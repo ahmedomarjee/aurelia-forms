@@ -4,12 +4,9 @@
     </models>
     <content>
         <text-box caption="Stefan" data-context="$m_Dummy" bind-to="Test" c-xs="6"/>
-        <text-box caption="Stefan" data-context="$m_Dummy" bind-to="Test" c-xs="6"/>
-        <text-box caption="Stefan" data-context="$m_Dummy" bind-to="Test" c-xs="6"/>
-        <text-box caption="Stefan" data-context="$m_Dummy" bind-to="Test" c-xs="6"/>
-        <text-box caption="Stefan" data-context="$m_Dummy" bind-to="Test" c-xs="6"/>
-        <text-box caption="Stefan" data-context="$m_Dummy" bind-to="Test" c-xs="6"/>
-        <text-box caption="Stefan" data-context="$m_Dummy" bind-to="Test" c-xs="6"/>
-        <text-box caption="Stefan" data-context="$m_Dummy" bind-to="Test" c-xs="6"/>
+        
+        <text>
+            **${$m_Dummy.Test}** ist hier
+        </text>
     </content>
 </form>
