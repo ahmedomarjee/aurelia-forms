@@ -18,7 +18,7 @@
   "filesGlob": [
     "./src/**/*.ts",
     "./test/**/*.ts",
-    "./node_modules/devextreme/dist/ts/dx.all.d.ts"
+    "./custom_typings/**/*.ts"
   ],
   "atom": {
     "rewriteTsconfig": false

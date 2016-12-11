@@ -1,5 +1,5 @@
 export * from "./options";
-export * from "./base-box-options";
+export * from "./editor-options";
 export * from "./calendar-options";
 export * from "./command-options";
 export * from "./date-box-options";

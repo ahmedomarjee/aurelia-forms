@@ -1,15 +1,19 @@
 import * as Forms from "../forms";
-import {FormBase} from "../base/form-base";
-import {ICommandData} from "../interfaces/command-data";
+import {
+  FormBase
+} from "../base/form-base";
+import {
+  ICommandData
+} from "../interfaces/command-data";
 
 export class WidgetCreatorService {
-  addDateBox(form: FormBase, options: Forms.IDateBoxOptions): any {
-    return this.createBaseBoxOptions(form, options);
+  addDateBox(form: FormBase, options: Forms.IDateBoxOptions): DevExpress.ui.dxDateBoxOptions {
+    return this.createEditorOptions(form, options);
   }
-  addCalendar(form: FormBase, options: Forms.ICalendarOptions): any {
-    return this.createBaseBoxOptions(form, options);
+  addCalendar(form: FormBase, options: Forms.ICalendarOptions): DevExpress.ui.dxCalendarOptions {
+    return this.createEditorOptions(form, options);
   }
-  addCommand(form: FormBase, options: Forms.ICommandOptions): any {
+  addCommand(form: FormBase, options: Forms.ICommandOptions): DevExpress.ui.dxButtonOptions {
     let command: ICommandData;
 
     if (options.binding.dataContext) {
@@ -18,7 +22,7 @@ export class WidgetCreatorService {
       command = form.evaluateExpression(options.binding.bindToFQ);
     }
 
-    const buttonOptions = <any>{};
+    const buttonOptions = < any > {};
     buttonOptions.text = command.title;
     buttonOptions.hint = command.tooltip;
     buttonOptions.onClick = () => {
@@ -32,59 +36,60 @@ export class WidgetCreatorService {
     };
 
     form[options.options.optionsName] = buttonOptions;
+    return buttonOptions;
   }
-  addNumberBox(form: FormBase, options: Forms.INumberBoxOptions): any {
-    const boxOptions = this.createBaseBoxOptions(form, options);
+  addNumberBox(form: FormBase, options: Forms.INumberBoxOptions): DevExpress.ui.dxNumberBoxOptions {
+    const editorOptions: DevExpress.ui.dxNumberBoxOptions = this.createEditorOptions(form, options);
 
     if (options.showClearButton) {
-      boxOptions.showClearButton = true;
+      editorOptions.showClearButton = true;
     }
     if (options.showSpinButtons) {
-      boxOptions.showSpinButtons = true;
+      editorOptions.showSpinButtons = true;
     }
-    boxOptions.min = options.minValue || 0;
+    editorOptions.min = options.minValue || 0;
     if (options.maxValue) {
-      boxOptions.max = options.maxValue;
+      editorOptions.max = options.maxValue;
     }
     if (options.step) {
-      boxOptions.step = options.step;
+      editorOptions.step = options.step;
     }
 
-    return boxOptions;
+    return editorOptions;
   }
-  addTextBox(form: FormBase, options: Forms.ITextBoxOptions): any {
-    const boxOptions = this.createBaseBoxOptions(form, options);
+  addTextBox(form: FormBase, options: Forms.ITextBoxOptions): DevExpress.ui.dxTextBoxOptions {
+    const editorOptions: DevExpress.ui.dxTextBoxOptions = this.createEditorOptions(form, options);
 
     if (options.maxLength) {
-      boxOptions.maxLength = options.maxLength;
+      editorOptions.maxLength = options.maxLength;
     }
 
-    return boxOptions;
+    return editorOptions;
   }
-  addTextArea(form: FormBase, options: Forms.ITextAreaOptions): any {
-    var boxOptions = this.addTextBox(form, options);
+  addTextArea(form: FormBase, options: Forms.ITextAreaOptions): DevExpress.ui.dxTextAreaOptions {
+    var editorOptions: DevExpress.ui.dxTextAreaOptions = this.addTextBox(form, options);
 
     if (options.height) {
-      boxOptions.height = options.height;
+      editorOptions.height = options.height;
     }
 
-    return boxOptions;
+    return editorOptions;
   }
 
-  private createBaseBoxOptions(form: FormBase, options: Forms.IBaseBoxOptions): any {
-    const boxOptions = <any>{
-      bindingOptions: <any>{}
+  private createEditorOptions(form: FormBase, options: Forms.IEditorOptions): any {
+    const editorOptions: DevExpress.ui.EditorOptions = {
+      bindingOptions: {}
     };
 
     if (options.binding && options.binding.bindToFQ) {
-      boxOptions.bindingOptions.value = options.binding.bindToFQ;
+      ( < any > editorOptions.bindingOptions).value = options.binding.bindToFQ;
     }
     if (options.isReadOnly) {
-      boxOptions.readOnly = true;
+      editorOptions.readOnly = true;
     }
 
-    form[options.options.optionsName] = boxOptions;
+    form[options.options.optionsName] = editorOptions;
 
-    return boxOptions;
+    return editorOptions;
   }
 }

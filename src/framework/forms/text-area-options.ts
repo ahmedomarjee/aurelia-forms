@@ -1,8 +1,8 @@
 import {IBinding} from "../interfaces/binding";
 import {IOptions} from "./options";
 import {IValidationRule} from "./validation-rule";
-import {ITextBoxOptions} from "./text-box-options";
+import {IEditorOptions} from "./editor-options";
 
-export interface ITextAreaOptions extends ITextBoxOptions {
+export interface ITextAreaOptions extends IEditorOptions {
     height?: string;
 }

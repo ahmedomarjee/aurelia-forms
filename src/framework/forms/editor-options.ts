@@ -2,7 +2,7 @@ import {IBinding} from "../interfaces/binding";
 import {IOptions} from "./options";
 import {IValidationRule} from "./validation-rule";
 
-export interface IBaseBoxOptions {
+export interface IEditorOptions {
     id: string;
     options: IOptions;
 

@@ -1,7 +1,7 @@
 import {IBinding} from "../interfaces/binding";
 import {IOptions} from "./options";
 import {IValidationRule} from "./validation-rule";
-import {IBaseBoxOptions} from "./base-box-options";
+import {IEditorOptions} from "./editor-options";
 
-export interface ICalendarOptions extends IBaseBoxOptions {
+export interface ICalendarOptions extends IEditorOptions {
 }
