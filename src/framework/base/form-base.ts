@@ -4,25 +4,25 @@ import {
   Expression
 } from "aurelia-framework";
 import {
-  Model
-} from "./model";
+  ModelInstance
+} from "./model-instance";
 import {
-  Function
-} from "./function";
+  FunctionInstance
+} from "./function-instance";
 import {
-  CommandServerData
-} from "./command-server-data";
+  CommandServerDataInstance
+} from "./command-server-data-instance";
 
 export class FormBase {
-  model: Model;
-  function: Function;
-  commandServerData: CommandServerData;
+  model: ModelInstance;
+  function: FunctionInstance;
+  commandServerData: CommandServerDataInstance;
   expression: Map<string, Expression>;
 
   constructor(private bindingEngine: BindingEngine) {
-    this.model = new Model();
-    this.function = new Function();
-    this.commandServerData = new CommandServerData();
+    this.model = new ModelInstance();
+    this.function = new FunctionInstance();
+    this.commandServerData = new CommandServerDataInstance();
     this.expression = new Map();
   }
 

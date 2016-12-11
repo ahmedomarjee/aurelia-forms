@@ -467,46 +467,46 @@ define('dx/elements/dx-widget',["require", "exports", "aurelia-framework", "../s
     exports.DxWidget = DxWidget;
 });
 
-define('framework/base/command-server-data',["require", "exports"], function (require, exports) {
+define('framework/base/command-server-data-instance',["require", "exports"], function (require, exports) {
     "use strict";
-    var CommandServerData = (function () {
-        function CommandServerData() {
+    var CommandServerDataInstance = (function () {
+        function CommandServerDataInstance() {
         }
-        return CommandServerData;
+        return CommandServerDataInstance;
     }());
-    exports.CommandServerData = CommandServerData;
+    exports.CommandServerDataInstance = CommandServerDataInstance;
 });
 
-define('framework/base/model',["require", "exports"], function (require, exports) {
+define('framework/base/model-instance',["require", "exports"], function (require, exports) {
     "use strict";
-    var Model = (function () {
-        function Model() {
+    var ModelInstance = (function () {
+        function ModelInstance() {
             this.data = {};
             this.info = {};
         }
-        return Model;
+        return ModelInstance;
     }());
-    exports.Model = Model;
+    exports.ModelInstance = ModelInstance;
 });
 
-define('framework/base/function',["require", "exports"], function (require, exports) {
+define('framework/base/function-instance',["require", "exports"], function (require, exports) {
     "use strict";
-    var Function = (function () {
-        function Function() {
+    var FunctionInstance = (function () {
+        function FunctionInstance() {
         }
-        return Function;
+        return FunctionInstance;
     }());
-    exports.Function = Function;
+    exports.FunctionInstance = FunctionInstance;
 });
 
-define('framework/base/form-base',["require", "exports", "./model", "./function", "./command-server-data"], function (require, exports, model_1, function_1, command_server_data_1) {
+define('framework/base/form-base',["require", "exports", "./model-instance", "./function-instance", "./command-server-data-instance"], function (require, exports, model_instance_1, function_instance_1, command_server_data_instance_1) {
     "use strict";
     var FormBase = (function () {
         function FormBase(bindingEngine) {
             this.bindingEngine = bindingEngine;
-            this.model = new model_1.Model();
-            this.function = new function_1.Function();
-            this.commandServerData = new command_server_data_1.CommandServerData();
+            this.model = new model_instance_1.ModelInstance();
+            this.function = new function_instance_1.FunctionInstance();
+            this.commandServerData = new command_server_data_instance_1.CommandServerDataInstance();
             this.expression = new Map();
         }
         FormBase.prototype.addModel = function (model) {
@@ -842,46 +842,6 @@ define('main/views/form-test-form',["require", "exports", "aurelia-framework", "
         __metadata("design:paramtypes", [aurelia_framework_1.BindingEngine, widget_creator_service_1.WidgetCreatorService])
     ], FormTestForm);
     exports.FormTestForm = FormTestForm;
-});
-
-define('framework/base/form-injector',["require", "exports", "./model", "./function", "./command-server-data"], function (require, exports, model_1, function_1, command_server_data_1) {
-    "use strict";
-    var FormInjector = (function () {
-        function FormInjector() {
-            this.model = new model_1.Model();
-            this.function = new function_1.Function();
-            this.commandServerData = new command_server_data_1.CommandServerData();
-        }
-        FormInjector.prototype.addModel = function (model) {
-            this.model.info[model.id] = model;
-        };
-        FormInjector.prototype.addVariable = function (variable) {
-        };
-        FormInjector.prototype.addCommandServerData = function (id, commandServerData) {
-            this.commandServerData[id] = commandServerData;
-        };
-        FormInjector.prototype.addCommand = function (command) {
-        };
-        FormInjector.prototype.addFunction = function (id, functionInstance) {
-            this.function[id] = functionInstance;
-        };
-        FormInjector.prototype.addEditPopup = function (editPopup) {
-        };
-        FormInjector.prototype.addMapping = function (mapping) {
-        };
-        return FormInjector;
-    }());
-    exports.FormInjector = FormInjector;
-});
-
-define('framework/base/expression',["require", "exports"], function (require, exports) {
-    "use strict";
-    var Expression = (function () {
-        function Expression() {
-        }
-        return Expression;
-    }());
-    exports.Expression = Expression;
 });
 
 define('text!app.html', ['module'], function(module) { module.exports = "<template>\n  <require from=\"bootstrap/css/bootstrap.min.css\"></require>\n  <require from=\"devextreme/css/dx.common.css\"></require>\n  <require from=\"devextreme/css/dx.light.compact.css\"></require>\n  <require from=\"./main/views/form-test-form\"></require>\n\n  <div class=\"container-fluid\">\n    <div class=\"row\">\n      <form-test-form></form-test-form>\n    </div>\n  </div>\n</template>\n"; });
