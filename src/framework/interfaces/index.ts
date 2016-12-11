@@ -1,5 +1,6 @@
 export * from "./binding";
 export * from "./command";
+export * from "./command-data";
 export * from "./filter";
 export * from "./function";
 export * from "./mapping";

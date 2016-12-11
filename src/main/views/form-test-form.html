@@ -1,3 +1,95 @@
-<template><div class="tip-margin-top col-xs-6"><div class="tip-editor-caption">Stefan</div><dx-widget name="dxTextBox" options.bind="id8788cb7b19934bfb8c3d5c4d5655e75fOptions"></dx-widget></div><div class="tip-margin-top col-xs-12"><div class="tip-editor-caption">&nbsp;</div><div>
-            <b>${models.data.$m_Dummy.Test}</b> ist hier
-        </div></div></template>
+<template>
+    <div class="col-xs-12">
+        <div class="tip-form-element-flex-box">
+            <div class="tip-margin-top">
+                <h1>${model.data.$m_Dummy.Test}</h1>
+            </div>
+            <div class="tip-margin-top">
+                <h2>${model.data.$m_Dummy.Test}</h2>
+            </div>
+            <div class="tip-margin-top">
+                <h3>${model.data.$m_Dummy.Test}</h3>
+            </div>
+            <div class="tip-margin-top">
+                <h4>${model.data.$m_Dummy.Test}</h4>
+            </div>
+            <div class="tip-margin-top">
+                <h5>${model.data.$m_Dummy.Test}</h5>
+            </div>
+            <div class="tip-margin-top">
+                <h6>${model.data.$m_Dummy.Test}</h6>
+            </div>
+        </div>
+    </div>
+    <div class="tip-margin-top col-xs-12">
+        <div class="tip-editor-caption">&nbsp;</div>
+        <dx-widget name="dxButton" options.bind="id15afd149f40f4255861a1078464fe771Options"></dx-widget>
+    </div>
+    <div class="tip-margin-top col-xs-12">
+        <div class="tip-editor-caption">&nbsp;</div>
+        <dx-widget name="dxButton" options.bind="id2d4da7a18e4e41f5b11ead35fae848fbOptions"></dx-widget>
+    </div>
+    <div class="tip-margin-top col-xs-6">
+        <div class="tip-editor-caption">Name</div>
+        <dx-widget name="dxTextBox" options.bind="id36dcbf9327c24046a967e26e98ead2ebOptions"></dx-widget>
+    </div>
+    <div class="tip-margin-top col-xs-6">
+        <div class="tip-editor-caption">Date</div>
+        <dx-widget name="dxDateBox" options.bind="idc37f3b866a14493fb8f3d5b379bb7d43Options"></dx-widget>
+    </div>
+    <div class="tip-margin-top col-xs-6">
+        <div class="tip-editor-caption">Number</div>
+        <dx-widget name="dxNumberBox" options.bind="id9a1cb8050a9b4eb7b045ba79624244c9Options"></dx-widget>
+    </div>
+    <div class="col-xs-12">
+        <div class="row">
+            <div class="tip-margin-top col-xs-6">
+                <div class="tip-editor-caption">Name</div>
+                <dx-widget name="dxTextArea" options.bind="id40680063929445d68aec4277524759baOptions"></dx-widget>
+            </div>
+            <div class="tip-margin-top col-xs-6">
+                <div class="tip-editor-caption">Name</div>
+                <dx-widget name="dxCalendar" options.bind="idd6eeb92860524de891dd295b94c26242Options"></dx-widget>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12">
+        <div>
+            <row class="row">
+                <div class="tip-margin-top col-xs-6">
+                    <div class="tip-editor-caption">Name</div>
+                    <dx-widget name="dxTextArea" options.bind="id8fc8de6a2a7e4ed2acf873c5473f8030Options"></dx-widget>
+                </div>
+                <div class="tip-margin-top col-xs-6">
+                    <div class="tip-editor-caption">Name</div>
+                    <dx-widget name="dxCalendar" options.bind="id8ca0ae732b854fc48efcf09bab8a5d0fOptions"></dx-widget>
+                </div>
+            </row>
+        </div>
+    </div>
+    <div class="tip-margin-top col-xs-12">
+        <div>
+            <b>${model.data.$m_Dummy.Test}</b> ist am ${model.data.$m_Dummy.Date} ${model.data.$m_Dummy.Number}x hier gewesen!
+        </div>
+    </div>
+    <div class="tip-margin-top col-xs-12">
+        <div class="tip-editor-caption">Dummy</div>
+        <dx-widget name="dxTextBox" options.bind="function.$f_Test.dummyText"></dx-widget>
+    </div>
+    <div class="col-xs-12">
+        <div repeat.for="item of function.$f_Test.dataList">
+            <div class="row">
+                <div class="tip-margin-top col-xs-12">
+                    <div>${item.a} ${item.b}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12">
+        <div class="tip-repeat-side-by-side" repeat.for="item of function.$f_Test.dataList">
+            <div class="tip-margin-top">
+                <div>${item.a} ${item.b}</div>
+            </div>
+        </div>
+    </div>
+</template>

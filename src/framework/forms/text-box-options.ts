@@ -1,16 +1,8 @@
 import {IBinding} from "../interfaces/binding";
 import {IOptions} from "./options";
 import {IValidationRule} from "./validation-rule";
+import {IBaseBoxOptions} from "./base-box-options";
 
-export interface ITextBoxOptions {
-    id: string;
-    options: IOptions;
-
-    caption: string;
-    isReadOnly?: boolean;
+export interface ITextBoxOptions extends IBaseBoxOptions {
     maxLength?: number;
-
-    binding?: IBinding;
-
-    validationRules: IValidationRule[];
 }

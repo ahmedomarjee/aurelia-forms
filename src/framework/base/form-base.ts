@@ -1,42 +1,64 @@
 import * as Interfaces from "../interfaces";
-import * as Forms from "../forms";
-import {Model} from "./model";
+import {
+  BindingEngine,
+  Expression
+} from "aurelia-framework";
+import {
+  Model
+} from "./model";
+import {
+  Function
+} from "./function";
+import {
+  CommandServerData
+} from "./command-server-data";
 
 export class FormBase {
-    model: Model;
+  model: Model;
+  function: Function;
+  commandServerData: CommandServerData;
+  expression: Map<string, Expression>;
 
-    constructor() {
-        this.model = new Model();
+  constructor(private bindingEngine: BindingEngine) {
+    this.model = new Model();
+    this.function = new Function();
+    this.commandServerData = new CommandServerData();
+    this.expression = new Map();
+  }
+
+  addModel(model: Interfaces.IModel): void {
+    this.model.info[model.id] = model;
+  }
+  addVariable(variable: Interfaces.IVariable): void {
+
+  }
+  addCommandServerData(id: string, commandServerData: Interfaces.ICommandData): void {
+    this.commandServerData[id] = commandServerData;
+  }
+  addCommand(command: Interfaces.ICommand): void {
+
+  }
+  addFunction(id: string, functionInstance: any): void {
+    this.function[id] = functionInstance;
+  }
+  addEditPopup(editPopup: Interfaces.IEditPopup): void {
+
+  }
+  addMapping(mapping: Interfaces.IMapping): void {
+
+  }
+
+  evaluateExpression(expression: string): any {
+    let parsed = this.expression.get(expression);
+
+    if (!parsed) {
+      parsed = this.bindingEngine.parseExpression(expression);
+      this.expression.set(expression, parsed);
     }
 
-    addModel(model: Interfaces.IModel) {
-        this.model.info[model.id] = model;
-    }
-    addVariable(variable: Interfaces.IVariable) {
-
-    }
-    addCommand(command: Interfaces.ICommand) {
-
-    }
-    addFunction(func: Interfaces.IFunction) {
-
-    }
-    addEditPopup(editPopup: Interfaces.IEditPopup) {
-
-    }
-    addMapping(mapping: Interfaces.IMapping) {
-
-    }
-
-    addTextBox(options: Forms.ITextBoxOptions) {
-        const textBoxOptions = {
-            bindingOptions: <any>{}
-        };
-        
-        if (options.binding && options.binding.bindToFQ) {
-            textBoxOptions.bindingOptions.value = options.binding.bindToFQ; 
-        }
-
-        this[options.options.optionsName] = textBoxOptions;
-    }
+    return parsed.evaluate({
+      bindingContext: this,
+      overrideContext: null  
+    });
+  }
 }

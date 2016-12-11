@@ -1,12 +1,45 @@
 <form>
     <models>
-        <model id="$m_Dummy"/>
+        <model id="$m_Dummy" web-api-action="1/2/3"/>
     </models>
+    <functions>
+        <function id="$f_Test" file-path="../functions/test-function" class-name="TestFunction" custom-parameter="{ x: 1, y: 2}" />
+    </functions>
     <content>
-        <text-box caption="Stefan" data-context="$m_Dummy" bind-to="Test" c-xs="6"/>
-        
+        <flex-box>
+            <h1>${$m_Dummy.Test}</h1>
+            <h2>${$m_Dummy.Test}</h2>
+            <h3>${$m_Dummy.Test}</h3>
+            <h4>${$m_Dummy.Test}</h4>
+            <h5>${$m_Dummy.Test}</h5>
+            <h6>${$m_Dummy.Test}</h6>
+        </flex-box>
+
+        <command data-context="$m_Dummy" bind-to="demoCommand" />
+        <command bind-to="$f_Test.giveItToMe" />
+        <text-box caption="Name" data-context="$m_Dummy" bind-to="Test" c-xs="6"/>
+        <date-box caption="Date" data-context="$m_Dummy" bind-to="Date" c-xs="6"/>
+        <number-box caption="Number" data-context="$m_Dummy" bind-to="Number" c-xs="6"/>
+        <row>
+            <text-area caption="Name" data-context="$m_Dummy" bind-to="Test" height="200px" c-xs="6"/>
+            <calendar caption="Name" data-context="$m_Dummy" bind-to="Date" c-xs="6"/>
+        </row>
+        <div>
+            <text-area caption="Name" data-context="$m_Dummy" bind-to="Test" height="200px" c-xs="6"/>
+            <calendar caption="Name" data-context="$m_Dummy" bind-to="Date" c-xs="6"/>
+        </div>
+
         <text>
-            **${$m_Dummy.Test}** ist hier
+            **${$m_Dummy.Test}** ist am ${$m_Dummy.Date} ${$m_Dummy.Number}x hier gewesen!
         </text>
+
+        <dx caption="Dummy" widget="dxTextBox" options-name="$f_Test.dummyText" />
+
+        <repeat bind-to="$f_Test.dataList">
+            <text>${item.a} ${item.b}</text>
+        </repeat>
+        <repeat bind-to="$f_Test.dataList" side-by-side="true">
+            <text>${item.a} ${item.b}</text>
+        </repeat>
     </content>
 </form>
