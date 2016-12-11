@@ -63,7 +63,7 @@ define('framework/forms/validation-rule',["require", "exports"], function (requi
     "use strict";
 });
 
-define('framework/forms/base-box-options',["require", "exports"], function (require, exports) {
+define('framework/forms/editor-options',["require", "exports"], function (require, exports) {
     "use strict";
 });
 
@@ -542,98 +542,6 @@ define('framework/base/form-base',["require", "exports", "./model-instance", "./
     exports.FormBase = FormBase;
 });
 
-define('framework/services/widget-creator-service',["require", "exports"], function (require, exports) {
-    "use strict";
-    var WidgetCreatorService = (function () {
-        function WidgetCreatorService() {
-        }
-        WidgetCreatorService.prototype.addDateBox = function (form, options) {
-            return this.createBaseBoxOptions(form, options);
-        };
-        WidgetCreatorService.prototype.addCalendar = function (form, options) {
-            return this.createBaseBoxOptions(form, options);
-        };
-        WidgetCreatorService.prototype.addCommand = function (form, options) {
-            var command;
-            if (options.binding.dataContext) {
-                command = form.commandServerData[options.binding.dataContext + ";" + options.binding.bindTo];
-            }
-            else {
-                command = form.evaluateExpression(options.binding.bindToFQ);
-            }
-            var buttonOptions = {};
-            buttonOptions.text = command.title;
-            buttonOptions.hint = command.tooltip;
-            buttonOptions.onClick = function () {
-                if (typeof command.execute === "function") {
-                    command.execute();
-                }
-                else if (typeof command.execute === "string") {
-                    form.evaluateExpression(command.execute);
-                }
-                else {
-                    throw new Error();
-                }
-            };
-            form[options.options.optionsName] = buttonOptions;
-        };
-        WidgetCreatorService.prototype.addNumberBox = function (form, options) {
-            var boxOptions = this.createBaseBoxOptions(form, options);
-            if (options.showClearButton) {
-                boxOptions.showClearButton = true;
-            }
-            if (options.showSpinButtons) {
-                boxOptions.showSpinButtons = true;
-            }
-            boxOptions.min = options.minValue || 0;
-            if (options.maxValue) {
-                boxOptions.max = options.maxValue;
-            }
-            if (options.step) {
-                boxOptions.step = options.step;
-            }
-            return boxOptions;
-        };
-        WidgetCreatorService.prototype.addTextBox = function (form, options) {
-            var boxOptions = this.createBaseBoxOptions(form, options);
-            if (options.maxLength) {
-                boxOptions.maxLength = options.maxLength;
-            }
-            return boxOptions;
-        };
-        WidgetCreatorService.prototype.addTextArea = function (form, options) {
-            var boxOptions = this.addTextBox(form, options);
-            if (options.height) {
-                boxOptions.height = options.height;
-            }
-            return boxOptions;
-        };
-        WidgetCreatorService.prototype.createBaseBoxOptions = function (form, options) {
-            var boxOptions = {
-                bindingOptions: {}
-            };
-            if (options.binding && options.binding.bindToFQ) {
-                boxOptions.bindingOptions.value = options.binding.bindToFQ;
-            }
-            if (options.isReadOnly) {
-                boxOptions.readOnly = true;
-            }
-            form[options.options.optionsName] = boxOptions;
-            return boxOptions;
-        };
-        return WidgetCreatorService;
-    }());
-    exports.WidgetCreatorService = WidgetCreatorService;
-});
-
-define('framework/services/index',["require", "exports", "./widget-creator-service"], function (require, exports, widget_creator_service_1) {
-    "use strict";
-    function __export(m) {
-        for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-    }
-    __export(widget_creator_service_1);
-});
-
 define('main/functions/test-function',["require", "exports"], function (require, exports) {
     "use strict";
     var TestFunction = (function () {
@@ -669,6 +577,91 @@ define('main/functions/test-function',["require", "exports"], function (require,
         return TestFunction;
     }());
     exports.TestFunction = TestFunction;
+});
+
+define('framework/services/widget-creator-service',["require", "exports"], function (require, exports) {
+    "use strict";
+    var WidgetCreatorService = (function () {
+        function WidgetCreatorService() {
+        }
+        WidgetCreatorService.prototype.addDateBox = function (form, options) {
+            return this.createEditorOptions(form, options);
+        };
+        WidgetCreatorService.prototype.addCalendar = function (form, options) {
+            return this.createEditorOptions(form, options);
+        };
+        WidgetCreatorService.prototype.addCommand = function (form, options) {
+            var command;
+            if (options.binding.dataContext) {
+                command = form.commandServerData[options.binding.dataContext + ";" + options.binding.bindTo];
+            }
+            else {
+                command = form.evaluateExpression(options.binding.bindToFQ);
+            }
+            var buttonOptions = {};
+            buttonOptions.text = command.title;
+            buttonOptions.hint = command.tooltip;
+            buttonOptions.onClick = function () {
+                if (typeof command.execute === "function") {
+                    command.execute();
+                }
+                else if (typeof command.execute === "string") {
+                    form.evaluateExpression(command.execute);
+                }
+                else {
+                    throw new Error();
+                }
+            };
+            form[options.options.optionsName] = buttonOptions;
+            return buttonOptions;
+        };
+        WidgetCreatorService.prototype.addNumberBox = function (form, options) {
+            var editorOptions = this.createEditorOptions(form, options);
+            if (options.showClearButton) {
+                editorOptions.showClearButton = true;
+            }
+            if (options.showSpinButtons) {
+                editorOptions.showSpinButtons = true;
+            }
+            editorOptions.min = options.minValue || 0;
+            if (options.maxValue) {
+                editorOptions.max = options.maxValue;
+            }
+            if (options.step) {
+                editorOptions.step = options.step;
+            }
+            return editorOptions;
+        };
+        WidgetCreatorService.prototype.addTextBox = function (form, options) {
+            var editorOptions = this.createEditorOptions(form, options);
+            if (options.maxLength) {
+                editorOptions.maxLength = options.maxLength;
+            }
+            return editorOptions;
+        };
+        WidgetCreatorService.prototype.addTextArea = function (form, options) {
+            var editorOptions = this.addTextBox(form, options);
+            if (options.height) {
+                editorOptions.height = options.height;
+            }
+            return editorOptions;
+        };
+        WidgetCreatorService.prototype.createEditorOptions = function (form, options) {
+            var editorOptions = {
+                bindingOptions: {}
+            };
+            if (options.binding && options.binding.bindToFQ) {
+                editorOptions.bindingOptions.value = options.binding.bindToFQ;
+            }
+            if (options.isReadOnly) {
+                editorOptions.readOnly = true;
+            }
+            form[options.options.optionsName] = editorOptions;
+            return editorOptions;
+        };
+        return WidgetCreatorService;
+    }());
+    exports.WidgetCreatorService = WidgetCreatorService;
 });
 
 var __extends = (this && this.__extends) || function (d, b) {
@@ -842,6 +835,14 @@ define('main/views/form-test-form',["require", "exports", "aurelia-framework", "
         __metadata("design:paramtypes", [aurelia_framework_1.BindingEngine, widget_creator_service_1.WidgetCreatorService])
     ], FormTestForm);
     exports.FormTestForm = FormTestForm;
+});
+
+define('framework/services/index',["require", "exports", "./widget-creator-service"], function (require, exports, widget_creator_service_1) {
+    "use strict";
+    function __export(m) {
+        for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+    }
+    __export(widget_creator_service_1);
 });
 
 define('text!app.html', ['module'], function(module) { module.exports = "<template>\n  <require from=\"bootstrap/css/bootstrap.min.css\"></require>\n  <require from=\"devextreme/css/dx.common.css\"></require>\n  <require from=\"devextreme/css/dx.light.compact.css\"></require>\n  <require from=\"./main/views/form-test-form\"></require>\n\n  <div class=\"container-fluid\">\n    <div class=\"row\">\n      <form-test-form></form-test-form>\n    </div>\n  </div>\n</template>\n"; });
