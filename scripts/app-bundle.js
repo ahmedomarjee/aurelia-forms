@@ -51,6 +51,13 @@ define('dx/index',["require", "exports"], function (require, exports) {
     exports.configure = configure;
 });
 
+define('main/index',["require", "exports"], function (require, exports) {
+    "use strict";
+    function configure(config) {
+    }
+    exports.configure = configure;
+});
+
 define('framework/forms/options',["require", "exports"], function (require, exports) {
     "use strict";
 });
@@ -133,13 +140,6 @@ define('framework/interfaces/index',["require", "exports"], function (require, e
 
 define('framework/index',["require", "exports"], function (require, exports) {
     "use strict";
-});
-
-define('main/index',["require", "exports"], function (require, exports) {
-    "use strict";
-    function configure(config) {
-    }
-    exports.configure = configure;
 });
 
 define('resources/index',["require", "exports"], function (require, exports) {
@@ -467,16 +467,6 @@ define('dx/elements/dx-widget',["require", "exports", "aurelia-framework", "../s
     exports.DxWidget = DxWidget;
 });
 
-define('framework/base/command-server-data-instance',["require", "exports"], function (require, exports) {
-    "use strict";
-    var CommandServerDataInstance = (function () {
-        function CommandServerDataInstance() {
-        }
-        return CommandServerDataInstance;
-    }());
-    exports.CommandServerDataInstance = CommandServerDataInstance;
-});
-
 define('framework/base/model-instance',["require", "exports"], function (require, exports) {
     "use strict";
     var ModelInstance = (function () {
@@ -497,6 +487,16 @@ define('framework/base/function-instance',["require", "exports"], function (requ
         return FunctionInstance;
     }());
     exports.FunctionInstance = FunctionInstance;
+});
+
+define('framework/base/command-server-data-instance',["require", "exports"], function (require, exports) {
+    "use strict";
+    var CommandServerDataInstance = (function () {
+        function CommandServerDataInstance() {
+        }
+        return CommandServerDataInstance;
+    }());
+    exports.CommandServerDataInstance = CommandServerDataInstance;
 });
 
 define('framework/base/form-base',["require", "exports", "aurelia-framework", "./model-instance", "./function-instance", "./command-server-data-instance"], function (require, exports, aurelia_framework_1, model_instance_1, function_instance_1, command_server_data_instance_1) {
@@ -540,6 +540,43 @@ define('framework/base/form-base',["require", "exports", "aurelia-framework", ".
         return FormBase;
     }());
     exports.FormBase = FormBase;
+});
+
+define('main/functions/test-function',["require", "exports"], function (require, exports) {
+    "use strict";
+    var TestFunction = (function () {
+        function TestFunction(form, namespace, parameters) {
+            this.form = form;
+            this.namespace = namespace;
+            this.parameters = parameters;
+            this.dataList = [
+                {
+                    a: "A",
+                    b: "B"
+                },
+                {
+                    a: "A",
+                    b: "B"
+                },
+                {
+                    a: "A",
+                    b: "B"
+                }
+            ];
+            this.dummyText = {
+                placeholder: "This is a dummy"
+            };
+            this.giveItToMe = {
+                id: "giveItToMe",
+                title: "Test with Func",
+                execute: function () {
+                    alert('Hallo');
+                }
+            };
+        }
+        return TestFunction;
+    }());
+    exports.TestFunction = TestFunction;
 });
 
 define('framework/services/widget-creator-service',["require", "exports"], function (require, exports) {
@@ -625,51 +662,6 @@ define('framework/services/widget-creator-service',["require", "exports"], funct
         return WidgetCreatorService;
     }());
     exports.WidgetCreatorService = WidgetCreatorService;
-});
-
-define('framework/services/index',["require", "exports", "./widget-creator-service"], function (require, exports, widget_creator_service_1) {
-    "use strict";
-    function __export(m) {
-        for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-    }
-    __export(widget_creator_service_1);
-});
-
-define('main/functions/test-function',["require", "exports"], function (require, exports) {
-    "use strict";
-    var TestFunction = (function () {
-        function TestFunction(form, namespace, parameters) {
-            this.form = form;
-            this.namespace = namespace;
-            this.parameters = parameters;
-            this.dataList = [
-                {
-                    a: "A",
-                    b: "B"
-                },
-                {
-                    a: "A",
-                    b: "B"
-                },
-                {
-                    a: "A",
-                    b: "B"
-                }
-            ];
-            this.dummyText = {
-                placeholder: "This is a dummy"
-            };
-            this.giveItToMe = {
-                id: "giveItToMe",
-                title: "Test with Func",
-                execute: function () {
-                    alert('Hallo');
-                }
-            };
-        }
-        return TestFunction;
-    }());
-    exports.TestFunction = TestFunction;
 });
 
 var __extends = (this && this.__extends) || function (d, b) {
@@ -843,6 +835,14 @@ define('main/views/form-test-form',["require", "exports", "aurelia-framework", "
         __metadata("design:paramtypes", [widget_creator_service_1.WidgetCreatorService])
     ], FormTestForm);
     exports.FormTestForm = FormTestForm;
+});
+
+define('framework/services/index',["require", "exports", "./widget-creator-service"], function (require, exports, widget_creator_service_1) {
+    "use strict";
+    function __export(m) {
+        for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+    }
+    __export(widget_creator_service_1);
 });
 
 define('text!app.html', ['module'], function(module) { module.exports = "<template>\r\n  <require from=\"bootstrap/css/bootstrap.min.css\"></require>\r\n  <require from=\"devextreme/css/dx.common.css\"></require>\r\n  <require from=\"devextreme/css/dx.light.compact.css\"></require>\r\n  <require from=\"./main/views/form-test-form\"></require>\r\n\r\n  <div class=\"container-fluid\">\r\n    <div class=\"row\">\r\n      <form-test-form></form-test-form>\r\n    </div>\r\n  </div>\r\n</template>\r\n"; });

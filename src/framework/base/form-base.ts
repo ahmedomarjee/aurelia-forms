@@ -15,11 +15,11 @@ import {
 } from "./command-server-data-instance";
 
 export class FormBase {
-  bindingEngine: BindingEngine;
-  model: ModelInstance;
-  function: FunctionInstance;
-  commandServerData: CommandServerDataInstance;
-  expression: Map<string, Expression>;
+  readonly bindingEngine: BindingEngine;
+  readonly model: ModelInstance;
+  readonly function: FunctionInstance;
+  readonly commandServerData: CommandServerDataInstance;
+  protected readonly expression: Map<string, Expression>;
 
   constructor() {
     this.bindingEngine = Container.instance.get(BindingEngine);
@@ -29,25 +29,25 @@ export class FormBase {
     this.expression = new Map();
   }
 
-  addModel(model: Interfaces.IModel): void {
+  protected addModel(model: Interfaces.IModel): void {
     this.model.info[model.id] = model;
   }
-  addVariable(variable: Interfaces.IVariable): void {
+  protected addVariable(variable: Interfaces.IVariable): void {
 
   }
-  addCommandServerData(id: string, commandServerData: Interfaces.ICommandData): void {
+  protected addCommandServerData(id: string, commandServerData: Interfaces.ICommandData): void {
     this.commandServerData[id] = commandServerData;
   }
-  addCommand(command: Interfaces.ICommand): void {
+  protected addCommand(command: Interfaces.ICommand): void {
 
   }
-  addFunction(id: string, functionInstance: any): void {
+  protected addFunction(id: string, functionInstance: any): void {
     this.function[id] = functionInstance;
   }
-  addEditPopup(editPopup: Interfaces.IEditPopup): void {
+  protected addEditPopup(editPopup: Interfaces.IEditPopup): void {
 
   }
-  addMapping(mapping: Interfaces.IMapping): void {
+  protected addMapping(mapping: Interfaces.IMapping): void {
 
   }
 
