@@ -499,11 +499,11 @@ define('framework/base/function-instance',["require", "exports"], function (requ
     exports.FunctionInstance = FunctionInstance;
 });
 
-define('framework/base/form-base',["require", "exports", "./model-instance", "./function-instance", "./command-server-data-instance"], function (require, exports, model_instance_1, function_instance_1, command_server_data_instance_1) {
+define('framework/base/form-base',["require", "exports", "aurelia-framework", "./model-instance", "./function-instance", "./command-server-data-instance"], function (require, exports, aurelia_framework_1, model_instance_1, function_instance_1, command_server_data_instance_1) {
     "use strict";
     var FormBase = (function () {
-        function FormBase(bindingEngine) {
-            this.bindingEngine = bindingEngine;
+        function FormBase() {
+            this.bindingEngine = aurelia_framework_1.Container.instance.get(aurelia_framework_1.BindingEngine);
             this.model = new model_instance_1.ModelInstance();
             this.function = new function_instance_1.FunctionInstance();
             this.commandServerData = new command_server_data_instance_1.CommandServerDataInstance();
@@ -540,43 +540,6 @@ define('framework/base/form-base',["require", "exports", "./model-instance", "./
         return FormBase;
     }());
     exports.FormBase = FormBase;
-});
-
-define('main/functions/test-function',["require", "exports"], function (require, exports) {
-    "use strict";
-    var TestFunction = (function () {
-        function TestFunction(form, namespace, parameters) {
-            this.form = form;
-            this.namespace = namespace;
-            this.parameters = parameters;
-            this.dataList = [
-                {
-                    a: "A",
-                    b: "B"
-                },
-                {
-                    a: "A",
-                    b: "B"
-                },
-                {
-                    a: "A",
-                    b: "B"
-                }
-            ];
-            this.dummyText = {
-                placeholder: "This is a dummy"
-            };
-            this.giveItToMe = {
-                id: "giveItToMe",
-                title: "Test with Func",
-                execute: function () {
-                    alert('Hallo');
-                }
-            };
-        }
-        return TestFunction;
-    }());
-    exports.TestFunction = TestFunction;
 });
 
 define('framework/services/widget-creator-service',["require", "exports"], function (require, exports) {
@@ -664,6 +627,51 @@ define('framework/services/widget-creator-service',["require", "exports"], funct
     exports.WidgetCreatorService = WidgetCreatorService;
 });
 
+define('framework/services/index',["require", "exports", "./widget-creator-service"], function (require, exports, widget_creator_service_1) {
+    "use strict";
+    function __export(m) {
+        for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+    }
+    __export(widget_creator_service_1);
+});
+
+define('main/functions/test-function',["require", "exports"], function (require, exports) {
+    "use strict";
+    var TestFunction = (function () {
+        function TestFunction(form, namespace, parameters) {
+            this.form = form;
+            this.namespace = namespace;
+            this.parameters = parameters;
+            this.dataList = [
+                {
+                    a: "A",
+                    b: "B"
+                },
+                {
+                    a: "A",
+                    b: "B"
+                },
+                {
+                    a: "A",
+                    b: "B"
+                }
+            ];
+            this.dummyText = {
+                placeholder: "This is a dummy"
+            };
+            this.giveItToMe = {
+                id: "giveItToMe",
+                title: "Test with Func",
+                execute: function () {
+                    alert('Hallo');
+                }
+            };
+        }
+        return TestFunction;
+    }());
+    exports.TestFunction = TestFunction;
+});
+
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -682,8 +690,8 @@ define('main/views/form-test-form',["require", "exports", "aurelia-framework", "
     "use strict";
     var FormTestForm = (function (_super) {
         __extends(FormTestForm, _super);
-        function FormTestForm(bindingEngine, widgetCreator) {
-            var _this = _super.call(this, bindingEngine) || this;
+        function FormTestForm(widgetCreator) {
+            var _this = _super.call(this) || this;
             _this.widgetCreator = widgetCreator;
             _this.addModel({
                 "id": "$m_Dummy",
@@ -831,21 +839,13 @@ define('main/views/form-test-form',["require", "exports", "aurelia-framework", "
         return FormTestForm;
     }(form_base_1.FormBase));
     FormTestForm = __decorate([
-        aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [aurelia_framework_1.BindingEngine, widget_creator_service_1.WidgetCreatorService])
+        aurelia_framework_1.inject(widget_creator_service_1.WidgetCreatorService),
+        __metadata("design:paramtypes", [widget_creator_service_1.WidgetCreatorService])
     ], FormTestForm);
     exports.FormTestForm = FormTestForm;
 });
 
-define('framework/services/index',["require", "exports", "./widget-creator-service"], function (require, exports, widget_creator_service_1) {
-    "use strict";
-    function __export(m) {
-        for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-    }
-    __export(widget_creator_service_1);
-});
-
-define('text!app.html', ['module'], function(module) { module.exports = "<template>\n  <require from=\"bootstrap/css/bootstrap.min.css\"></require>\n  <require from=\"devextreme/css/dx.common.css\"></require>\n  <require from=\"devextreme/css/dx.light.compact.css\"></require>\n  <require from=\"./main/views/form-test-form\"></require>\n\n  <div class=\"container-fluid\">\n    <div class=\"row\">\n      <form-test-form></form-test-form>\n    </div>\n  </div>\n</template>\n"; });
-define('text!dx/elements/dx-widget.html', ['module'], function(module) { module.exports = "<template class=\"dx-widget\">\n    <require from=\"devextreme\"></require>\n</template>"; });
-define('text!main/views/form-test-form.html', ['module'], function(module) { module.exports = "<template>\n    <div class=\"col-xs-12\">\n        <div class=\"tip-form-element-flex-box\">\n            <div class=\"tip-margin-top\">\n                <h1>${model.data.$m_Dummy.Test}</h1>\n            </div>\n            <div class=\"tip-margin-top\">\n                <h2>${model.data.$m_Dummy.Test}</h2>\n            </div>\n            <div class=\"tip-margin-top\">\n                <h3>${model.data.$m_Dummy.Test}</h3>\n            </div>\n            <div class=\"tip-margin-top\">\n                <h4>${model.data.$m_Dummy.Test}</h4>\n            </div>\n            <div class=\"tip-margin-top\">\n                <h5>${model.data.$m_Dummy.Test}</h5>\n            </div>\n            <div class=\"tip-margin-top\">\n                <h6>${model.data.$m_Dummy.Test}</h6>\n            </div>\n        </div>\n    </div>\n    <div class=\"tip-margin-top col-xs-12\">\n        <div class=\"tip-editor-caption\">&nbsp;</div>\n        <dx-widget name=\"dxButton\" options.bind=\"id15afd149f40f4255861a1078464fe771Options\"></dx-widget>\n    </div>\n    <div class=\"tip-margin-top col-xs-12\">\n        <div class=\"tip-editor-caption\">&nbsp;</div>\n        <dx-widget name=\"dxButton\" options.bind=\"id2d4da7a18e4e41f5b11ead35fae848fbOptions\"></dx-widget>\n    </div>\n    <div class=\"tip-margin-top col-xs-6\">\n        <div class=\"tip-editor-caption\">Name</div>\n        <dx-widget name=\"dxTextBox\" options.bind=\"id36dcbf9327c24046a967e26e98ead2ebOptions\"></dx-widget>\n    </div>\n    <div class=\"tip-margin-top col-xs-6\">\n        <div class=\"tip-editor-caption\">Date</div>\n        <dx-widget name=\"dxDateBox\" options.bind=\"idc37f3b866a14493fb8f3d5b379bb7d43Options\"></dx-widget>\n    </div>\n    <div class=\"tip-margin-top col-xs-6\">\n        <div class=\"tip-editor-caption\">Number</div>\n        <dx-widget name=\"dxNumberBox\" options.bind=\"id9a1cb8050a9b4eb7b045ba79624244c9Options\"></dx-widget>\n    </div>\n    <div class=\"col-xs-12\">\n        <div class=\"row\">\n            <div class=\"tip-margin-top col-xs-6\">\n                <div class=\"tip-editor-caption\">Name</div>\n                <dx-widget name=\"dxTextArea\" options.bind=\"id40680063929445d68aec4277524759baOptions\"></dx-widget>\n            </div>\n            <div class=\"tip-margin-top col-xs-6\">\n                <div class=\"tip-editor-caption\">Name</div>\n                <dx-widget name=\"dxCalendar\" options.bind=\"idd6eeb92860524de891dd295b94c26242Options\"></dx-widget>\n            </div>\n        </div>\n    </div>\n    <div class=\"col-xs-12\">\n        <div>\n            <row class=\"row\">\n                <div class=\"tip-margin-top col-xs-6\">\n                    <div class=\"tip-editor-caption\">Name</div>\n                    <dx-widget name=\"dxTextArea\" options.bind=\"id8fc8de6a2a7e4ed2acf873c5473f8030Options\"></dx-widget>\n                </div>\n                <div class=\"tip-margin-top col-xs-6\">\n                    <div class=\"tip-editor-caption\">Name</div>\n                    <dx-widget name=\"dxCalendar\" options.bind=\"id8ca0ae732b854fc48efcf09bab8a5d0fOptions\"></dx-widget>\n                </div>\n            </row>\n        </div>\n    </div>\n    <div class=\"tip-margin-top col-xs-12\">\n        <div>\n            <b>${model.data.$m_Dummy.Test}</b> ist am ${model.data.$m_Dummy.Date} ${model.data.$m_Dummy.Number}x hier gewesen!\n        </div>\n    </div>\n    <div class=\"tip-margin-top col-xs-12\">\n        <div class=\"tip-editor-caption\">Dummy</div>\n        <dx-widget name=\"dxTextBox\" options.bind=\"function.$f_Test.dummyText\"></dx-widget>\n    </div>\n    <div class=\"col-xs-12\">\n        <div repeat.for=\"item of function.$f_Test.dataList\">\n            <div class=\"row\">\n                <div class=\"tip-margin-top col-xs-12\">\n                    <div>${item.a} ${item.b}</div>\n                </div>\n            </div>\n        </div>\n    </div>\n    <div class=\"col-xs-12\">\n        <div class=\"tip-repeat-side-by-side\" repeat.for=\"item of function.$f_Test.dataList\">\n            <div class=\"tip-margin-top\">\n                <div>${item.a} ${item.b}</div>\n            </div>\n        </div>\n    </div>\n</template>"; });
+define('text!app.html', ['module'], function(module) { module.exports = "<template>\r\n  <require from=\"bootstrap/css/bootstrap.min.css\"></require>\r\n  <require from=\"devextreme/css/dx.common.css\"></require>\r\n  <require from=\"devextreme/css/dx.light.compact.css\"></require>\r\n  <require from=\"./main/views/form-test-form\"></require>\r\n\r\n  <div class=\"container-fluid\">\r\n    <div class=\"row\">\r\n      <form-test-form></form-test-form>\r\n    </div>\r\n  </div>\r\n</template>\r\n"; });
+define('text!dx/elements/dx-widget.html', ['module'], function(module) { module.exports = "<template class=\"dx-widget\">\r\n    <require from=\"devextreme\"></require>\r\n</template>"; });
+define('text!main/views/form-test-form.html', ['module'], function(module) { module.exports = "<template>\r\n    <div class=\"col-xs-12\">\r\n        <div class=\"tip-form-element-flex-box\">\r\n            <div class=\"tip-margin-top\">\r\n                <h1>${model.data.$m_Dummy.Test}</h1>\r\n            </div>\r\n            <div class=\"tip-margin-top\">\r\n                <h2>${model.data.$m_Dummy.Test}</h2>\r\n            </div>\r\n            <div class=\"tip-margin-top\">\r\n                <h3>${model.data.$m_Dummy.Test}</h3>\r\n            </div>\r\n            <div class=\"tip-margin-top\">\r\n                <h4>${model.data.$m_Dummy.Test}</h4>\r\n            </div>\r\n            <div class=\"tip-margin-top\">\r\n                <h5>${model.data.$m_Dummy.Test}</h5>\r\n            </div>\r\n            <div class=\"tip-margin-top\">\r\n                <h6>${model.data.$m_Dummy.Test}</h6>\r\n            </div>\r\n        </div>\r\n    </div>\r\n    <div class=\"tip-margin-top col-xs-12\">\r\n        <div class=\"tip-editor-caption\">&nbsp;</div>\r\n        <dx-widget name=\"dxButton\" options.bind=\"id15afd149f40f4255861a1078464fe771Options\"></dx-widget>\r\n    </div>\r\n    <div class=\"tip-margin-top col-xs-12\">\r\n        <div class=\"tip-editor-caption\">&nbsp;</div>\r\n        <dx-widget name=\"dxButton\" options.bind=\"id2d4da7a18e4e41f5b11ead35fae848fbOptions\"></dx-widget>\r\n    </div>\r\n    <div class=\"tip-margin-top col-xs-6\">\r\n        <div class=\"tip-editor-caption\">Name</div>\r\n        <dx-widget name=\"dxTextBox\" options.bind=\"id36dcbf9327c24046a967e26e98ead2ebOptions\"></dx-widget>\r\n    </div>\r\n    <div class=\"tip-margin-top col-xs-6\">\r\n        <div class=\"tip-editor-caption\">Date</div>\r\n        <dx-widget name=\"dxDateBox\" options.bind=\"idc37f3b866a14493fb8f3d5b379bb7d43Options\"></dx-widget>\r\n    </div>\r\n    <div class=\"tip-margin-top col-xs-6\">\r\n        <div class=\"tip-editor-caption\">Number</div>\r\n        <dx-widget name=\"dxNumberBox\" options.bind=\"id9a1cb8050a9b4eb7b045ba79624244c9Options\"></dx-widget>\r\n    </div>\r\n    <div class=\"col-xs-12\">\r\n        <div class=\"row\">\r\n            <div class=\"tip-margin-top col-xs-6\">\r\n                <div class=\"tip-editor-caption\">Name</div>\r\n                <dx-widget name=\"dxTextArea\" options.bind=\"id40680063929445d68aec4277524759baOptions\"></dx-widget>\r\n            </div>\r\n            <div class=\"tip-margin-top col-xs-6\">\r\n                <div class=\"tip-editor-caption\">Name</div>\r\n                <dx-widget name=\"dxCalendar\" options.bind=\"idd6eeb92860524de891dd295b94c26242Options\"></dx-widget>\r\n            </div>\r\n        </div>\r\n    </div>\r\n    <div class=\"col-xs-12\">\r\n        <div>\r\n            <row class=\"row\">\r\n                <div class=\"tip-margin-top col-xs-6\">\r\n                    <div class=\"tip-editor-caption\">Name</div>\r\n                    <dx-widget name=\"dxTextArea\" options.bind=\"id8fc8de6a2a7e4ed2acf873c5473f8030Options\"></dx-widget>\r\n                </div>\r\n                <div class=\"tip-margin-top col-xs-6\">\r\n                    <div class=\"tip-editor-caption\">Name</div>\r\n                    <dx-widget name=\"dxCalendar\" options.bind=\"id8ca0ae732b854fc48efcf09bab8a5d0fOptions\"></dx-widget>\r\n                </div>\r\n            </row>\r\n        </div>\r\n    </div>\r\n    <div class=\"tip-margin-top col-xs-12\">\r\n        <div>\r\n            <b>${model.data.$m_Dummy.Test}</b> ist am ${model.data.$m_Dummy.Date} ${model.data.$m_Dummy.Number}x hier gewesen!\r\n        </div>\r\n    </div>\r\n    <div class=\"tip-margin-top col-xs-12\">\r\n        <div class=\"tip-editor-caption\">Dummy</div>\r\n        <dx-widget name=\"dxTextBox\" options.bind=\"function.$f_Test.dummyText\"></dx-widget>\r\n    </div>\r\n    <div class=\"col-xs-12\">\r\n        <div repeat.for=\"item of function.$f_Test.dataList\">\r\n            <div class=\"row\">\r\n                <div class=\"tip-margin-top col-xs-12\">\r\n                    <div>${item.a} ${item.b}</div>\r\n                </div>\r\n            </div>\r\n        </div>\r\n    </div>\r\n    <div class=\"col-xs-12\">\r\n        <div class=\"tip-repeat-side-by-side\" repeat.for=\"item of function.$f_Test.dataList\">\r\n            <div class=\"tip-margin-top\">\r\n                <div>${item.a} ${item.b}</div>\r\n            </div>\r\n        </div>\r\n    </div>\r\n</template>"; });
 //# sourceMappingURL=app-bundle.js.map

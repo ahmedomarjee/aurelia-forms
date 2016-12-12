@@ -1,5 +1,5 @@
 import {
-    autoinject,
+    inject,
     BindingEngine
 } from "aurelia-framework";
 import {
@@ -12,10 +12,10 @@ import {
     TestFunction
 } from "../functions/test-function";
 
-@autoinject
+@inject(WidgetCreatorService)
 export class FormTestForm extends FormBase {
-    constructor(bindingEngine: BindingEngine, private widgetCreator: WidgetCreatorService) {
-        super(bindingEngine);
+    constructor(private widgetCreator: WidgetCreatorService) {
+        super();
         this.addModel({
             "id": "$m_Dummy",
             "webApiAction": "1/2/3",

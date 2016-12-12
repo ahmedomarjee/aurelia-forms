@@ -1,7 +1,8 @@
 import * as Interfaces from "../interfaces";
 import {
   BindingEngine,
-  Expression
+  Expression,
+  Container
 } from "aurelia-framework";
 import {
   ModelInstance
@@ -14,12 +15,14 @@ import {
 } from "./command-server-data-instance";
 
 export class FormBase {
+  bindingEngine: BindingEngine;
   model: ModelInstance;
   function: FunctionInstance;
   commandServerData: CommandServerDataInstance;
   expression: Map<string, Expression>;
 
-  constructor(private bindingEngine: BindingEngine) {
+  constructor() {
+    this.bindingEngine = Container.instance.get(BindingEngine);
     this.model = new ModelInstance();
     this.function = new FunctionInstance();
     this.commandServerData = new CommandServerDataInstance();
