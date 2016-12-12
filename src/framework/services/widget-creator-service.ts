@@ -57,6 +57,44 @@ export class WidgetCreatorService {
 
     return editorOptions;
   }
+  addTab(form: FormBase, options: Forms.ITabOptions): DevExpress.ui.dxTabsOptions {
+    const tabOptions: DevExpress.ui.dxTabsOptions = this.createOptions(form, options);
+
+    tabOptions.items = [];
+    tabOptions.bindingOptions["selectedIndex"] = `${options.id}Selected`;
+
+    options.pages.forEach(page => {
+      const pageOptions = {
+        text: page.caption,
+        visible: true,
+        __options: page
+      };
+
+      if (page.if) {
+        form.createObserver(page.if, (newValue) => {
+          //TODO - Binding
+          pageOptions.visible = newValue;
+        });
+      }
+      
+      tabOptions.items.push(pageOptions);
+    });
+
+    tabOptions.onSelectionChanged = (e) => {
+      if (!e.addedItems || e.addedItems.length === 0) {
+        return;
+      }
+
+      const page = e.addedItems[0];
+      if (!page || !page.__options || !page.__options.onActivated) {
+        return;
+      }
+
+      form.evaluateExpression(page.__options.onActivated);
+    };
+
+    return tabOptions;
+  }
   addTextBox(form: FormBase, options: Forms.ITextBoxOptions): DevExpress.ui.dxTextBoxOptions {
     const editorOptions: DevExpress.ui.dxTextBoxOptions = this.createEditorOptions(form, options);
 
@@ -67,7 +105,7 @@ export class WidgetCreatorService {
     return editorOptions;
   }
   addTextArea(form: FormBase, options: Forms.ITextAreaOptions): DevExpress.ui.dxTextAreaOptions {
-    var editorOptions: DevExpress.ui.dxTextAreaOptions = this.addTextBox(form, options);
+    const editorOptions: DevExpress.ui.dxTextAreaOptions = this.addTextBox(form, options);
 
     if (options.height) {
       editorOptions.height = options.height;
@@ -76,19 +114,24 @@ export class WidgetCreatorService {
     return editorOptions;
   }
 
-  private createEditorOptions(form: FormBase, options: Forms.IEditorOptions): any {
-    const editorOptions: DevExpress.ui.EditorOptions = {
+  private createOptions(form: FormBase, options: any): any {
+    const editorOptions = {
       bindingOptions: {}
     };
 
+    form[options.options.optionsName] = editorOptions;
+
+    return editorOptions;
+  }
+  private createEditorOptions(form: FormBase, options: Forms.IEditorOptions): any {
+    const editorOptions: DevExpress.ui.EditorOptions = this.createOptions(form, options);
+
     if (options.binding && options.binding.bindToFQ) {
-      ( < any > editorOptions.bindingOptions).value = options.binding.bindToFQ;
+      editorOptions.bindingOptions["value"] = options.binding.bindToFQ;
     }
     if (options.isReadOnly) {
       editorOptions.readOnly = true;
     }
-
-    form[options.options.optionsName] = editorOptions;
 
     return editorOptions;
   }

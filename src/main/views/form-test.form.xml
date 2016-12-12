@@ -3,7 +3,7 @@
         <model id="$m_Dummy" web-api-action="1/2/3"/>
     </models>
     <functions>
-        <function id="$f_Test" file-path="../functions/test-function" class-name="TestFunction" custom-parameter="{ x: 1, y: 2}" />
+        <function id="$f_Test" file="../functions/test-function" class-name="TestFunction" custom-parameter="{ x: 1, y: 2}" />
     </functions>
     <content>
         <flex-box>
@@ -14,6 +14,11 @@
             <h5>${$m_Dummy.Test}</h5>
             <h6>${$m_Dummy.Test}</h6>
         </flex-box>
+
+        <icon icon="fa-home"/>
+        <icon bind-to="$f_Test.icon"/>
+        <image src="https://upload.wikimedia.org/wikipedia/commons/e/ec/Blume_mit_Schmetterling_und_Biene_1uf.JPG" height="150px" background-size="contain" />
+        <html file="../htmls/dummy.html" />
 
         <command data-context="$m_Dummy" bind-to="demoCommand" />
         <command bind-to="$f_Test.giveItToMe" />
@@ -41,5 +46,19 @@
         <repeat bind-to="$f_Test.dataList" side-by-side="true">
             <text>${item.a} ${item.b}</text>
         </repeat>
+
+        <tab>
+            <tab-pages>
+                <tab-page caption="Tab 1">
+                    <text>Ich bin ein Text 1</text>
+                </tab-page>
+                <tab-page caption="Tab 2" on-activated="dummyx = 1">
+                    <text>Ich bin ein Text 2</text>
+                </tab-page>
+                <tab-page caption="Tab 3">
+                    <text>Ich bin ein Text 3</text>
+                </tab-page>
+            </tab-pages>
+        </tab>
     </content>
 </form>

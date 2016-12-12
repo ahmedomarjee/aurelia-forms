@@ -31,4 +31,5 @@ export class TestFunction {
           alert('Hallo');
       }
   }
+  icon = "fa-book";
 }

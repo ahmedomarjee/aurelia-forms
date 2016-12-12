@@ -22,34 +22,51 @@
         </div>
     </div>
     <div class="tip-margin-top col-xs-12">
+        <i class="fa fa-home"></i>
+    </div>
+    <div class="tip-margin-top col-xs-12">
+        <i class="fa" class.bind="function.$f_Test.icon"></i>
+    </div>
+    <div class="tip-margin-top col-xs-12">
+        <div class="tip-form-element-image-inline tip-form-element-image" style="height: 150px;background-size: contain;background-image: url('https://upload.wikimedia.org/wikipedia/commons/e/ec/Blume_mit_Schmetterling_und_Biene_1uf.JPG');"></div>
+    </div>
+    <div class="col-xs-12">
         <div class="tip-editor-caption">&nbsp;</div>
-        <dx-widget name="dxButton" options.bind="id15afd149f40f4255861a1078464fe771Options"></dx-widget>
+        <div>
+            <div>
+                Ich bin ein Dummy-Html
+            </div>
+        </div>
     </div>
     <div class="tip-margin-top col-xs-12">
         <div class="tip-editor-caption">&nbsp;</div>
-        <dx-widget name="dxButton" options.bind="id2d4da7a18e4e41f5b11ead35fae848fbOptions"></dx-widget>
+        <dx-widget name="dxButton" options.bind="id507f38819f3341fba29f40547da89b1dOptions"></dx-widget>
+    </div>
+    <div class="tip-margin-top col-xs-12">
+        <div class="tip-editor-caption">&nbsp;</div>
+        <dx-widget name="dxButton" options.bind="idf9bf7e3c96bd46c69c5b91b1668b57b4Options"></dx-widget>
     </div>
     <div class="tip-margin-top col-xs-6">
         <div class="tip-editor-caption">Name</div>
-        <dx-widget name="dxTextBox" options.bind="id36dcbf9327c24046a967e26e98ead2ebOptions"></dx-widget>
+        <dx-widget name="dxTextBox" options.bind="id3941d0f56fc64b2eb16068e156ac21f0Options"></dx-widget>
     </div>
     <div class="tip-margin-top col-xs-6">
         <div class="tip-editor-caption">Date</div>
-        <dx-widget name="dxDateBox" options.bind="idc37f3b866a14493fb8f3d5b379bb7d43Options"></dx-widget>
+        <dx-widget name="dxDateBox" options.bind="idb0da532db89640538d47643bc16b0104Options"></dx-widget>
     </div>
     <div class="tip-margin-top col-xs-6">
         <div class="tip-editor-caption">Number</div>
-        <dx-widget name="dxNumberBox" options.bind="id9a1cb8050a9b4eb7b045ba79624244c9Options"></dx-widget>
+        <dx-widget name="dxNumberBox" options.bind="id251aeae6e2e54869a9eb776b05170975Options"></dx-widget>
     </div>
     <div class="col-xs-12">
         <div class="row">
             <div class="tip-margin-top col-xs-6">
                 <div class="tip-editor-caption">Name</div>
-                <dx-widget name="dxTextArea" options.bind="id40680063929445d68aec4277524759baOptions"></dx-widget>
+                <dx-widget name="dxTextArea" options.bind="ide267c1b49885426d9fb090d8bc71d246Options"></dx-widget>
             </div>
             <div class="tip-margin-top col-xs-6">
                 <div class="tip-editor-caption">Name</div>
-                <dx-widget name="dxCalendar" options.bind="idd6eeb92860524de891dd295b94c26242Options"></dx-widget>
+                <dx-widget name="dxCalendar" options.bind="id376b81433dea42869f3035676512a77cOptions"></dx-widget>
             </div>
         </div>
     </div>
@@ -58,11 +75,11 @@
             <row class="row">
                 <div class="tip-margin-top col-xs-6">
                     <div class="tip-editor-caption">Name</div>
-                    <dx-widget name="dxTextArea" options.bind="id8fc8de6a2a7e4ed2acf873c5473f8030Options"></dx-widget>
+                    <dx-widget name="dxTextArea" options.bind="idc60ec180710943b2b9bb67d03b125997Options"></dx-widget>
                 </div>
                 <div class="tip-margin-top col-xs-6">
                     <div class="tip-editor-caption">Name</div>
-                    <dx-widget name="dxCalendar" options.bind="id8ca0ae732b854fc48efcf09bab8a5d0fOptions"></dx-widget>
+                    <dx-widget name="dxCalendar" options.bind="id7c1d82f61cd64bb2bd01284b9a948999Options"></dx-widget>
                 </div>
             </row>
         </div>
@@ -90,6 +107,24 @@
             <div class="tip-margin-top">
                 <div>${item.a} ${item.b}</div>
             </div>
+        </div>
+    </div>
+    <div class="tip-margin-top col-xs-12">
+        <dx-widget name="dxTabs" options.bind="idd24402a0ae0c4b2c917f3ee9cd705572Options"></dx-widget>
+    </div>
+    <div show.bind="idd24402a0ae0c4b2c917f3ee9cd705572Selected === 0">
+        <div class="tip-margin-top col-xs-12">
+            <div>Ich bin ein Text 1</div>
+        </div>
+    </div>
+    <div show.bind="idd24402a0ae0c4b2c917f3ee9cd705572Selected === 1">
+        <div class="tip-margin-top col-xs-12">
+            <div>Ich bin ein Text 2</div>
+        </div>
+    </div>
+    <div show.bind="idd24402a0ae0c4b2c917f3ee9cd705572Selected === 2">
+        <div class="tip-margin-top col-xs-12">
+            <div>Ich bin ein Text 3</div>
         </div>
     </div>
 </template>

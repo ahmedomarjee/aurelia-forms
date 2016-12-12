@@ -4,6 +4,7 @@ export * from "./calendar-options";
 export * from "./command-options";
 export * from "./date-box-options";
 export * from "./number-box-options";
+export * from "./tab-options";
 export * from "./text-box-options";
 export * from "./text-area-options";
 export * from "./validation-rule";

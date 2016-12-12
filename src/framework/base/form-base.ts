@@ -51,6 +51,14 @@ export class FormBase {
 
   }
 
+  createObserver(expression: string, action: {(newValue?: any, oldValue?: any): void}): {(): void} {
+    const observer = this.bindingEngine.expressionObserver({
+      bindingContext: this,
+      overrideContext: null 
+    }, expression);
+
+    return observer.subscribe(action).dispose;
+  }
   evaluateExpression(expression: string): any {
     let parsed = this.expression.get(expression);
 
@@ -63,5 +71,8 @@ export class FormBase {
       bindingContext: this,
       overrideContext: null  
     });
+  }
+  getFileDownloadUrl(key: string): string {
+    return key;
   }
 }

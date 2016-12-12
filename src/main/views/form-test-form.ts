@@ -1,6 +1,6 @@
 import {
-    inject,
-    BindingEngine
+    autoinject,
+    computedFrom
 } from "aurelia-framework";
 import {
     FormBase
@@ -12,7 +12,7 @@ import {
     TestFunction
 } from "../functions/test-function";
 
-@inject(WidgetCreatorService)
+@autoinject
 export class FormTestForm extends FormBase {
     constructor(private widgetCreator: WidgetCreatorService) {
         super();
@@ -34,10 +34,10 @@ export class FormTestForm extends FormBase {
             "execute": "alert('Hallo')"
         });
         this.widgetCreator.addCommand(this, {
-            "id": "id15afd149f40f4255861a1078464fe771",
+            "id": "id507f38819f3341fba29f40547da89b1d",
             "options": {
-                "optionsName": "id15afd149f40f4255861a1078464fe771Options",
-                "optionsNameFQ": "id15afd149f40f4255861a1078464fe771Options"
+                "optionsName": "id507f38819f3341fba29f40547da89b1dOptions",
+                "optionsNameFQ": "id507f38819f3341fba29f40547da89b1dOptions"
             },
             "binding": {
                 "dataContext": "$m_Dummy",
@@ -46,10 +46,10 @@ export class FormTestForm extends FormBase {
             }
         });
         this.widgetCreator.addCommand(this, {
-            "id": "id2d4da7a18e4e41f5b11ead35fae848fb",
+            "id": "idf9bf7e3c96bd46c69c5b91b1668b57b4",
             "options": {
-                "optionsName": "id2d4da7a18e4e41f5b11ead35fae848fbOptions",
-                "optionsNameFQ": "id2d4da7a18e4e41f5b11ead35fae848fbOptions"
+                "optionsName": "idf9bf7e3c96bd46c69c5b91b1668b57b4Options",
+                "optionsNameFQ": "idf9bf7e3c96bd46c69c5b91b1668b57b4Options"
             },
             "binding": {
                 "bindTo": "$f_Test.giveItToMe",
@@ -58,10 +58,10 @@ export class FormTestForm extends FormBase {
             }
         });
         this.widgetCreator.addTextBox(this, {
-            "id": "id36dcbf9327c24046a967e26e98ead2eb",
+            "id": "id3941d0f56fc64b2eb16068e156ac21f0",
             "options": {
-                "optionsName": "id36dcbf9327c24046a967e26e98ead2ebOptions",
-                "optionsNameFQ": "id36dcbf9327c24046a967e26e98ead2ebOptions"
+                "optionsName": "id3941d0f56fc64b2eb16068e156ac21f0Options",
+                "optionsNameFQ": "id3941d0f56fc64b2eb16068e156ac21f0Options"
             },
             "caption": "Name",
             "binding": {
@@ -72,10 +72,10 @@ export class FormTestForm extends FormBase {
             "validationRules": []
         });
         this.widgetCreator.addDateBox(this, {
-            "id": "idc37f3b866a14493fb8f3d5b379bb7d43",
+            "id": "idb0da532db89640538d47643bc16b0104",
             "options": {
-                "optionsName": "idc37f3b866a14493fb8f3d5b379bb7d43Options",
-                "optionsNameFQ": "idc37f3b866a14493fb8f3d5b379bb7d43Options"
+                "optionsName": "idb0da532db89640538d47643bc16b0104Options",
+                "optionsNameFQ": "idb0da532db89640538d47643bc16b0104Options"
             },
             "caption": "Date",
             "binding": {
@@ -86,10 +86,10 @@ export class FormTestForm extends FormBase {
             "validationRules": []
         });
         this.widgetCreator.addNumberBox(this, {
-            "id": "id9a1cb8050a9b4eb7b045ba79624244c9",
+            "id": "id251aeae6e2e54869a9eb776b05170975",
             "options": {
-                "optionsName": "id9a1cb8050a9b4eb7b045ba79624244c9Options",
-                "optionsNameFQ": "id9a1cb8050a9b4eb7b045ba79624244c9Options"
+                "optionsName": "id251aeae6e2e54869a9eb776b05170975Options",
+                "optionsNameFQ": "id251aeae6e2e54869a9eb776b05170975Options"
             },
             "caption": "Number",
             "binding": {
@@ -101,10 +101,10 @@ export class FormTestForm extends FormBase {
         });
         this.widgetCreator.addTextArea(this, {
             "height": "200px",
-            "id": "id40680063929445d68aec4277524759ba",
+            "id": "ide267c1b49885426d9fb090d8bc71d246",
             "options": {
-                "optionsName": "id40680063929445d68aec4277524759baOptions",
-                "optionsNameFQ": "id40680063929445d68aec4277524759baOptions"
+                "optionsName": "ide267c1b49885426d9fb090d8bc71d246Options",
+                "optionsNameFQ": "ide267c1b49885426d9fb090d8bc71d246Options"
             },
             "caption": "Name",
             "binding": {
@@ -115,10 +115,10 @@ export class FormTestForm extends FormBase {
             "validationRules": []
         });
         this.widgetCreator.addCalendar(this, {
-            "id": "idd6eeb92860524de891dd295b94c26242",
+            "id": "id376b81433dea42869f3035676512a77c",
             "options": {
-                "optionsName": "idd6eeb92860524de891dd295b94c26242Options",
-                "optionsNameFQ": "idd6eeb92860524de891dd295b94c26242Options"
+                "optionsName": "id376b81433dea42869f3035676512a77cOptions",
+                "optionsNameFQ": "id376b81433dea42869f3035676512a77cOptions"
             },
             "caption": "Name",
             "binding": {
@@ -130,10 +130,10 @@ export class FormTestForm extends FormBase {
         });
         this.widgetCreator.addTextArea(this, {
             "height": "200px",
-            "id": "id8fc8de6a2a7e4ed2acf873c5473f8030",
+            "id": "idc60ec180710943b2b9bb67d03b125997",
             "options": {
-                "optionsName": "id8fc8de6a2a7e4ed2acf873c5473f8030Options",
-                "optionsNameFQ": "id8fc8de6a2a7e4ed2acf873c5473f8030Options"
+                "optionsName": "idc60ec180710943b2b9bb67d03b125997Options",
+                "optionsNameFQ": "idc60ec180710943b2b9bb67d03b125997Options"
             },
             "caption": "Name",
             "binding": {
@@ -144,10 +144,10 @@ export class FormTestForm extends FormBase {
             "validationRules": []
         });
         this.widgetCreator.addCalendar(this, {
-            "id": "id8ca0ae732b854fc48efcf09bab8a5d0f",
+            "id": "id7c1d82f61cd64bb2bd01284b9a948999",
             "options": {
-                "optionsName": "id8ca0ae732b854fc48efcf09bab8a5d0fOptions",
-                "optionsNameFQ": "id8ca0ae732b854fc48efcf09bab8a5d0fOptions"
+                "optionsName": "id7c1d82f61cd64bb2bd01284b9a948999Options",
+                "optionsNameFQ": "id7c1d82f61cd64bb2bd01284b9a948999Options"
             },
             "caption": "Name",
             "binding": {
@@ -157,5 +157,21 @@ export class FormTestForm extends FormBase {
             },
             "validationRules": []
         });
+        this.widgetCreator.addTab(this, {
+            "id": "idd24402a0ae0c4b2c917f3ee9cd705572",
+            "options": {
+                "optionsName": "idd24402a0ae0c4b2c917f3ee9cd705572Options",
+                "optionsNameFQ": "idd24402a0ae0c4b2c917f3ee9cd705572Options"
+            },
+            "pages": [{
+                "caption": "Tab 1"
+            }, {
+                "caption": "Tab 2",
+                "onActivated": "dummyx = 1"
+            }, {
+                "caption": "Tab 3"
+            }]
+        });
     }
+    idd24402a0ae0c4b2c917f3ee9cd705572Selected = 0;
 }
