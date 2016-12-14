@@ -59,7 +59,7 @@ export class FormBase {
 
     return observer.subscribe(action).dispose;
   }
-  evaluateExpression(expression: string): any {
+  evaluateExpression(expression: string, overrideContext?: any): any {
     let parsed = this.expression.get(expression);
 
     if (!parsed) {
@@ -69,7 +69,7 @@ export class FormBase {
 
     return parsed.evaluate({
       bindingContext: this,
-      overrideContext: null  
+      overrideContext: overrideContext  
     });
   }
   getFileDownloadUrl(key: string): string {

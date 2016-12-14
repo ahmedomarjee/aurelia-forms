@@ -7,7 +7,7 @@
     </functions>
     <content>
         <flex-box>
-            <h1>${$m_Dummy.Test}</h1>
+            <h1>${$m_Dummy.Test} asdf</h1>
             <h2>${$m_Dummy.Test}</h2>
             <h3>${$m_Dummy.Test}</h3>
             <h4>${$m_Dummy.Test}</h4>
@@ -51,6 +51,13 @@
             <tab-pages>
                 <tab-page caption="Tab 1">
                     <text>Ich bin ein Text 1</text>
+
+                    <data-grid bind-to="$f_Test.dataList" show-filter-row="true" on-row-click="$f_Test.dummyRowClickFunc(e)" selection-mode="single">
+                        <data-grid-columns>
+                            <data-grid-column caption="Test" bind-to="a" />
+                            <data-grid-column caption="Test" bind-to="b" />
+                        </data-grid-columns>
+                    </data-grid>
                 </tab-page>
                 <tab-page caption="Tab 2" on-activated="dummyx = 1">
                     <text>Ich bin ein Text 2</text>

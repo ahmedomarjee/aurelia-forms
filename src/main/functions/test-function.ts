@@ -4,7 +4,9 @@ export class TestFunction {
   constructor(private form: FormBase, private namespace: string, private parameters: any) {
       
   }
-
+  dummyRowClickFunc(e){
+      alert("rowClick Data: " +  e.data.a);
+  }
   dataList = [
       {
           a: "A",

@@ -5,6 +5,9 @@ import {
 import {
   ICommandData
 } from "../interfaces/command-data";
+import {
+  SelectionModeEnum
+} from "../enums/selection-mode-enum";
 
 export class WidgetCreatorService {
   addDateBox(form: FormBase, options: Forms.IDateBoxOptions): DevExpress.ui.dxDateBoxOptions {
@@ -22,7 +25,7 @@ export class WidgetCreatorService {
       command = form.evaluateExpression(options.binding.bindToFQ);
     }
 
-    const buttonOptions = < any > {};
+    const buttonOptions = <any>{};
     buttonOptions.text = command.title;
     buttonOptions.hint = command.tooltip;
     buttonOptions.onClick = () => {
@@ -38,6 +41,51 @@ export class WidgetCreatorService {
     form[options.options.optionsName] = buttonOptions;
     return buttonOptions;
   }
+
+  addDataGrid(form: FormBase, options: Forms.IDataGridOptions): DevExpress.ui.dxDataGridOptions {
+    const dataGridOptions: DevExpress.ui.dxDataGridOptions = this.createWidgetOptions(form, options);
+
+    if (options.binding.bindToFQ) {
+      dataGridOptions.bindingOptions["dataSource"] = options.binding.bindToFQ;
+    }
+    if (options.showFilterRow) {
+
+      dataGridOptions.filterRow = dataGridOptions.filterRow ? dataGridOptions.filterRow : {};
+      dataGridOptions.filterRow.visible = true;
+    }
+    if (options.rowScriptTemplateId) {
+      //TODO >> wie kan man eine Template hinzügefugen?
+      dataGridOptions.rowTemplate = options.rowScriptTemplateId;
+    }
+    if (options.onItemClick) {
+      dataGridOptions.onRowClick = (e) => {
+        form.evaluateExpression(options.onItemClick, { e });
+      }
+    }
+    if (options.selectionMode) {
+      //TODO >> Key in DataSource
+      let selectionModeString = "";
+
+      switch (options.selectionMode) {
+        case SelectionModeEnum.Multiple:
+          selectionModeString = "multiple";
+          break;
+        case SelectionModeEnum.Single:
+          selectionModeString = "single";
+          break;
+        default:
+          selectionModeString = "none";
+          break;
+      }
+
+      dataGridOptions.selection = dataGridOptions.selection ? dataGridOptions.selection : {};
+      dataGridOptions.selection.mode = selectionModeString;
+
+    }
+
+    return dataGridOptions;
+  }
+
   addNumberBox(form: FormBase, options: Forms.INumberBoxOptions): DevExpress.ui.dxNumberBoxOptions {
     const editorOptions: DevExpress.ui.dxNumberBoxOptions = this.createEditorOptions(form, options);
 
@@ -58,7 +106,7 @@ export class WidgetCreatorService {
     return editorOptions;
   }
   addTab(form: FormBase, options: Forms.ITabOptions): DevExpress.ui.dxTabsOptions {
-    const tabOptions: DevExpress.ui.dxTabsOptions = this.createOptions(form, options);
+    const tabOptions: DevExpress.ui.dxTabsOptions = this.createWidgetOptions(form, options);
 
     tabOptions.items = [];
     tabOptions.bindingOptions["selectedIndex"] = `${options.id}Selected`;
@@ -76,7 +124,7 @@ export class WidgetCreatorService {
           pageOptions.visible = newValue;
         });
       }
-      
+
       tabOptions.items.push(pageOptions);
     });
 
@@ -114,17 +162,8 @@ export class WidgetCreatorService {
     return editorOptions;
   }
 
-  private createOptions(form: FormBase, options: any): any {
-    const editorOptions = {
-      bindingOptions: {}
-    };
-
-    form[options.options.optionsName] = editorOptions;
-
-    return editorOptions;
-  }
   private createEditorOptions(form: FormBase, options: Forms.IEditorOptions): any {
-    const editorOptions: DevExpress.ui.EditorOptions = this.createOptions(form, options);
+    const editorOptions: DevExpress.ui.EditorOptions = this.createWidgetOptions(form, options);
 
     if (options.binding && options.binding.bindToFQ) {
       editorOptions.bindingOptions["value"] = options.binding.bindToFQ;
@@ -134,5 +173,15 @@ export class WidgetCreatorService {
     }
 
     return editorOptions;
+  }
+
+  private createWidgetOptions(form: FormBase, options: Forms.IWidgetOptions): any {
+    const widgetOptions = {
+      bindingOptions: {}
+    };
+
+    form[options.options.optionsName] = widgetOptions;
+
+    return widgetOptions;
   }
 }

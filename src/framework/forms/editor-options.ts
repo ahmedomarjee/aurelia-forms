@@ -1,15 +1,12 @@
 import {IBinding} from "../interfaces/binding";
-import {IOptions} from "./options";
+import{IWidgetOptions} from "./widget-options";
 import {IValidationRule} from "./validation-rule";
 
-export interface IEditorOptions {
-    id: string;
-    options: IOptions;
-
+export interface IEditorOptions extends IWidgetOptions {
     caption: string;
+
     isReadOnly?: boolean;
 
     binding?: IBinding;
-
-    validationRules: IValidationRule[];
+    validationRules?: IValidationRule[];
 }

@@ -34,10 +34,10 @@ export class FormTestForm extends FormBase {
             "execute": "alert('Hallo')"
         });
         this.widgetCreator.addCommand(this, {
-            "id": "id507f38819f3341fba29f40547da89b1d",
+            "id": "id3cec30f3481841568654366a5ef938b4",
             "options": {
-                "optionsName": "id507f38819f3341fba29f40547da89b1dOptions",
-                "optionsNameFQ": "id507f38819f3341fba29f40547da89b1dOptions"
+                "optionsName": "id3cec30f3481841568654366a5ef938b4Options",
+                "optionsNameFQ": "id3cec30f3481841568654366a5ef938b4Options"
             },
             "binding": {
                 "dataContext": "$m_Dummy",
@@ -46,10 +46,10 @@ export class FormTestForm extends FormBase {
             }
         });
         this.widgetCreator.addCommand(this, {
-            "id": "idf9bf7e3c96bd46c69c5b91b1668b57b4",
+            "id": "id39b61cb9fbc64613926879a0ec229f1a",
             "options": {
-                "optionsName": "idf9bf7e3c96bd46c69c5b91b1668b57b4Options",
-                "optionsNameFQ": "idf9bf7e3c96bd46c69c5b91b1668b57b4Options"
+                "optionsName": "id39b61cb9fbc64613926879a0ec229f1aOptions",
+                "optionsNameFQ": "id39b61cb9fbc64613926879a0ec229f1aOptions"
             },
             "binding": {
                 "bindTo": "$f_Test.giveItToMe",
@@ -58,110 +58,110 @@ export class FormTestForm extends FormBase {
             }
         });
         this.widgetCreator.addTextBox(this, {
-            "id": "id3941d0f56fc64b2eb16068e156ac21f0",
-            "options": {
-                "optionsName": "id3941d0f56fc64b2eb16068e156ac21f0Options",
-                "optionsNameFQ": "id3941d0f56fc64b2eb16068e156ac21f0Options"
-            },
             "caption": "Name",
             "binding": {
                 "dataContext": "$m_Dummy",
                 "bindTo": "Test",
                 "bindToFQ": "model.data.$m_Dummy.Test"
             },
-            "validationRules": []
+            "validationRules": [],
+            "id": "iddd0b10f6f6784b3ab0f8f120e3ffb93e",
+            "options": {
+                "optionsName": "iddd0b10f6f6784b3ab0f8f120e3ffb93eOptions",
+                "optionsNameFQ": "iddd0b10f6f6784b3ab0f8f120e3ffb93eOptions"
+            }
         });
         this.widgetCreator.addDateBox(this, {
-            "id": "idb0da532db89640538d47643bc16b0104",
-            "options": {
-                "optionsName": "idb0da532db89640538d47643bc16b0104Options",
-                "optionsNameFQ": "idb0da532db89640538d47643bc16b0104Options"
-            },
             "caption": "Date",
             "binding": {
                 "dataContext": "$m_Dummy",
                 "bindTo": "Date",
                 "bindToFQ": "model.data.$m_Dummy.Date"
             },
-            "validationRules": []
+            "validationRules": [],
+            "id": "idbb2b0120934d466aa4ac031309a5b018",
+            "options": {
+                "optionsName": "idbb2b0120934d466aa4ac031309a5b018Options",
+                "optionsNameFQ": "idbb2b0120934d466aa4ac031309a5b018Options"
+            }
         });
         this.widgetCreator.addNumberBox(this, {
-            "id": "id251aeae6e2e54869a9eb776b05170975",
-            "options": {
-                "optionsName": "id251aeae6e2e54869a9eb776b05170975Options",
-                "optionsNameFQ": "id251aeae6e2e54869a9eb776b05170975Options"
-            },
             "caption": "Number",
             "binding": {
                 "dataContext": "$m_Dummy",
                 "bindTo": "Number",
                 "bindToFQ": "model.data.$m_Dummy.Number"
             },
-            "validationRules": []
+            "validationRules": [],
+            "id": "id7239e3183fb045a68c8eaf58e653a50d",
+            "options": {
+                "optionsName": "id7239e3183fb045a68c8eaf58e653a50dOptions",
+                "optionsNameFQ": "id7239e3183fb045a68c8eaf58e653a50dOptions"
+            }
         });
         this.widgetCreator.addTextArea(this, {
             "height": "200px",
-            "id": "ide267c1b49885426d9fb090d8bc71d246",
-            "options": {
-                "optionsName": "ide267c1b49885426d9fb090d8bc71d246Options",
-                "optionsNameFQ": "ide267c1b49885426d9fb090d8bc71d246Options"
-            },
             "caption": "Name",
             "binding": {
                 "dataContext": "$m_Dummy",
                 "bindTo": "Test",
                 "bindToFQ": "model.data.$m_Dummy.Test"
             },
-            "validationRules": []
+            "validationRules": [],
+            "id": "idb9561a47599b486085c73856fcfdb96e",
+            "options": {
+                "optionsName": "idb9561a47599b486085c73856fcfdb96eOptions",
+                "optionsNameFQ": "idb9561a47599b486085c73856fcfdb96eOptions"
+            }
         });
         this.widgetCreator.addCalendar(this, {
-            "id": "id376b81433dea42869f3035676512a77c",
-            "options": {
-                "optionsName": "id376b81433dea42869f3035676512a77cOptions",
-                "optionsNameFQ": "id376b81433dea42869f3035676512a77cOptions"
-            },
             "caption": "Name",
             "binding": {
                 "dataContext": "$m_Dummy",
                 "bindTo": "Date",
                 "bindToFQ": "model.data.$m_Dummy.Date"
             },
-            "validationRules": []
+            "validationRules": [],
+            "id": "idf00fece0c2744107a5429a92b0bebf33",
+            "options": {
+                "optionsName": "idf00fece0c2744107a5429a92b0bebf33Options",
+                "optionsNameFQ": "idf00fece0c2744107a5429a92b0bebf33Options"
+            }
         });
         this.widgetCreator.addTextArea(this, {
             "height": "200px",
-            "id": "idc60ec180710943b2b9bb67d03b125997",
-            "options": {
-                "optionsName": "idc60ec180710943b2b9bb67d03b125997Options",
-                "optionsNameFQ": "idc60ec180710943b2b9bb67d03b125997Options"
-            },
             "caption": "Name",
             "binding": {
                 "dataContext": "$m_Dummy",
                 "bindTo": "Test",
                 "bindToFQ": "model.data.$m_Dummy.Test"
             },
-            "validationRules": []
+            "validationRules": [],
+            "id": "id3ee8e49cc11b4027a098f402aad61356",
+            "options": {
+                "optionsName": "id3ee8e49cc11b4027a098f402aad61356Options",
+                "optionsNameFQ": "id3ee8e49cc11b4027a098f402aad61356Options"
+            }
         });
         this.widgetCreator.addCalendar(this, {
-            "id": "id7c1d82f61cd64bb2bd01284b9a948999",
-            "options": {
-                "optionsName": "id7c1d82f61cd64bb2bd01284b9a948999Options",
-                "optionsNameFQ": "id7c1d82f61cd64bb2bd01284b9a948999Options"
-            },
             "caption": "Name",
             "binding": {
                 "dataContext": "$m_Dummy",
                 "bindTo": "Date",
                 "bindToFQ": "model.data.$m_Dummy.Date"
             },
-            "validationRules": []
+            "validationRules": [],
+            "id": "id696e0887b8ca47b18d7a79f3379cb06e",
+            "options": {
+                "optionsName": "id696e0887b8ca47b18d7a79f3379cb06eOptions",
+                "optionsNameFQ": "id696e0887b8ca47b18d7a79f3379cb06eOptions"
+            }
         });
         this.widgetCreator.addTab(this, {
-            "id": "idd24402a0ae0c4b2c917f3ee9cd705572",
+            "id": "id6b5b031382a34acfb6578a25c4e0204b",
             "options": {
-                "optionsName": "idd24402a0ae0c4b2c917f3ee9cd705572Options",
-                "optionsNameFQ": "idd24402a0ae0c4b2c917f3ee9cd705572Options"
+                "optionsName": "id6b5b031382a34acfb6578a25c4e0204bOptions",
+                "optionsNameFQ": "id6b5b031382a34acfb6578a25c4e0204bOptions"
             },
             "pages": [{
                 "caption": "Tab 1"
@@ -172,6 +172,37 @@ export class FormTestForm extends FormBase {
                 "caption": "Tab 3"
             }]
         });
+        this.widgetCreator.addDataGrid(this, {
+            "showFilterRow": true,
+            "columns": [{
+                "caption": "Test",
+                "bindTo": "a"
+            }, {
+                "caption": "Test",
+                "bindTo": "b"
+            }],
+            "optionsToolbar": {
+                "optionsName": "id499a514991a147eda48e8efc638e629aToolbarOptions",
+                "optionsNameFQ": "id499a514991a147eda48e8efc638e629aToolbarOptions"
+            },
+            "binding": {
+                "bindTo": "$f_Test.dataList",
+                "bindToFQ": "function.$f_Test.dataList",
+                "propertyPrefix": "$f_Test"
+            },
+            "onItemClick": "function.$f_Test.dummyRowClickFunc(e)",
+            "showToolbarTitle": true,
+            "selectionMode": 1,
+            "pageSize": 30,
+            "edits": [],
+            "filters": [],
+            "commands": [],
+            "id": "id499a514991a147eda48e8efc638e629a",
+            "options": {
+                "optionsName": "id499a514991a147eda48e8efc638e629aOptions",
+                "optionsNameFQ": "id499a514991a147eda48e8efc638e629aOptions"
+            }
+        });
     }
-    idd24402a0ae0c4b2c917f3ee9cd705572Selected = 0;
+    id6b5b031382a34acfb6578a25c4e0204bSelected = 0;
 }
