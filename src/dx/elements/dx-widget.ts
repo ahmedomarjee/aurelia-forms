@@ -153,7 +153,7 @@ export class DxWidget {
     for (let key in obj) {
       if (key.endsWith("Template") && typeof obj[key] === "string") {
         obj[key] = this.__getTemplateRenderFunc(obj[key]);
-      } else if (typeof obj[key] === "object") {
+      } else if (typeof obj[key] === "object" && key !== "bindingOptions" && key != "dataSource") {
         this.__replaceTemplates(obj[key]);
       }
     }

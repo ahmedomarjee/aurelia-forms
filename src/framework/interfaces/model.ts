@@ -12,6 +12,7 @@ export interface IModel {
     webApiSearchtextEnabled?: boolean;
 
     key?: string;
+    keyProperty?: string;
     postOnSave?: boolean;
     isMain?: boolean;
     autoLoad?: boolean;

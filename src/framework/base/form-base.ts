@@ -11,12 +11,16 @@ import {
   FunctionInstance
 } from "./function-instance";
 import {
+  VariableInstance
+} from "./variable-instance";
+import {
   CommandServerDataInstance
 } from "./command-server-data-instance";
 
 export class FormBase {
   readonly bindingEngine: BindingEngine;
   readonly model: ModelInstance;
+  readonly variable: VariableInstance;
   readonly function: FunctionInstance;
   readonly commandServerData: CommandServerDataInstance;
   protected readonly expression: Map<string, Expression>;
@@ -24,25 +28,26 @@ export class FormBase {
   constructor() {
     this.bindingEngine = Container.instance.get(BindingEngine);
     this.model = new ModelInstance();
+    this.variable = new VariableInstance();
     this.function = new FunctionInstance();
     this.commandServerData = new CommandServerDataInstance();
     this.expression = new Map();
   }
 
   protected addModel(model: Interfaces.IModel): void {
-    this.model.info[model.id] = model;
+    this.model.addInfo(this, model);
   }
   protected addVariable(variable: Interfaces.IVariable): void {
-
+    this.variable.addInfo(variable);
   }
   protected addCommandServerData(id: string, commandServerData: Interfaces.ICommandData): void {
-    this.commandServerData[id] = commandServerData;
+    this.commandServerData.add(id, commandServerData);
   }
   protected addCommand(command: Interfaces.ICommand): void {
 
   }
   protected addFunction(id: string, functionInstance: any): void {
-    this.function[id] = functionInstance;
+    this.function.add(id, functionInstance);
   }
   protected addEditPopup(editPopup: Interfaces.IEditPopup): void {
 

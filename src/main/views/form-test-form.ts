@@ -7,7 +7,7 @@ import {
 } from "../../framework/base/form-base";
 import {
     WidgetCreatorService
-} from "../../framework/services/widget-creator-service";
+} from "../../framework/widget-services/widget-creator-service";
 import {
     TestFunction
 } from "../functions/test-function";
@@ -18,7 +18,8 @@ export class FormTestForm extends FormBase {
         super();
         this.addModel({
             "id": "$m_Dummy",
-            "webApiAction": "1/2/3",
+            "keyProperty": "feature_id",
+            "webApiAction": "tx.json",
             "filters": []
         });
         this.addFunction("$f_Test", new TestFunction(this, "function.$f_Test", {
@@ -175,21 +176,15 @@ export class FormTestForm extends FormBase {
         this.widgetCreator.addDataGrid(this, {
             "showFilterRow": true,
             "columns": [{
-                "caption": "Test",
-                "bindTo": "a"
-            }, {
-                "caption": "Test",
-                "bindTo": "b"
+                "caption": "Name",
+                "bindTo": "name"
             }],
+            "binding": {},
             "optionsToolbar": {
                 "optionsName": "id499a514991a147eda48e8efc638e629aToolbarOptions",
                 "optionsNameFQ": "id499a514991a147eda48e8efc638e629aToolbarOptions"
             },
-            "binding": {
-                "bindTo": "$f_Test.dataList",
-                "bindToFQ": "function.$f_Test.dataList",
-                "propertyPrefix": "$f_Test"
-            },
+            "dataModel": "$m_Dummy",
             "onItemClick": "function.$f_Test.dummyRowClickFunc(e)",
             "showToolbarTitle": true,
             "selectionMode": 1,

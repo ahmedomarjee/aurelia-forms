@@ -8,6 +8,14 @@ define('app',["require", "exports"], function (require, exports) {
     exports.App = App;
 });
 
+define('config',["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = {
+        baseUrl: "http://api.sba.gov/geodata/county_links_for_state_of"
+    };
+});
+
 define('environment',["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -51,7 +59,7 @@ define('dx/index',["require", "exports"], function (require, exports) {
     exports.configure = configure;
 });
 
-define('framework/forms/options',["require", "exports"], function (require, exports) {
+define('framework/widget-options/options',["require", "exports"], function (require, exports) {
     "use strict";
 });
 
@@ -59,23 +67,23 @@ define('framework/interfaces/binding',["require", "exports"], function (require,
     "use strict";
 });
 
-define('framework/forms/widget-options',["require", "exports"], function (require, exports) {
+define('framework/widget-options/widget-options',["require", "exports"], function (require, exports) {
     "use strict";
 });
 
-define('framework/forms/validation-rule',["require", "exports"], function (require, exports) {
+define('framework/widget-options/validation-rule',["require", "exports"], function (require, exports) {
     "use strict";
 });
 
-define('framework/forms/editor-options',["require", "exports"], function (require, exports) {
+define('framework/widget-options/editor-options',["require", "exports"], function (require, exports) {
     "use strict";
 });
 
-define('framework/forms/calendar-options',["require", "exports"], function (require, exports) {
+define('framework/widget-options/calendar-options',["require", "exports"], function (require, exports) {
     "use strict";
 });
 
-define('framework/forms/command-options',["require", "exports"], function (require, exports) {
+define('framework/widget-options/command-options',["require", "exports"], function (require, exports) {
     "use strict";
 });
 
@@ -83,7 +91,7 @@ define('framework/enums/sort-order-column-enum',["require", "exports"], function
     "use strict";
 });
 
-define('framework/forms/data-grid-column-options',["require", "exports"], function (require, exports) {
+define('framework/widget-options/data-grid-column-options',["require", "exports"], function (require, exports) {
     "use strict";
 });
 
@@ -97,39 +105,39 @@ define('framework/enums/selection-mode-enum',["require", "exports"], function (r
     })(SelectionModeEnum = exports.SelectionModeEnum || (exports.SelectionModeEnum = {}));
 });
 
-define('framework/forms/list-options',["require", "exports"], function (require, exports) {
+define('framework/widget-options/list-options',["require", "exports"], function (require, exports) {
     "use strict";
 });
 
-define('framework/forms/data-grid-options',["require", "exports"], function (require, exports) {
+define('framework/widget-options/data-grid-options',["require", "exports"], function (require, exports) {
     "use strict";
 });
 
-define('framework/forms/date-box-options',["require", "exports"], function (require, exports) {
+define('framework/widget-options/date-box-options',["require", "exports"], function (require, exports) {
     "use strict";
 });
 
-define('framework/forms/number-box-options',["require", "exports"], function (require, exports) {
+define('framework/widget-options/number-box-options',["require", "exports"], function (require, exports) {
     "use strict";
 });
 
-define('framework/forms/tab-page-options',["require", "exports"], function (require, exports) {
+define('framework/widget-options/tab-page-options',["require", "exports"], function (require, exports) {
     "use strict";
 });
 
-define('framework/forms/tab-options',["require", "exports"], function (require, exports) {
+define('framework/widget-options/tab-options',["require", "exports"], function (require, exports) {
     "use strict";
 });
 
-define('framework/forms/text-box-options',["require", "exports"], function (require, exports) {
+define('framework/widget-options/text-box-options',["require", "exports"], function (require, exports) {
     "use strict";
 });
 
-define('framework/forms/text-area-options',["require", "exports"], function (require, exports) {
+define('framework/widget-options/text-area-options',["require", "exports"], function (require, exports) {
     "use strict";
 });
 
-define('framework/forms/index',["require", "exports"], function (require, exports) {
+define('framework/widget-options/index',["require", "exports"], function (require, exports) {
     "use strict";
 });
 
@@ -162,6 +170,10 @@ define('framework/interfaces/variable',["require", "exports"], function (require
 });
 
 define('framework/interfaces/edit-popup',["require", "exports"], function (require, exports) {
+    "use strict";
+});
+
+define('framework/interfaces/rest-load-options',["require", "exports"], function (require, exports) {
     "use strict";
 });
 
@@ -438,7 +450,7 @@ define('dx/elements/dx-widget',["require", "exports", "aurelia-framework", "../s
                 if (key.endsWith("Template") && typeof obj[key] === "string") {
                     obj[key] = this.__getTemplateRenderFunc(obj[key]);
                 }
-                else if (typeof obj[key] === "object") {
+                else if (typeof obj[key] === "object" && key !== "bindingOptions" && key != "dataSource") {
                     this.__replaceTemplates(obj[key]);
                 }
             }
@@ -510,18 +522,123 @@ define('framework/base/command-server-data-instance',["require", "exports"], fun
     var CommandServerDataInstance = (function () {
         function CommandServerDataInstance() {
         }
+        CommandServerDataInstance.prototype.add = function (id, data) {
+            this[id] = data;
+        };
         return CommandServerDataInstance;
     }());
     exports.CommandServerDataInstance = CommandServerDataInstance;
 });
 
-define('framework/base/model-instance',["require", "exports"], function (require, exports) {
+define('framework/event-args/custom-event-args',["require", "exports"], function (require, exports) {
+    "use strict";
+});
+
+define('framework/base/custom-event',["require", "exports"], function (require, exports) {
+    "use strict";
+    var CustomEvent = (function () {
+        function CustomEvent() {
+        }
+        CustomEvent.prototype.register = function (action) {
+            var _this = this;
+            this.delegates.push(action);
+            return function () {
+                var indexOf = _this.delegates.indexOf(action);
+                if (indexOf < 0) {
+                    return;
+                }
+                _this.delegates.splice(indexOf, 1);
+            };
+        };
+        CustomEvent.prototype.fire = function (args) {
+            return Promise.all(this.delegates.map(function (item) { return item(args); }));
+        };
+        return CustomEvent;
+    }());
+    exports.CustomEvent = CustomEvent;
+});
+
+define('framework/event-args/model-load-required',["require", "exports"], function (require, exports) {
+    "use strict";
+});
+
+define('framework/services/rest-service',["require", "exports", "../../config", "aurelia-fetch-client"], function (require, exports, config_1, aurelia_fetch_client_1) {
+    "use strict";
+    var RestService = (function () {
+        function RestService() {
+        }
+        RestService.prototype.get = function (options) {
+            var _this = this;
+            var client = new aurelia_fetch_client_1.HttpClient();
+            return new Promise(function (success, error) {
+                client
+                    .fetch(_this.getUrl(options.url))
+                    .then(function (r) { return r.json(); })
+                    .catch(function (r) {
+                    error(r);
+                });
+            });
+        };
+        RestService.prototype.getUrl = function (suffix) {
+            return config_1.default.baseUrl + "/" + suffix;
+        };
+        return RestService;
+    }());
+    exports.RestService = RestService;
+});
+
+define('framework/base/model-instance',["require", "exports", "./custom-event", "../services/rest-service", "aurelia-framework"], function (require, exports, custom_event_1, rest_service_1, aurelia_framework_1) {
     "use strict";
     var ModelInstance = (function () {
         function ModelInstance() {
+            this.onLoadRequired = new custom_event_1.CustomEvent();
+            this.rest = aurelia_framework_1.Container.instance.get(rest_service_1.RestService);
             this.data = {};
             this.info = {};
         }
+        ModelInstance.prototype.addInfo = function (formBase, model) {
+            this.info[model.id] = model;
+        };
+        ModelInstance.prototype.getInfo = function (id) {
+            var model = this.info[id];
+            if (!model) {
+                throw new Error();
+            }
+            return model;
+        };
+        ModelInstance.prototype.createDataSource = function (model) {
+            var _this = this;
+            return new DevExpress.data.DataSource({
+                key: model.keyProperty,
+                load: function (options) {
+                    return _this.rest.get({
+                        url: model.webApiAction
+                    }).then(function (r) {
+                        if (options.requireTotalCount) {
+                            return [
+                                r,
+                                {
+                                    totalCount: r.length
+                                }
+                            ];
+                        }
+                        else {
+                            return r;
+                        }
+                    });
+                }
+            });
+        };
+        ModelInstance.prototype.addObservers = function (formBase, model) {
+            var _this = this;
+            if (model.key) {
+                formBase.createObserver(model.key, function (newValue, oldValue) {
+                    _this.onLoadRequired.fire({
+                        model: model
+                    });
+                });
+            }
+        };
         return ModelInstance;
     }());
     exports.ModelInstance = ModelInstance;
@@ -532,33 +649,53 @@ define('framework/base/function-instance',["require", "exports"], function (requ
     var FunctionInstance = (function () {
         function FunctionInstance() {
         }
+        FunctionInstance.prototype.add = function (id, functionInstance) {
+            this[id] = functionInstance;
+        };
         return FunctionInstance;
     }());
     exports.FunctionInstance = FunctionInstance;
 });
 
-define('framework/base/form-base',["require", "exports", "aurelia-framework", "./model-instance", "./function-instance", "./command-server-data-instance"], function (require, exports, aurelia_framework_1, model_instance_1, function_instance_1, command_server_data_instance_1) {
+define('framework/base/variable-instance',["require", "exports"], function (require, exports) {
+    "use strict";
+    var VariableInstance = (function () {
+        function VariableInstance() {
+            this.data = {};
+            this.info = {};
+        }
+        VariableInstance.prototype.addInfo = function (variable) {
+            this.info[variable.id] = variable;
+        };
+        return VariableInstance;
+    }());
+    exports.VariableInstance = VariableInstance;
+});
+
+define('framework/base/form-base',["require", "exports", "aurelia-framework", "./model-instance", "./function-instance", "./variable-instance", "./command-server-data-instance"], function (require, exports, aurelia_framework_1, model_instance_1, function_instance_1, variable_instance_1, command_server_data_instance_1) {
     "use strict";
     var FormBase = (function () {
         function FormBase() {
             this.bindingEngine = aurelia_framework_1.Container.instance.get(aurelia_framework_1.BindingEngine);
             this.model = new model_instance_1.ModelInstance();
+            this.variable = new variable_instance_1.VariableInstance();
             this.function = new function_instance_1.FunctionInstance();
             this.commandServerData = new command_server_data_instance_1.CommandServerDataInstance();
             this.expression = new Map();
         }
         FormBase.prototype.addModel = function (model) {
-            this.model.info[model.id] = model;
+            this.model.addInfo(this, model);
         };
         FormBase.prototype.addVariable = function (variable) {
+            this.variable.addInfo(variable);
         };
         FormBase.prototype.addCommandServerData = function (id, commandServerData) {
-            this.commandServerData[id] = commandServerData;
+            this.commandServerData.add(id, commandServerData);
         };
         FormBase.prototype.addCommand = function (command) {
         };
         FormBase.prototype.addFunction = function (id, functionInstance) {
-            this.function[id] = functionInstance;
+            this.function.add(id, functionInstance);
         };
         FormBase.prototype.addEditPopup = function (editPopup) {
         };
@@ -590,44 +727,58 @@ define('framework/base/form-base',["require", "exports", "aurelia-framework", ".
     exports.FormBase = FormBase;
 });
 
-define('framework/services/widget-creator-service',["require", "exports", "../enums/selection-mode-enum"], function (require, exports, selection_mode_enum_1) {
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+define('framework/widget-services/base-widget-creator-service',["require", "exports", "aurelia-framework"], function (require, exports, aurelia_framework_1) {
     "use strict";
-    var WidgetCreatorService = (function () {
-        function WidgetCreatorService() {
+    var BaseWidgetCreatorService = (function () {
+        function BaseWidgetCreatorService() {
         }
-        WidgetCreatorService.prototype.addDateBox = function (form, options) {
-            return this.createEditorOptions(form, options);
-        };
-        WidgetCreatorService.prototype.addCalendar = function (form, options) {
-            return this.createEditorOptions(form, options);
-        };
-        WidgetCreatorService.prototype.addCommand = function (form, options) {
-            var command;
-            if (options.binding.dataContext) {
-                command = form.commandServerData[options.binding.dataContext + ";" + options.binding.bindTo];
-            }
-            else {
-                command = form.evaluateExpression(options.binding.bindToFQ);
-            }
-            var buttonOptions = {};
-            buttonOptions.text = command.title;
-            buttonOptions.hint = command.tooltip;
-            buttonOptions.onClick = function () {
-                if (typeof command.execute === "function") {
-                    command.execute();
-                }
-                else if (typeof command.execute === "string") {
-                    form.evaluateExpression(command.execute);
-                }
-                else {
-                    throw new Error();
-                }
+        BaseWidgetCreatorService.prototype.createWidgetOptions = function (form, options) {
+            var widgetOptions = {
+                bindingOptions: {}
             };
-            form[options.options.optionsName] = buttonOptions;
-            return buttonOptions;
+            form[options.options.optionsName] = widgetOptions;
+            return widgetOptions;
         };
-        WidgetCreatorService.prototype.addDataGrid = function (form, options) {
-            var dataGridOptions = this.createWidgetOptions(form, options);
+        return BaseWidgetCreatorService;
+    }());
+    BaseWidgetCreatorService = __decorate([
+        aurelia_framework_1.autoinject,
+        __metadata("design:paramtypes", [])
+    ], BaseWidgetCreatorService);
+    exports.BaseWidgetCreatorService = BaseWidgetCreatorService;
+});
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+define('framework/widget-services/data-grid-widget-creator-service',["require", "exports", "./base-widget-creator-service", "../enums/selection-mode-enum", "aurelia-framework"], function (require, exports, base_widget_creator_service_1, selection_mode_enum_1, aurelia_framework_1) {
+    "use strict";
+    var DataGridWidgetCreatorService = (function () {
+        function DataGridWidgetCreatorService(baseWidgetCreator) {
+            this.baseWidgetCreator = baseWidgetCreator;
+        }
+        ;
+        DataGridWidgetCreatorService.prototype.addDataGrid = function (form, options) {
+            var dataGridOptions = this.baseWidgetCreator.createWidgetOptions(form, options);
+            if (options.dataModel) {
+                var model = form.model.getInfo(options.dataModel);
+                dataGridOptions.dataSource = form.model.createDataSource(model);
+            }
             if (options.binding.bindToFQ) {
                 dataGridOptions.bindingOptions["dataSource"] = options.binding.bindToFQ;
             }
@@ -661,7 +812,72 @@ define('framework/services/widget-creator-service',["require", "exports", "../en
             }
             return dataGridOptions;
         };
-        WidgetCreatorService.prototype.addNumberBox = function (form, options) {
+        return DataGridWidgetCreatorService;
+    }());
+    DataGridWidgetCreatorService = __decorate([
+        aurelia_framework_1.autoinject,
+        __metadata("design:paramtypes", [base_widget_creator_service_1.BaseWidgetCreatorService])
+    ], DataGridWidgetCreatorService);
+    exports.DataGridWidgetCreatorService = DataGridWidgetCreatorService;
+});
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+define('framework/widget-services/simple-widget-creator-service',["require", "exports", "./base-widget-creator-service", "aurelia-framework"], function (require, exports, base_widget_creator_service_1, aurelia_framework_1) {
+    "use strict";
+    var SimpleWidgetCreatorService = (function () {
+        function SimpleWidgetCreatorService(baseWidgetCreator) {
+            this.baseWidgetCreator = baseWidgetCreator;
+        }
+        SimpleWidgetCreatorService.prototype.createEditorOptions = function (form, options) {
+            var editorOptions = this.baseWidgetCreator.createWidgetOptions(form, options);
+            if (options.binding && options.binding.bindToFQ) {
+                editorOptions.bindingOptions["value"] = options.binding.bindToFQ;
+            }
+            if (options.isReadOnly) {
+                editorOptions.readOnly = true;
+            }
+            return editorOptions;
+        };
+        SimpleWidgetCreatorService.prototype.addDateBox = function (form, options) {
+            return this.createEditorOptions(form, options);
+        };
+        SimpleWidgetCreatorService.prototype.addCalendar = function (form, options) {
+            return this.createEditorOptions(form, options);
+        };
+        SimpleWidgetCreatorService.prototype.addCommand = function (form, options) {
+            var command;
+            if (options.binding.dataContext) {
+                command = form.commandServerData[options.binding.dataContext + ";" + options.binding.bindTo];
+            }
+            else {
+                command = form.evaluateExpression(options.binding.bindToFQ);
+            }
+            var buttonOptions = {};
+            buttonOptions.text = command.title;
+            buttonOptions.hint = command.tooltip;
+            buttonOptions.onClick = function () {
+                if (typeof command.execute === "function") {
+                    command.execute();
+                }
+                else if (typeof command.execute === "string") {
+                    form.evaluateExpression(command.execute);
+                }
+                else {
+                    throw new Error();
+                }
+            };
+            form[options.options.optionsName] = buttonOptions;
+            return buttonOptions;
+        };
+        SimpleWidgetCreatorService.prototype.addNumberBox = function (form, options) {
             var editorOptions = this.createEditorOptions(form, options);
             if (options.showClearButton) {
                 editorOptions.showClearButton = true;
@@ -678,8 +894,8 @@ define('framework/services/widget-creator-service',["require", "exports", "../en
             }
             return editorOptions;
         };
-        WidgetCreatorService.prototype.addTab = function (form, options) {
-            var tabOptions = this.createWidgetOptions(form, options);
+        SimpleWidgetCreatorService.prototype.addTab = function (form, options) {
+            var tabOptions = this.baseWidgetCreator.createWidgetOptions(form, options);
             tabOptions.items = [];
             tabOptions.bindingOptions["selectedIndex"] = options.id + "Selected";
             options.pages.forEach(function (page) {
@@ -707,43 +923,80 @@ define('framework/services/widget-creator-service',["require", "exports", "../en
             };
             return tabOptions;
         };
-        WidgetCreatorService.prototype.addTextBox = function (form, options) {
+        SimpleWidgetCreatorService.prototype.addTextBox = function (form, options) {
             var editorOptions = this.createEditorOptions(form, options);
             if (options.maxLength) {
                 editorOptions.maxLength = options.maxLength;
             }
             return editorOptions;
         };
-        WidgetCreatorService.prototype.addTextArea = function (form, options) {
+        SimpleWidgetCreatorService.prototype.addTextArea = function (form, options) {
             var editorOptions = this.addTextBox(form, options);
             if (options.height) {
                 editorOptions.height = options.height;
             }
             return editorOptions;
         };
-        WidgetCreatorService.prototype.createEditorOptions = function (form, options) {
-            var editorOptions = this.createWidgetOptions(form, options);
-            if (options.binding && options.binding.bindToFQ) {
-                editorOptions.bindingOptions["value"] = options.binding.bindToFQ;
-            }
-            if (options.isReadOnly) {
-                editorOptions.readOnly = true;
-            }
-            return editorOptions;
+        return SimpleWidgetCreatorService;
+    }());
+    SimpleWidgetCreatorService = __decorate([
+        aurelia_framework_1.autoinject,
+        __metadata("design:paramtypes", [base_widget_creator_service_1.BaseWidgetCreatorService])
+    ], SimpleWidgetCreatorService);
+    exports.SimpleWidgetCreatorService = SimpleWidgetCreatorService;
+});
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+define('framework/widget-services/widget-creator-service',["require", "exports", "./simple-widget-creator-service", "./data-grid-widget-creator-service", "aurelia-framework"], function (require, exports, simple_widget_creator_service_1, data_grid_widget_creator_service_1, aurelia_framework_1) {
+    "use strict";
+    var WidgetCreatorService = (function () {
+        function WidgetCreatorService(simpleWidgetCreator, dataGridWidgetCreator) {
+            this.simpleWidgetCreator = simpleWidgetCreator;
+            this.dataGridWidgetCreator = dataGridWidgetCreator;
+        }
+        WidgetCreatorService.prototype.addDateBox = function (form, options) {
+            return this.simpleWidgetCreator.addDateBox(form, options);
         };
-        WidgetCreatorService.prototype.createWidgetOptions = function (form, options) {
-            var widgetOptions = {
-                bindingOptions: {}
-            };
-            form[options.options.optionsName] = widgetOptions;
-            return widgetOptions;
+        WidgetCreatorService.prototype.addCalendar = function (form, options) {
+            return this.simpleWidgetCreator.addCalendar(form, options);
+        };
+        WidgetCreatorService.prototype.addCommand = function (form, options) {
+            return this.simpleWidgetCreator.addCommand(form, options);
+        };
+        WidgetCreatorService.prototype.addDataGrid = function (form, options) {
+            return this.dataGridWidgetCreator.addDataGrid(form, options);
+        };
+        WidgetCreatorService.prototype.addNumberBox = function (form, options) {
+            return this.simpleWidgetCreator.addNumberBox(form, options);
+        };
+        WidgetCreatorService.prototype.addTab = function (form, options) {
+            return this.simpleWidgetCreator.addTab(form, options);
+        };
+        WidgetCreatorService.prototype.addTextBox = function (form, options) {
+            return this.simpleWidgetCreator.addTextBox(form, options);
+        };
+        WidgetCreatorService.prototype.addTextArea = function (form, options) {
+            return this.simpleWidgetCreator.addTextArea(form, options);
         };
         return WidgetCreatorService;
     }());
+    WidgetCreatorService = __decorate([
+        aurelia_framework_1.autoinject,
+        __metadata("design:paramtypes", [simple_widget_creator_service_1.SimpleWidgetCreatorService,
+            data_grid_widget_creator_service_1.DataGridWidgetCreatorService])
+    ], WidgetCreatorService);
     exports.WidgetCreatorService = WidgetCreatorService;
 });
 
-define('framework/services/index',["require", "exports", "./widget-creator-service"], function (require, exports, widget_creator_service_1) {
+define('framework/widget-services/index',["require", "exports", "./widget-creator-service"], function (require, exports, widget_creator_service_1) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -806,7 +1059,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-define('main/views/form-test-form',["require", "exports", "aurelia-framework", "../../framework/base/form-base", "../../framework/services/widget-creator-service", "../functions/test-function"], function (require, exports, aurelia_framework_1, form_base_1, widget_creator_service_1, test_function_1) {
+define('main/views/form-test-form',["require", "exports", "aurelia-framework", "../../framework/base/form-base", "../../framework/widget-services/widget-creator-service", "../functions/test-function"], function (require, exports, aurelia_framework_1, form_base_1, widget_creator_service_1, test_function_1) {
     "use strict";
     var FormTestForm = (function (_super) {
         __extends(FormTestForm, _super);
@@ -816,7 +1069,8 @@ define('main/views/form-test-form',["require", "exports", "aurelia-framework", "
             _this.id6b5b031382a34acfb6578a25c4e0204bSelected = 0;
             _this.addModel({
                 "id": "$m_Dummy",
-                "webApiAction": "1/2/3",
+                "keyProperty": "feature_id",
+                "webApiAction": "tx.json",
                 "filters": []
             });
             _this.addFunction("$f_Test", new test_function_1.TestFunction(_this, "function.$f_Test", {
@@ -973,21 +1227,15 @@ define('main/views/form-test-form',["require", "exports", "aurelia-framework", "
             _this.widgetCreator.addDataGrid(_this, {
                 "showFilterRow": true,
                 "columns": [{
-                        "caption": "Test",
-                        "bindTo": "a"
-                    }, {
-                        "caption": "Test",
-                        "bindTo": "b"
+                        "caption": "Name",
+                        "bindTo": "name"
                     }],
+                "binding": {},
                 "optionsToolbar": {
                     "optionsName": "id499a514991a147eda48e8efc638e629aToolbarOptions",
                     "optionsNameFQ": "id499a514991a147eda48e8efc638e629aToolbarOptions"
                 },
-                "binding": {
-                    "bindTo": "$f_Test.dataList",
-                    "bindToFQ": "function.$f_Test.dataList",
-                    "propertyPrefix": "$f_Test"
-                },
+                "dataModel": "$m_Dummy",
                 "onItemClick": "function.$f_Test.dummyRowClickFunc(e)",
                 "showToolbarTitle": true,
                 "selectionMode": 1,
@@ -1012,8 +1260,8 @@ define('main/views/form-test-form',["require", "exports", "aurelia-framework", "
     exports.FormTestForm = FormTestForm;
 });
 
-define('text!app.html', ['module'], function(module) { module.exports = "<template>\r\n  <require from=\"bootstrap/css/bootstrap.min.css\"></require>\r\n  <require from=\"devextreme/css/dx.common.css\"></require>\r\n  <require from=\"devextreme/css/dx.light.compact.css\"></require>\r\n  <require from=\"./main/views/form-test-form\"></require>\r\n\r\n  <div class=\"container-fluid\">\r\n    <div class=\"row\">\r\n      <form-test-form></form-test-form>\r\n    </div>\r\n  </div>\r\n</template>\r\n"; });
-define('text!dx/elements/dx-widget.html', ['module'], function(module) { module.exports = "<template class=\"dx-widget\">\r\n    <require from=\"devextreme\"></require>\r\n</template>"; });
-define('text!main/htmls/dummy.html', ['module'], function(module) { module.exports = "<div>\r\n    Ich bin ein Dummy-Html\r\n</div>"; });
+define('text!app.html', ['module'], function(module) { module.exports = "<template>\n  <require from=\"bootstrap/css/bootstrap.min.css\"></require>\n  <require from=\"devextreme/css/dx.common.css\"></require>\n  <require from=\"devextreme/css/dx.light.compact.css\"></require>\n  <require from=\"./main/views/form-test-form\"></require>\n\n  <div class=\"container-fluid\">\n    <div class=\"row\">\n      <form-test-form></form-test-form>\n    </div>\n  </div>\n</template>\n"; });
+define('text!dx/elements/dx-widget.html', ['module'], function(module) { module.exports = "<template class=\"dx-widget\">\n    <require from=\"devextreme\"></require>\n</template>"; });
+define('text!main/htmls/dummy.html', ['module'], function(module) { module.exports = "<div>\n    Ich bin ein Dummy-Html\n</div>"; });
 define('text!main/views/form-test-form.html', ['module'], function(module) { module.exports = "<template>\n    <div class=\"col-xs-12\">\n        <div class=\"tip-form-element-flex-box\">\n            <div class=\"tip-margin-top\">\n                <h1>${model.data.$m_Dummy.Test} asdf</h1>\n            </div>\n            <div class=\"tip-margin-top\">\n                <h2>${model.data.$m_Dummy.Test}</h2>\n            </div>\n            <div class=\"tip-margin-top\">\n                <h3>${model.data.$m_Dummy.Test}</h3>\n            </div>\n            <div class=\"tip-margin-top\">\n                <h4>${model.data.$m_Dummy.Test}</h4>\n            </div>\n            <div class=\"tip-margin-top\">\n                <h5>${model.data.$m_Dummy.Test}</h5>\n            </div>\n            <div class=\"tip-margin-top\">\n                <h6>${model.data.$m_Dummy.Test}</h6>\n            </div>\n        </div>\n    </div>\n    <div class=\"tip-margin-top col-xs-12\">\n        <i class=\"fa fa-home\"></i>\n    </div>\n    <div class=\"tip-margin-top col-xs-12\">\n        <i class=\"fa\" class.bind=\"function.$f_Test.icon\"></i>\n    </div>\n    <div class=\"tip-margin-top col-xs-12\">\n        <div class=\"tip-form-element-image-inline tip-form-element-image\" style=\"height: 150px;background-size: contain;background-image: url('https://upload.wikimedia.org/wikipedia/commons/e/ec/Blume_mit_Schmetterling_und_Biene_1uf.JPG');\"></div>\n    </div>\n    <div class=\"col-xs-12\">\n        <div class=\"tip-editor-caption\">&nbsp;</div>\n        <div>\n            <div>\n                Ich bin ein Dummy-Html\n            </div>\n        </div>\n    </div>\n    <div class=\"tip-margin-top col-xs-12\">\n        <div class=\"tip-editor-caption\">&nbsp;</div>\n        <dx-widget name=\"dxButton\" options.bind=\"id3cec30f3481841568654366a5ef938b4Options\"></dx-widget>\n    </div>\n    <div class=\"tip-margin-top col-xs-12\">\n        <div class=\"tip-editor-caption\">&nbsp;</div>\n        <dx-widget name=\"dxButton\" options.bind=\"id39b61cb9fbc64613926879a0ec229f1aOptions\"></dx-widget>\n    </div>\n    <div class=\"tip-margin-top col-xs-6\">\n        <div class=\"tip-editor-caption\">Name</div>\n        <dx-widget name=\"dxTextBox\" options.bind=\"iddd0b10f6f6784b3ab0f8f120e3ffb93eOptions\"></dx-widget>\n    </div>\n    <div class=\"tip-margin-top col-xs-6\">\n        <div class=\"tip-editor-caption\">Date</div>\n        <dx-widget name=\"dxDateBox\" options.bind=\"idbb2b0120934d466aa4ac031309a5b018Options\"></dx-widget>\n    </div>\n    <div class=\"tip-margin-top col-xs-6\">\n        <div class=\"tip-editor-caption\">Number</div>\n        <dx-widget name=\"dxNumberBox\" options.bind=\"id7239e3183fb045a68c8eaf58e653a50dOptions\"></dx-widget>\n    </div>\n    <div class=\"col-xs-12\">\n        <div class=\"row\">\n            <div class=\"tip-margin-top col-xs-6\">\n                <div class=\"tip-editor-caption\">Name</div>\n                <dx-widget name=\"dxTextArea\" options.bind=\"idb9561a47599b486085c73856fcfdb96eOptions\"></dx-widget>\n            </div>\n            <div class=\"tip-margin-top col-xs-6\">\n                <div class=\"tip-editor-caption\">Name</div>\n                <dx-widget name=\"dxCalendar\" options.bind=\"idf00fece0c2744107a5429a92b0bebf33Options\"></dx-widget>\n            </div>\n        </div>\n    </div>\n    <div class=\"col-xs-12\">\n        <div>\n            <div class=\"row\">\n                <div class=\"tip-margin-top col-xs-6\">\n                    <div class=\"tip-editor-caption\">Name</div>\n                    <dx-widget name=\"dxTextArea\" options.bind=\"id3ee8e49cc11b4027a098f402aad61356Options\"></dx-widget>\n                </div>\n                <div class=\"tip-margin-top col-xs-6\">\n                    <div class=\"tip-editor-caption\">Name</div>\n                    <dx-widget name=\"dxCalendar\" options.bind=\"id696e0887b8ca47b18d7a79f3379cb06eOptions\"></dx-widget>\n                </div>\n            </div>\n        </div>\n    </div>\n    <div class=\"tip-margin-top col-xs-12\">\n        <div>\n            <b>${model.data.$m_Dummy.Test}</b> ist am ${model.data.$m_Dummy.Date} ${model.data.$m_Dummy.Number}x hier gewesen!\n        </div>\n    </div>\n    <div class=\"tip-margin-top col-xs-12\">\n        <div class=\"tip-editor-caption\">Dummy</div>\n        <dx-widget name=\"dxTextBox\" options.bind=\"function.$f_Test.dummyText\"></dx-widget>\n    </div>\n    <div class=\"col-xs-12\">\n        <div repeat.for=\"item of function.$f_Test.dataList\">\n            <div class=\"row\">\n                <div class=\"tip-margin-top col-xs-12\">\n                    <div>${item.a} ${item.b}</div>\n                </div>\n            </div>\n        </div>\n    </div>\n    <div class=\"col-xs-12\">\n        <div class=\"tip-repeat-side-by-side\" repeat.for=\"item of function.$f_Test.dataList\">\n            <div class=\"tip-margin-top\">\n                <div>${item.a} ${item.b}</div>\n            </div>\n        </div>\n    </div>\n    <div class=\"tip-margin-top col-xs-12\">\n        <dx-widget name=\"dxTabs\" options.bind=\"id6b5b031382a34acfb6578a25c4e0204bOptions\"></dx-widget>\n    </div>\n    <div show.bind=\"id6b5b031382a34acfb6578a25c4e0204bSelected === 0\">\n        <div class=\"tip-margin-top col-xs-12\">\n            <div>Ich bin ein Text 1</div>\n        </div>\n        <div class=\"col-xs-12\">\n            <dx-widget name=\"dxDataGrid\" options.bind=\"id499a514991a147eda48e8efc638e629aOptions\"></dx-widget>\n        </div>\n    </div>\n    <div show.bind=\"id6b5b031382a34acfb6578a25c4e0204bSelected === 1\">\n        <div class=\"tip-margin-top col-xs-12\">\n            <div>Ich bin ein Text 2</div>\n        </div>\n    </div>\n    <div show.bind=\"id6b5b031382a34acfb6578a25c4e0204bSelected === 2\">\n        <div class=\"tip-margin-top col-xs-12\">\n            <div>Ich bin ein Text 3</div>\n        </div>\n    </div>\n</template>"; });
 //# sourceMappingURL=app-bundle.js.map
