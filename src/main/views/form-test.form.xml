@@ -1,6 +1,7 @@
 <form>
     <models>
-        <model id="$m_Dummy" web-api-action="1/2/3"/>
+        <model id="$m_Dummy" web-api-action="base/Security/Profile"/>
+        <model id="$m_Dummy2" web-api-action="base/Security/Profile" key="$m_Dummy.Id"/>
     </models>
     <functions>
         <function id="$f_Test" file="../functions/test-function" class-name="TestFunction" custom-parameter="{ x: 1, y: 2}" />
@@ -20,18 +21,18 @@
         <image src="https://upload.wikimedia.org/wikipedia/commons/e/ec/Blume_mit_Schmetterling_und_Biene_1uf.JPG" height="150px" background-size="contain" />
         <html file="../htmls/dummy.html" />
 
-        <command data-context="$m_Dummy" bind-to="demoCommand" />
+        <!--<command data-context="$m_Dummy" bind-to="demoCommand" />-->
         <command bind-to="$f_Test.giveItToMe" />
-        <text-box caption="Name" data-context="$m_Dummy" bind-to="Test" c-xs="6"/>
-        <date-box caption="Date" data-context="$m_Dummy" bind-to="Date" c-xs="6"/>
-        <number-box caption="Number" data-context="$m_Dummy" bind-to="Number" c-xs="6"/>
+        <text-box caption="Name" data-context="$m_Dummy2" bind-to="Name" c-xs="6"/>
+        <date-box caption="Date" data-context="$m_Dummy2" bind-to="ModifiedDate" c-xs="6"/>
+        <number-box caption="Number" data-context="$m_Dummy2" bind-to="IdMandator" c-xs="6"/>
         <row>
-            <text-area caption="Name" data-context="$m_Dummy" bind-to="Test" height="200px" c-xs="6"/>
-            <calendar caption="Name" data-context="$m_Dummy" bind-to="Date" c-xs="6"/>
+            <text-area caption="Name" data-context="$m_Dummy2" bind-to="Name" height="200px" c-xs="6"/>
+            <calendar caption="Name" data-context="$m_Dummy2" bind-to="ModifiedDate" c-xs="6"/>
         </row>
         <div>
-            <text-area caption="Name" data-context="$m_Dummy" bind-to="Test" height="200px" c-xs="6"/>
-            <calendar caption="Name" data-context="$m_Dummy" bind-to="Date" c-xs="6"/>
+            <text-area caption="Name" data-context="$m_Dummy2" bind-to="Name" height="200px" c-xs="6"/>
+            <calendar caption="Name" data-context="$m_Dummy2" bind-to="ModifiedDate" c-xs="6"/>
         </div>
 
         <text>
@@ -52,10 +53,10 @@
                 <tab-page caption="Tab 1">
                     <text>Ich bin ein Text 1</text>
 
-                    <data-grid bind-to="$f_Test.dataList" show-filter-row="true" on-row-click="$f_Test.dummyRowClickFunc(e)" selection-mode="single">
+                    <data-grid data-context="$m_Dummy" show-filter-row="true" on-row-click="$f_Test.dummyRowClickFunc(e)" selection-mode="single" edit-data-context="$m_Dummy2">
                         <data-grid-columns>
-                            <data-grid-column caption="Test" bind-to="a" />
-                            <data-grid-column caption="Test" bind-to="b" />
+                            <data-grid-column caption="Name" bind-to="Name" />
+                            <data-grid-column caption="ModifiedDate" bind-to="ModifiedDate" />
                         </data-grid-columns>
                     </data-grid>
                 </tab-page>

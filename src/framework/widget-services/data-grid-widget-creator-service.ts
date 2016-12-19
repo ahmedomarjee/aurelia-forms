@@ -1,68 +1,92 @@
 import * as WidgetOptions from "../widget-options";
 import {
-    FormBase
+  FormBase
 } from "../base/form-base";
 import {
-    BaseWidgetCreatorService
+  BaseWidgetCreatorService
 } from "./base-widget-creator-service";
 import {
   SelectionModeEnum
 } from "../enums/selection-mode-enum";
 import {
-    autoinject
+  autoinject
 } from "aurelia-framework";
 
 @autoinject
 export class DataGridWidgetCreatorService {
-    constructor(
-        private baseWidgetCreator: BaseWidgetCreatorService
-    ) {
+  constructor(
+    private baseWidgetCreator: BaseWidgetCreatorService
+  ) {
 
-    };
+  };
 
-    addDataGrid(form: FormBase, options: WidgetOptions.IDataGridOptions): DevExpress.ui.dxDataGridOptions {
-        const dataGridOptions: DevExpress.ui.dxDataGridOptions = this.baseWidgetCreator.createWidgetOptions(form, options);
+  addDataGrid(form: FormBase, options: WidgetOptions.IDataGridOptions): DevExpress.ui.dxDataGridOptions {
+    const dataGridOptions: DevExpress.ui.dxDataGridOptions = this.baseWidgetCreator.createWidgetOptions(form, options);
 
-        if (options.dataModel) {
-            const model = form.model.getInfo(options.dataModel);
-            dataGridOptions.dataSource = form.model.createDataSource(model);
-        }
-        if (options.binding.bindToFQ) {
-            dataGridOptions.bindingOptions["dataSource"] = options.binding.bindToFQ;
-        }
-        if (options.showFilterRow) {
-            dataGridOptions.filterRow = dataGridOptions.filterRow ? dataGridOptions.filterRow : {};
-            dataGridOptions.filterRow.visible = true;
-        }
-        if (options.rowScriptTemplateId) {
-            //TODO >> wie kan man eine Template hinzügefugen?
-            dataGridOptions.rowTemplate = options.rowScriptTemplateId;
-        }
-        if (options.onItemClick) {
-            dataGridOptions.onRowClick = (e) => {
-                form.evaluateExpression(options.onItemClick, { e });
-            }
-        }
-        if (options.selectionMode) {
-            //TODO >> Key in DataSource
-            let selectionModeString = "";
+    if (options.dataModel) {
+      const model = form.model.getInfo(options.dataModel);
+      dataGridOptions.dataSource = form.model.createDataSource(model);
 
-            switch (options.selectionMode) {
-                case SelectionModeEnum.Multiple:
-                    selectionModeString = "multiple";
-                    break;
-                case SelectionModeEnum.Single:
-                    selectionModeString = "single";
-                    break;
-                default:
-                    selectionModeString = "none";
-                    break;
-            }
-
-            dataGridOptions.selection = dataGridOptions.selection ? dataGridOptions.selection : {};
-            dataGridOptions.selection.mode = selectionModeString;
-        }
-
-        return dataGridOptions;
+      dataGridOptions.remoteOperations = {
+        filtering: true,
+        paging: true,
+        sorting: true
+      }
     }
+    else if (options.binding.bindTo) {
+      dataGridOptions.bindingOptions["dataSource"] = options.binding.bindToFQ;
+    }
+
+    if (options.showFilterRow) {
+      dataGridOptions.filterRow = dataGridOptions.filterRow ? dataGridOptions.filterRow : {};
+      dataGridOptions.filterRow.visible = true;
+    }
+    if (options.rowScriptTemplateId) {
+      //TODO >> wie kan man eine Template hinzügefugen?
+      dataGridOptions.rowTemplate = options.rowScriptTemplateId;
+    }
+
+    let clickActions: { (e: any): void }[] = [];
+
+    if (options.onItemClick) {
+      clickActions.push((e) => {
+        form.evaluateExpression(options.onItemClick, { e })
+      });
+    }
+    if (options.editDataContext) {
+      clickActions.push((e) => {
+        form.model.data[options.editDataContext] = e.data;
+      });
+    }
+
+    if (clickActions.length > 0) {
+      dataGridOptions.onRowClick = (e) => {
+        clickActions.forEach(item => {
+          item(e)
+        });
+      };
+    }
+
+    if (options.selectionMode) {
+      //TODO >> Key in DataSource
+      let selectionModeString = "";
+
+      switch (options.selectionMode) {
+        case SelectionModeEnum.Multiple:
+          selectionModeString = "multiple";
+          break;
+        case SelectionModeEnum.Single:
+          selectionModeString = "single";
+          break;
+        default:
+          selectionModeString = "none";
+          break;
+      }
+
+      dataGridOptions.selection = dataGridOptions.selection ? dataGridOptions.selection : {};
+      dataGridOptions.selection.mode = selectionModeString;
+    }
+
+    return dataGridOptions;
+  }
 }

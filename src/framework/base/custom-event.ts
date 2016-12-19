@@ -3,7 +3,7 @@ import {
 } from "../event-args/custom-event-args";
 
 export class CustomEvent<T extends ICustomEventArgs> {
-  private delegates: {(args: T): Promise<any>}[];
+  private delegates: {(args: T): Promise<any>}[] = [];
 
   constructor() {
   }

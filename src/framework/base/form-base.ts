@@ -27,7 +27,7 @@ export class FormBase {
 
   constructor() {
     this.bindingEngine = Container.instance.get(BindingEngine);
-    this.model = new ModelInstance();
+    this.model = new ModelInstance(this);
     this.variable = new VariableInstance();
     this.function = new FunctionInstance();
     this.commandServerData = new CommandServerDataInstance();
@@ -35,7 +35,7 @@ export class FormBase {
   }
 
   protected addModel(model: Interfaces.IModel): void {
-    this.model.addInfo(this, model);
+    this.model.addInfo(model);
   }
   protected addVariable(variable: Interfaces.IVariable): void {
     this.variable.addInfo(variable);
