@@ -1,19 +1,20 @@
 <form>
     <models>
         <model id="$m_Dummy" web-api-action="base/Security/Profile"/>
-        <model id="$m_Dummy2" web-api-action="base/Security/Profile" key="$m_Dummy.Id"/>
+        <model id="$m_Dummy2" web-api-action="base/Security/Profile"/>
+        <model id="$m_Dummy3" web-api-action="base/Security/Profile" key="$m_Dummy2.Id"/>
     </models>
     <functions>
         <function id="$f_Test" file="../functions/test-function" class-name="TestFunction" custom-parameter="{ x: 1, y: 2}" />
     </functions>
     <content>
         <flex-box>
-            <h1>${$m_Dummy.Test} asdf</h1>
-            <h2>${$m_Dummy.Test}</h2>
-            <h3>${$m_Dummy.Test}</h3>
-            <h4>${$m_Dummy.Test}</h4>
-            <h5>${$m_Dummy.Test}</h5>
-            <h6>${$m_Dummy.Test}</h6>
+            <h1>${$m_Dummy2.Name} asdf</h1>
+            <h2>${$m_Dummy2.Name}</h2>
+            <h3>${$m_Dummy2.Name}</h3>
+            <h4>${$m_Dummy2.Name}</h4>
+            <h5>${$m_Dummy2.Name}</h5>
+            <h6>${$m_Dummy2.Name}</h6>
         </flex-box>
 
         <icon icon="fa-home"/>
@@ -34,6 +35,12 @@
             <text-area caption="Name" data-context="$m_Dummy2" bind-to="Name" height="200px" c-xs="6"/>
             <calendar caption="Name" data-context="$m_Dummy2" bind-to="ModifiedDate" c-xs="6"/>
         </div>
+        <h1>Dummy 3</h1>
+        <div>
+            <text-area caption="Name" data-context="$m_Dummy3" bind-to="Name" height="200px" c-xs="6"/>
+            <calendar caption="Name" data-context="$m_Dummy3" bind-to="ModifiedDate" c-xs="6"/>
+        </div>
+
 
         <text>
             **${$m_Dummy.Test}** ist am ${$m_Dummy.Date} ${$m_Dummy.Number}x hier gewesen!

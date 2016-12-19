@@ -28,7 +28,7 @@ export class ModelInstance {
     this.info = {};
 
     this.onLoadRequired.register((args) => {
-      if (args.model.key) {
+      if (args.model.key || args.model.autoLoad) {
         const getOptions = this.createGetOptions(args.model);
 
         return this.rest.get({
@@ -45,7 +45,7 @@ export class ModelInstance {
 
   data: any;
 
-  onLoadRequired = new CustomEvent<IModelLoadRequiredEventArgs>();
+  onLoadRequired = new CustomEvent<IModelLoadRequiredEventArgs>(10);
 
   addInfo(model: Interfaces.IModel) {
     this.info[model.id] = model;
@@ -106,7 +106,31 @@ export class ModelInstance {
   }
 
   private addObservers(model: Interfaces.IModel) {
-    if (model.key) {
+    this.addObserversDetail(model, model.key);
+    this.addObserversDetail(model, model.webApiWhere);
+    
+    if (model.filters) {
+      for(let item of model.filters) {
+        this.addObserversDetail(model, item.if);
+        this.addObserversDetail(model, item.webApiCustomValue);
+        this.addObserversDetail(model, item.webApiWhere);
+      }
+    }
+  }
+  private addObserversDetail(model: Interfaces.IModel, obj: any) {
+    if (obj == void(0)) {
+      return;
+    }
+    
+    if (Array.isArray(obj)) {
+      for (let item of obj) {
+        this.addObserversDetail(model, item);
+      }
+    } else if (typeof obj === "object") {
+      for(let property of obj) {
+        this.addObserversDetail(model, property);
+      }
+    } else if (typeof obj === "string") {
       this.form.createObserver(model.key, (newValue, oldValue) => {
         this.onLoadRequired.fire({
           model
@@ -124,6 +148,7 @@ export class ModelInstance {
     }
 
     getOptions.orderBy = model.webApiOrderBy;
+  
 
     return getOptions;
   }

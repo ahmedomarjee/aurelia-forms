@@ -57,12 +57,11 @@ export class FormBase {
   }
 
   createObserver(expression: string, action: {(newValue?: any, oldValue?: any): void}): {(): void} {
-    const observer = this.bindingEngine.expressionObserver({
-      bindingContext: this,
-      overrideContext: null 
-    }, expression);
-
-    return observer.subscribe(action).dispose;
+    return this
+      .bindingEngine
+      .expressionObserver(this, expression)
+      .subscribe(action)
+      .dispose;
   }
   evaluateExpression(expression: string, overrideContext?: any): any {
     let parsed = this.expression.get(expression);
