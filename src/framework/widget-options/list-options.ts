@@ -1,6 +1,6 @@
 import {IBinding} from "../interfaces/binding";
 import {IOptions} from "./options";
-import{IWidgetOptions} from "./widget-options";
+import {IWidgetOptions} from "./widget-options";
 import {SelectionModeEnum} from "../enums/selection-mode-enum";
 
 export interface IListOptions extends IWidgetOptions {

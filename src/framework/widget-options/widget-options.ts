@@ -4,6 +4,7 @@ export interface IWidgetOptions{
     id: string;
     options: IOptions;
 
-    hint?: string;
+    tooltip?: string;
     isDisabled?: boolean;
+    isDisabledExpression?: string;
 }
