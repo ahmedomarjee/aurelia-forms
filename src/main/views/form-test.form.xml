@@ -17,9 +17,14 @@
             <h6>${$m_Dummy2.Name}</h6>
         </flex-box>
 
+        <file-download-link href="http://www.vol.at" />
+        <file-download-link data-context="$f_Test" bind-to="downloadUrl" />
+
         <icon icon="fa-home"/>
         <icon bind-to="$f_Test.icon"/>
-        <image src="https://upload.wikimedia.org/wikipedia/commons/e/ec/Blume_mit_Schmetterling_und_Biene_1uf.JPG" height="150px" background-size="contain" />
+        <image src="https://upload.wikimedia.org/wikipedia/commons/e/ec/Blume_mit_Schmetterling_und_Biene_1uf.JPG" height="150px" background-size="contain" /> 
+        <image data-context="$f_Test" bind-to="imageUrl" height="150px" background-size="contain" /> 
+        <image data-context="$f_Test" bind-to="imageUrl" /> 
         <html file="../htmls/dummy.html" />
 
         <!--<command data-context="$m_Dummy" bind-to="demoCommand" />-->
@@ -41,6 +46,7 @@
             <calendar caption="Name" data-context="$m_Dummy3" bind-to="ModifiedDate" c-xs="6"/>
         </div>
 
+        <editor data-context="$m_Dummy3" bind-to="Name" />
 
         <text>
             **${$m_Dummy.Test}** ist am ${$m_Dummy.Date} ${$m_Dummy.Number}x hier gewesen!

@@ -77,6 +77,6 @@ export class FormBase {
     });
   }
   getFileDownloadUrl(key: string): string {
-    return key;
+    return this.evaluateExpression(key);
   }
 }

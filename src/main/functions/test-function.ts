@@ -34,4 +34,6 @@ export class TestFunction {
       }
   }
   icon = "fa-book";
+  downloadUrl = "http://www.tip.co.at";
+  imageUrl = "https://upload.wikimedia.org/wikipedia/commons/e/ec/Blume_mit_Schmetterling_und_Biene_1uf.JPG";
 }

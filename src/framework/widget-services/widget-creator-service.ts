@@ -19,18 +19,22 @@ export class WidgetCreatorService {
     private dataGridWidgetCreator: DataGridWidgetCreatorService
   ) { }
 
-  addDateBox(form: FormBase, options: WidgetOptions.IDateBoxOptions): DevExpress.ui.dxDateBoxOptions {
-    return this.simpleWidgetCreator.addDateBox(form, options)
-  }
   addCalendar(form: FormBase, options: WidgetOptions.ICalendarOptions): DevExpress.ui.dxCalendarOptions {
     return this.simpleWidgetCreator.addCalendar(form, options);
   }
+  //addCheckBox
+  //addColorBox
   addCommand(form: FormBase, options: WidgetOptions.ICommandOptions): DevExpress.ui.dxButtonOptions {
     return this.simpleWidgetCreator.addCommand(form, options);
+  }
+  addDateBox(form: FormBase, options: WidgetOptions.IDateBoxOptions): DevExpress.ui.dxDateBoxOptions {
+    return this.simpleWidgetCreator.addDateBox(form, options)
   }
   addDataGrid(form: FormBase, options: WidgetOptions.IDataGridOptions): DevExpress.ui.dxDataGridOptions {
     return this.dataGridWidgetCreator.addDataGrid(form, options);
   }
+  //addFileUploader
+  //addFileUploaderWithViewer
   addNumberBox(form: FormBase, options: WidgetOptions.INumberBoxOptions): DevExpress.ui.dxNumberBoxOptions {
     return this.simpleWidgetCreator.addNumberBox(form, options);
   }
