@@ -1,0 +1,7 @@
+<form>
+    <content>
+        <text-box caption="Hilfe" />
+        <check-box caption="Hilfe" />
+        <color-box caption="Hilfe" />
+    </content>
+</form>

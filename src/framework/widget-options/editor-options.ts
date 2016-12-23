@@ -8,6 +8,8 @@ export interface IEditorOptions extends IWidgetOptions {
     isReadOnly?: boolean;
     isReadOnlyExpression?: string;
 
+    placeholder?: string;
+
     binding?: IBinding;
     validationRules?: IValidationRule[];
 }

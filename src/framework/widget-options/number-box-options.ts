@@ -7,7 +7,9 @@ export interface INumberBoxOptions extends IEditorOptions {
     showSpinButtons?: boolean;
     showClearButton?: boolean;
 
-    minValue?: number;
-    maxValue?: number;
+    min?: number;
+    max?: number;
     step?: number;
+
+    format?: string;
 }
