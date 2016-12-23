@@ -25,16 +25,47 @@ export class DataGridWidgetCreatorService {
 
     if (options.dataModel) {
       const model = form.model.getInfo(options.dataModel);
-      dataGridOptions.dataSource = form.model.createDataSource(model);
+      const dataSource = form.model.createDataSource(model);
+      dataGridOptions.dataSource = dataSource;
 
       dataGridOptions.remoteOperations = {
         filtering: true,
         paging: true,
         sorting: true
       }
+
+      form.model.onLoadRequired.register(e => {
+        if (e.model == model) {
+          dataSource.reload();
+        }
+
+        return Promise.resolve(); 
+      });
     }
     else if (options.binding.bindTo) {
       dataGridOptions.bindingOptions["dataSource"] = options.binding.bindToFQ;
+    }
+
+    if (options.columns) {
+      dataGridOptions.columns = options.columns.map(col => {
+        const column: DevExpress.ui.dxDataGridColumn = {};
+
+        if (col.caption) {
+          column.caption = col.caption;
+        }
+        if (col.bindTo) {
+          column.dataField = col.bindTo;
+        }
+        if (col.sortIndex != void(0) && col.sortOrder != void(0)) {
+          column.sortIndex = col.sortIndex;
+          column.sortOrder = col.sortOrder;
+        }
+        if (col.width) {
+          column.width = col.width;
+        }
+
+        return column;
+      });
     }
 
     if (options.showFilterRow) {

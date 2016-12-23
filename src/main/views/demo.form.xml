@@ -1,7 +1,28 @@
 <form>
+    <models>
+        <model id="$m_1" 
+            web-api-action="base/Security/Profile"
+            web-api-expand="{ Mandator: null }" />
+
+        <model id="$m_2" />
+
+        <model id="$m_3"
+            web-api-action="base/Security/AuthgroupProfile"
+            web-api-expand="{ Authgroup: null }"
+            web-api-where="['IdProfile', '$m_2.Id']" />
+    </models>
     <content>
-        <text-box caption="Hilfe" />
-        <check-box caption="Hilfe" />
-        <color-box caption="Hilfe" />
+        <data-grid data-context="$m_1" edit-data-context="$m_2" selection-mode="single">
+            <data-grid-columns>
+                <data-grid-column caption="Name" bind-to="Name" sort-index="0" sort-order="desc" />
+                <data-grid-column caption="Mandant" bind-to="Mandator.Name" />
+            </data-grid-columns>
+        </data-grid>
+
+        <data-grid data-context="$m_3">
+            <data-grid-columns>
+                <data-grid-column caption="Berechtigungsgruppe" bind-to="Authgroup.Name" sort-index="0" sort-order="desc" />
+            </data-grid-columns>
+        </data-grid>
     </content>
 </form>

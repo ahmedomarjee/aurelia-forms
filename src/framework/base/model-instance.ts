@@ -79,6 +79,20 @@ export class ModelInstance {
         getOptions.take = options.take;
         getOptions.requireTotalCount = options.requireTotalCount;
 
+        if (model.webApiWhere) {
+          getOptions.where = [];
+          if (!this.constructWhere(model.webApiWhere, getOptions.where)) {
+            if (options.requireTotalCount) {
+              return Promise.resolve({
+                data: [],
+                totalCount: 0
+              });
+            } else {
+              return Promise.resolve([]);
+            }
+          }
+        }
+
         if (options.sort) {
           getOptions.orderBy = (<any[]>options.sort).map((data) => {
             return {
@@ -107,36 +121,43 @@ export class ModelInstance {
 
   private addObservers(model: Interfaces.IModel) {
     this.addObserversDetail(model, model.key);
-    this.addObserversDetail(model, model.webApiWhere);
-    
+    this.addObserversWhere(model, model.webApiWhere);
+
     if (model.filters) {
-      for(let item of model.filters) {
+      for (let item of model.filters) {
         this.addObserversDetail(model, item.if);
         this.addObserversDetail(model, item.webApiCustomValue);
-        this.addObserversDetail(model, item.webApiWhere);
+        this.addObserversWhere(model, item.webApiWhere);
       }
     }
   }
-  private addObserversDetail(model: Interfaces.IModel, obj: any) {
-    if (obj == void(0)) {
+  private addObserversWhere(model: Interfaces.IModel, data: any) {
+    if (data == void (0)) {
       return;
     }
-    
-    if (Array.isArray(obj)) {
-      for (let item of obj) {
-        this.addObserversDetail(model, item);
+
+    if (Array.isArray(data)) {
+      (<any[]>data).forEach(item => this.addObserversWhere(model, item));
+    } else if (typeof data === "object") {
+      if (data.isBound === true && data.expression != void (0)) {
+        this.addObserversDetail(model, data.expression);
+      } else {
+        for (let property in data) {
+          this.addObserversWhere(model, data[property]);
+        }
       }
-    } else if (typeof obj === "object") {
-      for(let property of obj) {
-        this.addObserversDetail(model, property);
-      }
-    } else if (typeof obj === "string") {
-      this.form.createObserver(model.key, (newValue, oldValue) => {
-        this.onLoadRequired.fire({
-          model
-        });
-      });
     }
+  }
+  private addObserversDetail(model: Interfaces.IModel, expression: string) {
+    if (expression == void (0)) {
+      return;
+    }
+
+    this.form.createObserver(expression, (newValue, oldValue) => {
+      this.onLoadRequired.fire({
+        model
+      });
+    });
   }
   private createGetOptions(model: Interfaces.IModel): any {
     const getOptions: any = {};
@@ -148,8 +169,48 @@ export class ModelInstance {
     }
 
     getOptions.orderBy = model.webApiOrderBy;
-  
+
 
     return getOptions;
+  }
+  private constructWhere(data: any, where: any[]): boolean {
+    if (data == void (0)) {
+      return true;
+    }
+
+    if (Array.isArray(data)) {
+      const newArr = [];
+      where.push(newArr);
+
+      let cancel = false;
+      (<any[]>data).forEach(item => {
+        if (!this.constructWhere(item, newArr)) {
+          cancel = true;
+        }
+      });
+
+      if (cancel) {
+        return false;
+      }
+    } else if (typeof data === "object") {
+      if (data.isBound === true && data.expression != void (0)) {
+        const val = this.form.evaluateExpression(data.expression);
+        if (val == void (0)) {
+          return false;
+        }
+
+        where.push(val);
+      } else {
+        for (let property in data) {
+          if (!this.constructWhere(data[property], where)) {
+            return false;
+          }
+        }
+      }
+    } else {
+      where.push(data);
+    }
+
+    return true;
   }
 }

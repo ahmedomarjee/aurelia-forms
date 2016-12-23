@@ -13,40 +13,85 @@ import {
 export class DemoForm extends FormBase {
     constructor(private widgetCreator: WidgetCreatorService) {
         super();
-        this.widgetCreator.addTextBox(this, {
-            "caption": "Hilfe",
-            "binding": {
-                "bindToFQ": ""
+        this.addModel({
+            "id": "$m_1",
+            "webApiAction": "base/Security/Profile",
+            "webApiExpand": {
+                "Mandator": null
             },
-            "validationRules": [],
-            "id": "id360c584776fa432e9116993044cd46b1",
+            "keyProperty": "Id",
+            "filters": []
+        });
+        this.addModel({
+            "id": "$m_2",
+            "filters": []
+        });
+        this.addModel({
+            "id": "$m_3",
+            "webApiAction": "base/Security/AuthgroupProfile",
+            "webApiExpand": {
+                "Authgroup": null
+            },
+            "webApiWhere": ["IdProfile", {
+                "isBound": true,
+                "expression": "model.data.$m_2.Id"
+            }],
+            "keyProperty": "Id",
+            "filters": []
+        });
+        this.widgetCreator.addDataGrid(this, {
+            "columns": [{
+                "caption": "Name",
+                "bindTo": "Name",
+                "sortIndex": 0,
+                "sortOrder": "desc"
+            }, {
+                "caption": "Mandant",
+                "bindTo": "Mandator.Name"
+            }],
+            "optionsToolbar": {
+                "optionsName": "id2d9a358c0a454ac2a52dacb8395ccaceToolbarOptions",
+                "optionsNameFQ": "id2d9a358c0a454ac2a52dacb8395ccaceToolbarOptions"
+            },
+            "binding": {
+                "dataContext": "$m_1",
+                "bindToFQ": "model.data.$m_1."
+            },
+            "dataModel": "$m_1",
+            "editDataContext": "$m_2",
+            "selectionMode": 1,
+            "edits": [],
+            "filters": [],
+            "commands": [],
+            "id": "id2d9a358c0a454ac2a52dacb8395ccace",
             "options": {
-                "optionsName": "id360c584776fa432e9116993044cd46b1Options",
-                "optionsNameFQ": "id360c584776fa432e9116993044cd46b1Options"
+                "optionsName": "id2d9a358c0a454ac2a52dacb8395ccaceOptions",
+                "optionsNameFQ": "id2d9a358c0a454ac2a52dacb8395ccaceOptions"
             }
         });
-        this.widgetCreator.addCheckBox(this, {
-            "caption": "Hilfe",
-            "binding": {
-                "bindToFQ": ""
+        this.widgetCreator.addDataGrid(this, {
+            "columns": [{
+                "caption": "Berechtigungsgruppe",
+                "bindTo": "Authgroup.Name",
+                "sortIndex": 0,
+                "sortOrder": "desc"
+            }],
+            "optionsToolbar": {
+                "optionsName": "idca253d25d4a643a29b692def4e5891d9ToolbarOptions",
+                "optionsNameFQ": "idca253d25d4a643a29b692def4e5891d9ToolbarOptions"
             },
-            "validationRules": [],
-            "id": "id49bae163648a4b7bb76befddb3203adb",
-            "options": {
-                "optionsName": "id49bae163648a4b7bb76befddb3203adbOptions",
-                "optionsNameFQ": "id49bae163648a4b7bb76befddb3203adbOptions"
-            }
-        });
-        this.widgetCreator.addColorBox(this, {
-            "caption": "Hilfe",
             "binding": {
-                "bindToFQ": ""
+                "dataContext": "$m_3",
+                "bindToFQ": "model.data.$m_3."
             },
-            "validationRules": [],
-            "id": "id460828c7182d4ccfbbd9bce955ec5cef",
+            "dataModel": "$m_3",
+            "edits": [],
+            "filters": [],
+            "commands": [],
+            "id": "idca253d25d4a643a29b692def4e5891d9",
             "options": {
-                "optionsName": "id460828c7182d4ccfbbd9bce955ec5cefOptions",
-                "optionsNameFQ": "id460828c7182d4ccfbbd9bce955ec5cefOptions"
+                "optionsName": "idca253d25d4a643a29b692def4e5891d9Options",
+                "optionsNameFQ": "idca253d25d4a643a29b692def4e5891d9Options"
             }
         });
     }
