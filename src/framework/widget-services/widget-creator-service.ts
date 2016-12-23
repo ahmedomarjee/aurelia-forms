@@ -19,7 +19,9 @@ export class WidgetCreatorService {
     private dataGridWidgetCreator: DataGridWidgetCreatorService
   ) { }
 
-  //addAccordion
+  addAccordion(form: FormBase, options: WidgetOptions.IAccordionOptions): DevExpress.ui.dxAccordionOptions {
+    return this.simpleWidgetCreator.addAccordion(form, options);
+  }
   addCalendar(form: FormBase, options: WidgetOptions.ICalendarOptions): DevExpress.ui.dxCalendarOptions {
     return this.simpleWidgetCreator.addCalendar(form, options);
   }

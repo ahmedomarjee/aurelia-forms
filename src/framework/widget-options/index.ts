@@ -1,5 +1,6 @@
 export * from "./options";
 export * from "./editor-options";
+export * from "./accordion-options";
 export * from "./calendar-options";
 export * from "./check-box-options";
 export * from "./color-box-options";

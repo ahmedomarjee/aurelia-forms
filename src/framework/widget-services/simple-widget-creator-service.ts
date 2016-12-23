@@ -38,6 +38,9 @@ export class SimpleWidgetCreatorService {
     return editorOptions;
   }
 
+  addAccordion(form: FormBase, options: WidgetOptions.IAccordionOptions): DevExpress.ui.dxAccordionOptions {
+    return this.baseWidgetCreator.createWidgetOptions(form, options);
+  }
   addCalendar(form: FormBase, options: WidgetOptions.ICalendarOptions): DevExpress.ui.dxCalendarOptions {
     return this.createEditorOptions(form, options);
   }
