@@ -11,10 +11,11 @@ import environment from "./environment";
 
 export function configure(aurelia: Aurelia) {
   aurelia.use
-    .standardConfiguration()
+    .basicConfiguration()
     .feature("dx")
     .feature("resources")
-    .feature("main");
+    .feature("main")
+    .feature("stack-router");
 
   if (environment.debug) {
     aurelia.use.developmentLogging();

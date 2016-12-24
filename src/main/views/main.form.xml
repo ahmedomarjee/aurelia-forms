@@ -1,0 +1,14 @@
+<form>
+  <content>
+    <tab>
+      <tab-pages>
+        <tab-page caption="Demo">
+          <nested-form file="./demo-form" />
+        </tab-page>
+        <tab-page caption="Demo">
+          <nested-form file="./form-test-form" />
+        </tab-page>
+      </tab-pages>
+    </tab>
+  </content>
+</form>

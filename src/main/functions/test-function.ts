@@ -1,4 +1,4 @@
-import {FormBase} from "../../framework/base/form-base";
+import {FormBase} from "../../forms/base/form-base";
 
 export class TestFunction {
   constructor(private form: FormBase, private namespace: string, private parameters: any) {

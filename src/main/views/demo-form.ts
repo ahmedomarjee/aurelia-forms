@@ -4,10 +4,10 @@ import {
 } from "aurelia-framework";
 import {
     FormBase
-} from "../../framework/base/form-base";
+} from "../../forms/base/form-base";
 import {
     WidgetCreatorService
-} from "../../framework/widget-services/widget-creator-service";
+} from "../../forms/widget-services/widget-creator-service";
 
 @autoinject
 export class DemoForm extends FormBase {
@@ -50,8 +50,8 @@ export class DemoForm extends FormBase {
                 "bindTo": "Mandator.Name"
             }],
             "optionsToolbar": {
-                "optionsName": "id2d9a358c0a454ac2a52dacb8395ccaceToolbarOptions",
-                "optionsNameFQ": "id2d9a358c0a454ac2a52dacb8395ccaceToolbarOptions"
+                "optionsName": "idee8e7e493ad94958b374e08f6c589d1dToolbarOptions",
+                "optionsNameFQ": "idee8e7e493ad94958b374e08f6c589d1dToolbarOptions"
             },
             "binding": {
                 "dataContext": "$m_1",
@@ -63,10 +63,10 @@ export class DemoForm extends FormBase {
             "edits": [],
             "filters": [],
             "commands": [],
-            "id": "id2d9a358c0a454ac2a52dacb8395ccace",
+            "id": "idee8e7e493ad94958b374e08f6c589d1d",
             "options": {
-                "optionsName": "id2d9a358c0a454ac2a52dacb8395ccaceOptions",
-                "optionsNameFQ": "id2d9a358c0a454ac2a52dacb8395ccaceOptions"
+                "optionsName": "idee8e7e493ad94958b374e08f6c589d1dOptions",
+                "optionsNameFQ": "idee8e7e493ad94958b374e08f6c589d1dOptions"
             }
         });
         this.widgetCreator.addDataGrid(this, {
@@ -77,8 +77,8 @@ export class DemoForm extends FormBase {
                 "sortOrder": "desc"
             }],
             "optionsToolbar": {
-                "optionsName": "idca253d25d4a643a29b692def4e5891d9ToolbarOptions",
-                "optionsNameFQ": "idca253d25d4a643a29b692def4e5891d9ToolbarOptions"
+                "optionsName": "id652863f48dcf411f846189137338aef7ToolbarOptions",
+                "optionsNameFQ": "id652863f48dcf411f846189137338aef7ToolbarOptions"
             },
             "binding": {
                 "dataContext": "$m_3",
@@ -88,10 +88,10 @@ export class DemoForm extends FormBase {
             "edits": [],
             "filters": [],
             "commands": [],
-            "id": "idca253d25d4a643a29b692def4e5891d9",
+            "id": "id652863f48dcf411f846189137338aef7",
             "options": {
-                "optionsName": "idca253d25d4a643a29b692def4e5891d9Options",
-                "optionsNameFQ": "idca253d25d4a643a29b692def4e5891d9Options"
+                "optionsName": "id652863f48dcf411f846189137338aef7Options",
+                "optionsNameFQ": "id652863f48dcf411f846189137338aef7Options"
             }
         });
     }
