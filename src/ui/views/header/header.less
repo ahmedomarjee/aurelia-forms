@@ -1,0 +1,17 @@
+@import "../../styles/variables.less";
+
+.t--header {
+  position: fixed;
+  top: 0;
+  left: @sidebarExpandedWidth;
+  right: 0;
+  height: @headerHeight;
+  z-index: 9;
+  background-color: lightgray;
+}
+
+.t--sidebar-collapsed {
+  .t--header {
+    left: @sidebarCollapsedWidth;
+  }
+}

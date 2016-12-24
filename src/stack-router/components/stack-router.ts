@@ -1,9 +1,7 @@
 import {
   autoinject,
   customElement,
-  Origin,
-  Container,
-  ViewEngine
+  computedFrom
 } from "aurelia-framework";
 import {
   EventAggregator
@@ -15,6 +13,9 @@ import {
   HistoryService
 } from "../services/history-service";
 import * as Interfaces from "../interfaces";
+import {
+  ViewItem
+} from "../classes/view-item";
 
 @autoinject
 export class StackRouter {
@@ -25,13 +26,10 @@ export class StackRouter {
   constructor(
     private history: HistoryService,
     private router: RouterService,
-    private eventAggregator: EventAggregator,
-    private viewEngine: ViewEngine
+    private eventAggregator: EventAggregator
   ) {
     this.registerNavigate();
   }
-
-  stack: IViewStack[] = [];
 
   created(owningView) {
     this.owningView = owningView;
@@ -62,29 +60,13 @@ export class StackRouter {
     });
   }
   private navigate(routeInfo: Interfaces.IRouteInfo) {
-    if (this.stack.length > 1 && this.stack[this.stack.length - 2].routeInfo.id  === routeInfo.id) {
-      this.stack.splice(this.stack.length - 1, 1);
-      this.stack[this.stack.length - 1].isCurrent = true;
-      
+    const stack = this.router.viewStack;
+
+    if (stack.length > 1 && stack[stack.length - 2].routeInfo.id  === routeInfo.id) {
+      this.router.removeLastViewItem();
       return;
-    } else if (this.stack.length > 0) {
-      this.stack[this.stack.length - 1].isCurrent = false;
-    }
+    } 
 
-    this.stack.push({
-      routeInfo: routeInfo,
-      title: routeInfo.route.title,
-      viewModel: routeInfo.route.viewModel,
-      model: routeInfo,
-      isCurrent: true
-    });
+    this.router.addViewItem(new ViewItem(routeInfo));
   }
-}
-
-interface IViewStack {
-  routeInfo: Interfaces.IRouteInfo,
-  title: string;
-  viewModel: any;
-  model: any;
-  isCurrent: boolean;
 }

@@ -1,6 +1,9 @@
 import {
   autoinject
 } from "aurelia-framework";
+import {
+  ViewItem
+} from "../classes/view-item";
 import * as Interfaces from "../interfaces";
 
 @autoinject
@@ -13,6 +16,17 @@ export class RouterService {
   { }
 
   navigationRoutes: Interfaces.INavigationRoute[];
+  viewStack: ViewItem[] = [];
+  currentViewItem: ViewItem;
+
+  addViewItem(viewItem: ViewItem) {
+    this.viewStack.push(viewItem);
+    this.setCurrentViewItem();
+  }
+  removeLastViewItem() {
+    this.viewStack.pop();
+    this.setCurrentViewItem();
+  }
 
   getRoute(url: string): Interfaces.IRouteInfo {
     for (const route of this.routes) {
@@ -45,7 +59,7 @@ export class RouterService {
 
     const getRoute = (routes: Interfaces.IRoute[]): Interfaces.IRoute => {
       for (const route of routes) {
-        if (route.route === this.fallbackRoute) {
+        if ((<string[]>route.route).some(r => r === this.fallbackRoute)) {
           return route;
         }
 
@@ -152,5 +166,17 @@ export class RouterService {
   }
   private returnTrue(): boolean {
     return true;
+  }
+  private setCurrentViewItem() {
+    if (this.viewStack.length === 0) {
+      this.currentViewItem = null;
+    } else {
+      this.currentViewItem = this.viewStack[this.viewStack.length - 1];
+      this.currentViewItem.isCurrent = true;
+
+      if (this.viewStack.length > 1) {
+        this.viewStack[this.viewStack.length - 2].isCurrent = false;
+      }
+    }
   }
 }

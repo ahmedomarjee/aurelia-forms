@@ -1,0 +1,14 @@
+<template>
+  <require from="./sidebar.css"></require>
+
+  <div class="t--sidebar">
+    <ul>
+      <li repeat.for="route of router.navigationRoutes">
+        <a href="#${route.route}">${route.title}</a>
+      </li>
+      <li>
+        <a href="#demo/1">Demo 1</a>
+      </li>
+    </ul>
+  </div>
+</template>

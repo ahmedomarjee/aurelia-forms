@@ -1,0 +1,19 @@
+@import "../../styles/variables.less";
+
+.t--content {
+  margin-top: @headerHeight;
+  margin-left: @sidebarExpandedWidth;
+}
+
+.t--sidebar-collapsed {
+  .t--content {
+    margin-left: @sidebarCollapsedWidth;
+  }
+}
+
+.t--view-current {
+  display: block;
+}
+.t--view-history {
+  display: none;
+}

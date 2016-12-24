@@ -1,0 +1,16 @@
+<template>
+  <require from="bootstrap/css/bootstrap.min.css"></require>
+  <require from="devextreme/css/dx.common.css"></require>
+  <require from="devextreme/css/dx.light.compact.css"></require>
+  <require from="./container.css"></require>
+  
+  <require from="../sidebar/sidebar"></require>
+  <require from="../header/header"></require>
+  <require from="../content/content"></require>
+
+  <div class.bind="className">
+    <sidebar></sidebar>
+    <header></header>
+    <content></content>
+  </div>
+</template>

@@ -1,5 +1,5 @@
 <template>
-  <div repeat.for="item of stack">
-    <compose view-model.bind="item.viewModel" model.bind="item.model" class.bind="item.isCurrent ? 't--view-is-current' : 't--view-is-history'"></compose>
+  <div repeat.for="item of router.viewStack">
+    <compose view-model.bind="item.viewModel" model.bind="item.model" class.bind="item.className"></compose>
   </div>
 </template>

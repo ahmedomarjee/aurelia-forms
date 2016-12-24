@@ -1,0 +1,17 @@
+@import "../../styles/variables.less";
+
+.t--sidebar {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 10;
+  background-color: darkgray;
+  width: @sidebarExpandedWidth;
+}
+
+.t--sidebar-collapsed {
+  .t--sidebar {
+    width: @sidebarCollapsedWidth;
+  }
+}

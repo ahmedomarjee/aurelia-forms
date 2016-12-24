@@ -1,21 +1,4 @@
 <template>
-  <require from="bootstrap/css/bootstrap.min.css"></require>
-  <require from="devextreme/css/dx.common.css"></require>
-  <require from="devextreme/css/dx.light.compact.css"></require>
-  <require from="./main/views/main-form"></require>
-
-  <div class="container-fluid">
-    <div class="row">
-      <ul>
-        <li repeat.for="route of router.navigationRoutes">
-          <a href="#${route.route}">${route.title}</a>
-        </li>
-        <li>
-          <a href="#demo/1">Demo 1</a>
-        </li>
-      </ul>
-
-      <stack-router></stack-router>
-    </div>
-  </div>
+  <require from="./ui/views/container/container"></require>
+  <container></container>
 </template>
