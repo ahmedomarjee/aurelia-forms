@@ -10,6 +10,10 @@ define('stack-router/interfaces/navigate-args',["require", "exports"], function 
     "use strict";
 });
 
+define('stack-router/interfaces/navigation-route',["require", "exports"], function (require, exports) {
+    "use strict";
+});
+
 define('stack-router/interfaces/index',["require", "exports"], function (require, exports) {
     "use strict";
 });
@@ -40,23 +44,67 @@ define('stack-router/services/router-service',["require", "exports", "aurelia-fr
             }
             return {
                 id: this.routeInfoId++,
-                route: this.fallbackRoute,
+                route: this.getFallbackRoute(),
                 parameters: {}
             };
         };
         RouterService.prototype.registerRoutes = function (routes, fallbackRoute) {
-            this.routes = routes;
+            this.routes = this.validateRoutes(routes);
             this.fallbackRoute = fallbackRoute;
-            this.navigationRoutes = routes
-                .filter(function (r) { return r.isNavigation; });
+            this.navigationRoutes = this.getNavigationRoutes(routes);
+        };
+        RouterService.prototype.getFallbackRoute = function () {
+            var _this = this;
+            if (!this.fallbackRoute) {
+                return null;
+            }
+            var getRoute = function (routes) {
+                for (var _i = 0, routes_1 = routes; _i < routes_1.length; _i++) {
+                    var route = routes_1[_i];
+                    if (route.route === _this.fallbackRoute) {
+                        return route;
+                    }
+                    for (var _a = 0, _b = route.children; _a < _b.length; _a++) {
+                        var child = _b[_a];
+                        var route_1 = getRoute(child.children);
+                        if (route_1) {
+                            return route_1;
+                        }
+                    }
+                }
+                return null;
+            };
+            return getRoute(this.routes);
+        };
+        RouterService.prototype.getNavigationRoutes = function (routes) {
+            var result = [];
+            for (var _i = 0, routes_2 = routes; _i < routes_2.length; _i++) {
+                var route = routes_2[_i];
+                if (!route.isNavigation) {
+                    continue;
+                }
+                if (!route.canActivate()) {
+                    continue;
+                }
+                var navigationRoute = {
+                    title: route.title,
+                    route: route.route[0],
+                    children: this.getNavigationRoutes(route.children)
+                };
+                result.push(navigationRoute);
+            }
+            return result;
         };
         RouterService.prototype.isRoute = function (route, url) {
             if (Array.isArray(route.route)) {
                 for (var _i = 0, _a = route.route; _i < _a.length; _i++) {
                     var part = _a[_i];
-                    var result = this.isRouteEx(part, url);
+                    var result = this.isRoutePattern(part, url);
                     if (result == void (0)) {
-                        return null;
+                        continue;
+                    }
+                    else if (!route.canActivate()) {
+                        continue;
                     }
                     else {
                         return {
@@ -69,20 +117,10 @@ define('stack-router/services/router-service',["require", "exports", "aurelia-fr
                 return null;
             }
             else {
-                var result = this.isRouteEx(route.route, url);
-                if (result == void (0)) {
-                    return null;
-                }
-                else {
-                    return {
-                        id: this.routeInfoId++,
-                        route: route,
-                        parameters: result
-                    };
-                }
+                throw new Error();
             }
         };
-        RouterService.prototype.isRouteEx = function (route, url) {
+        RouterService.prototype.isRoutePattern = function (route, url) {
             var routeParts = route.split("/");
             var urlParts = url.split("/");
             var parameters = {};
@@ -98,6 +136,29 @@ define('stack-router/services/router-service',["require", "exports", "aurelia-fr
                 }
             }
             return parameters;
+        };
+        RouterService.prototype.validateRoutes = function (routes) {
+            for (var _i = 0, routes_3 = routes; _i < routes_3.length; _i++) {
+                var route = routes_3[_i];
+                if (route.route == void (0)) {
+                    route.route = "";
+                }
+                if (typeof route.route === "string") {
+                    route.route = [route.route];
+                }
+                if (route.canActivate == void (0)) {
+                    route.canActivate = this.returnTrue;
+                }
+                route.children = route.children || [];
+                for (var _a = 0, _b = route.children; _a < _b.length; _a++) {
+                    var child = _b[_a];
+                    this.validateRoutes(child.children);
+                }
+            }
+            return routes;
+        };
+        RouterService.prototype.returnTrue = function () {
+            return true;
         };
         return RouterService;
     }());
@@ -140,11 +201,7 @@ define('app',["require", "exports", "./stack-router/services/router-service", "a
                     route: "test",
                     isNavigation: true
                 }
-            ], {
-                viewModel: "main/views/demo-form",
-                title: "Demo",
-                route: null
-            });
+            ], "demo");
         }
         return App;
     }());
@@ -203,13 +260,6 @@ define('dx/index',["require", "exports"], function (require, exports) {
     function configure(config) {
         config
             .globalResources("./elements/dx-widget");
-    }
-    exports.configure = configure;
-});
-
-define('main/index',["require", "exports"], function (require, exports) {
-    "use strict";
-    function configure(config) {
     }
     exports.configure = configure;
 });
@@ -386,6 +436,13 @@ define('forms/interfaces/index',["require", "exports"], function (require, expor
 
 define('forms/index',["require", "exports"], function (require, exports) {
     "use strict";
+});
+
+define('main/index',["require", "exports"], function (require, exports) {
+    "use strict";
+    function configure(config) {
+    }
+    exports.configure = configure;
 });
 
 define('resources/index',["require", "exports"], function (require, exports) {
@@ -720,6 +777,19 @@ define('dx/elements/dx-widget',["require", "exports", "aurelia-framework", "../s
             deep_observer_service_1.DeepObserverService])
     ], DxWidget);
     exports.DxWidget = DxWidget;
+});
+
+define('forms/base/command-server-data-instance',["require", "exports"], function (require, exports) {
+    "use strict";
+    var CommandServerDataInstance = (function () {
+        function CommandServerDataInstance() {
+        }
+        CommandServerDataInstance.prototype.add = function (id, data) {
+            this[id] = data;
+        };
+        return CommandServerDataInstance;
+    }());
+    exports.CommandServerDataInstance = CommandServerDataInstance;
 });
 
 define('forms/services/object-info-service',["require", "exports"], function (require, exports) {
@@ -1120,19 +1190,6 @@ define('forms/base/variable-instance',["require", "exports"], function (require,
     exports.VariableInstance = VariableInstance;
 });
 
-define('forms/base/command-server-data-instance',["require", "exports"], function (require, exports) {
-    "use strict";
-    var CommandServerDataInstance = (function () {
-        function CommandServerDataInstance() {
-        }
-        CommandServerDataInstance.prototype.add = function (id, data) {
-            this[id] = data;
-        };
-        return CommandServerDataInstance;
-    }());
-    exports.CommandServerDataInstance = CommandServerDataInstance;
-});
-
 define('forms/base/form-base',["require", "exports", "aurelia-framework", "./model-instance", "./function-instance", "./variable-instance", "./command-server-data-instance"], function (require, exports, aurelia_framework_1, model_instance_1, function_instance_1, variable_instance_1, command_server_data_instance_1) {
     "use strict";
     var FormBase = (function () {
@@ -1191,49 +1248,6 @@ define('forms/base/form-base',["require", "exports", "aurelia-framework", "./mod
     exports.FormBase = FormBase;
 });
 
-define('main/functions/test-function',["require", "exports"], function (require, exports) {
-    "use strict";
-    var TestFunction = (function () {
-        function TestFunction(form, namespace, parameters) {
-            this.form = form;
-            this.namespace = namespace;
-            this.parameters = parameters;
-            this.dataList = [
-                {
-                    a: "A",
-                    b: "B"
-                },
-                {
-                    a: "A",
-                    b: "B"
-                },
-                {
-                    a: "A",
-                    b: "B"
-                }
-            ];
-            this.dummyText = {
-                placeholder: "This is a dummy"
-            };
-            this.giveItToMe = {
-                id: "giveItToMe",
-                title: "Test with Func",
-                execute: function () {
-                    alert('Hallo');
-                }
-            };
-            this.icon = "fa-book";
-            this.downloadUrl = "http://www.tip.co.at";
-            this.imageUrl = "https://upload.wikimedia.org/wikipedia/commons/e/ec/Blume_mit_Schmetterling_und_Biene_1uf.JPG";
-        }
-        TestFunction.prototype.dummyRowClickFunc = function (e) {
-            alert("rowClick Data: " + e.data.a);
-        };
-        return TestFunction;
-    }());
-    exports.TestFunction = TestFunction;
-});
-
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -1271,6 +1285,125 @@ define('forms/widget-services/base-widget-creator-service',["require", "exports"
         __metadata("design:paramtypes", [])
     ], BaseWidgetCreatorService);
     exports.BaseWidgetCreatorService = BaseWidgetCreatorService;
+});
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+define('forms/widget-services/data-grid-widget-creator-service',["require", "exports", "./base-widget-creator-service", "../enums/selection-mode-enum", "aurelia-framework"], function (require, exports, base_widget_creator_service_1, selection_mode_enum_1, aurelia_framework_1) {
+    "use strict";
+    var DataGridWidgetCreatorService = (function () {
+        function DataGridWidgetCreatorService(baseWidgetCreator) {
+            this.baseWidgetCreator = baseWidgetCreator;
+        }
+        DataGridWidgetCreatorService.prototype.addDataGrid = function (form, options) {
+            var dataGridOptions = this.baseWidgetCreator.createWidgetOptions(form, options);
+            if (options.dataModel) {
+                var model_1 = form.model.getInfo(options.dataModel);
+                var dataSource_1 = form.model.createDataSource(model_1);
+                dataGridOptions.dataSource = dataSource_1;
+                dataGridOptions.remoteOperations = {
+                    filtering: true,
+                    paging: true,
+                    sorting: true
+                };
+                form.model.onLoadRequired.register(function (e) {
+                    if (e.model == model_1) {
+                        dataSource_1.reload();
+                    }
+                    return Promise.resolve();
+                });
+            }
+            else if (options.binding.bindTo) {
+                dataGridOptions.bindingOptions["dataSource"] = options.binding.bindToFQ;
+            }
+            if (options.columns) {
+                dataGridOptions.columns = options.columns.map(function (col) {
+                    var column = {};
+                    if (col.caption) {
+                        column.caption = col.caption;
+                    }
+                    if (col.bindTo) {
+                        column.dataField = col.bindTo;
+                    }
+                    if (col.sortIndex != void (0) && col.sortOrder != void (0)) {
+                        column.sortIndex = col.sortIndex;
+                        column.sortOrder = col.sortOrder;
+                    }
+                    if (col.width) {
+                        column.width = col.width;
+                    }
+                    return column;
+                });
+            }
+            if (options.showFilterRow) {
+                dataGridOptions.filterRow = {
+                    visible: true
+                };
+            }
+            if (options.rowScriptTemplateId) {
+                dataGridOptions.rowTemplate = options.rowScriptTemplateId;
+            }
+            var clickActions = [];
+            if (options.onItemClick) {
+                clickActions.push(function (e) {
+                    form.evaluateExpression(options.onItemClick, { e: e });
+                });
+            }
+            if (options.editDataContext) {
+                clickActions.push(function (e) {
+                    form.model.data[options.editDataContext] = e.data;
+                });
+            }
+            if (clickActions.length > 0) {
+                dataGridOptions.onRowClick = function (e) {
+                    clickActions.forEach(function (item) {
+                        item(e);
+                    });
+                };
+            }
+            if (options.selectionMode) {
+                dataGridOptions.selection = {
+                    mode: this.getSelectionMode(options.selectionMode)
+                };
+            }
+            if (options.showPagerInfo) {
+                dataGridOptions.pager = {
+                    visible: true,
+                    showInfo: true
+                };
+            }
+            if (options.pageSize) {
+                dataGridOptions.paging = {
+                    pageSize: options.pageSize,
+                    enabled: true
+                };
+            }
+            return dataGridOptions;
+        };
+        DataGridWidgetCreatorService.prototype.getSelectionMode = function (selectionMode) {
+            switch (selectionMode) {
+                case selection_mode_enum_1.SelectionModeEnum.Multiple:
+                    return "multiple";
+                case selection_mode_enum_1.SelectionModeEnum.Single:
+                    return "single";
+                default:
+                    return "none";
+            }
+        };
+        return DataGridWidgetCreatorService;
+    }());
+    DataGridWidgetCreatorService = __decorate([
+        aurelia_framework_1.autoinject,
+        __metadata("design:paramtypes", [base_widget_creator_service_1.BaseWidgetCreatorService])
+    ], DataGridWidgetCreatorService);
+    exports.DataGridWidgetCreatorService = DataGridWidgetCreatorService;
 });
 
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -1481,125 +1614,6 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-define('forms/widget-services/data-grid-widget-creator-service',["require", "exports", "./base-widget-creator-service", "../enums/selection-mode-enum", "aurelia-framework"], function (require, exports, base_widget_creator_service_1, selection_mode_enum_1, aurelia_framework_1) {
-    "use strict";
-    var DataGridWidgetCreatorService = (function () {
-        function DataGridWidgetCreatorService(baseWidgetCreator) {
-            this.baseWidgetCreator = baseWidgetCreator;
-        }
-        DataGridWidgetCreatorService.prototype.addDataGrid = function (form, options) {
-            var dataGridOptions = this.baseWidgetCreator.createWidgetOptions(form, options);
-            if (options.dataModel) {
-                var model_1 = form.model.getInfo(options.dataModel);
-                var dataSource_1 = form.model.createDataSource(model_1);
-                dataGridOptions.dataSource = dataSource_1;
-                dataGridOptions.remoteOperations = {
-                    filtering: true,
-                    paging: true,
-                    sorting: true
-                };
-                form.model.onLoadRequired.register(function (e) {
-                    if (e.model == model_1) {
-                        dataSource_1.reload();
-                    }
-                    return Promise.resolve();
-                });
-            }
-            else if (options.binding.bindTo) {
-                dataGridOptions.bindingOptions["dataSource"] = options.binding.bindToFQ;
-            }
-            if (options.columns) {
-                dataGridOptions.columns = options.columns.map(function (col) {
-                    var column = {};
-                    if (col.caption) {
-                        column.caption = col.caption;
-                    }
-                    if (col.bindTo) {
-                        column.dataField = col.bindTo;
-                    }
-                    if (col.sortIndex != void (0) && col.sortOrder != void (0)) {
-                        column.sortIndex = col.sortIndex;
-                        column.sortOrder = col.sortOrder;
-                    }
-                    if (col.width) {
-                        column.width = col.width;
-                    }
-                    return column;
-                });
-            }
-            if (options.showFilterRow) {
-                dataGridOptions.filterRow = {
-                    visible: true
-                };
-            }
-            if (options.rowScriptTemplateId) {
-                dataGridOptions.rowTemplate = options.rowScriptTemplateId;
-            }
-            var clickActions = [];
-            if (options.onItemClick) {
-                clickActions.push(function (e) {
-                    form.evaluateExpression(options.onItemClick, { e: e });
-                });
-            }
-            if (options.editDataContext) {
-                clickActions.push(function (e) {
-                    form.model.data[options.editDataContext] = e.data;
-                });
-            }
-            if (clickActions.length > 0) {
-                dataGridOptions.onRowClick = function (e) {
-                    clickActions.forEach(function (item) {
-                        item(e);
-                    });
-                };
-            }
-            if (options.selectionMode) {
-                dataGridOptions.selection = {
-                    mode: this.getSelectionMode(options.selectionMode)
-                };
-            }
-            if (options.showPagerInfo) {
-                dataGridOptions.pager = {
-                    visible: true,
-                    showInfo: true
-                };
-            }
-            if (options.pageSize) {
-                dataGridOptions.paging = {
-                    pageSize: options.pageSize,
-                    enabled: true
-                };
-            }
-            return dataGridOptions;
-        };
-        DataGridWidgetCreatorService.prototype.getSelectionMode = function (selectionMode) {
-            switch (selectionMode) {
-                case selection_mode_enum_1.SelectionModeEnum.Multiple:
-                    return "multiple";
-                case selection_mode_enum_1.SelectionModeEnum.Single:
-                    return "single";
-                default:
-                    return "none";
-            }
-        };
-        return DataGridWidgetCreatorService;
-    }());
-    DataGridWidgetCreatorService = __decorate([
-        aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [base_widget_creator_service_1.BaseWidgetCreatorService])
-    ], DataGridWidgetCreatorService);
-    exports.DataGridWidgetCreatorService = DataGridWidgetCreatorService;
-});
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
 define('forms/widget-services/widget-creator-service',["require", "exports", "./simple-widget-creator-service", "./data-grid-widget-creator-service", "aurelia-framework"], function (require, exports, simple_widget_creator_service_1, data_grid_widget_creator_service_1, aurelia_framework_1) {
     "use strict";
     var WidgetCreatorService = (function () {
@@ -1678,6 +1692,57 @@ define('forms/widget-services/widget-creator-service',["require", "exports", "./
             data_grid_widget_creator_service_1.DataGridWidgetCreatorService])
     ], WidgetCreatorService);
     exports.WidgetCreatorService = WidgetCreatorService;
+});
+
+define('forms/widget-services/index',["require", "exports", "./widget-creator-service"], function (require, exports, widget_creator_service_1) {
+    "use strict";
+    function __export(m) {
+        for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+    }
+    __export(widget_creator_service_1);
+});
+
+define('main/functions/test-function',["require", "exports"], function (require, exports) {
+    "use strict";
+    var TestFunction = (function () {
+        function TestFunction(form, namespace, parameters) {
+            this.form = form;
+            this.namespace = namespace;
+            this.parameters = parameters;
+            this.dataList = [
+                {
+                    a: "A",
+                    b: "B"
+                },
+                {
+                    a: "A",
+                    b: "B"
+                },
+                {
+                    a: "A",
+                    b: "B"
+                }
+            ];
+            this.dummyText = {
+                placeholder: "This is a dummy"
+            };
+            this.giveItToMe = {
+                id: "giveItToMe",
+                title: "Test with Func",
+                execute: function () {
+                    alert('Hallo');
+                }
+            };
+            this.icon = "fa-book";
+            this.downloadUrl = "http://www.tip.co.at";
+            this.imageUrl = "https://upload.wikimedia.org/wikipedia/commons/e/ec/Blume_mit_Schmetterling_und_Biene_1uf.JPG";
+        }
+        TestFunction.prototype.dummyRowClickFunc = function (e) {
+            alert("rowClick Data: " + e.data.a);
+        };
+        return TestFunction;
+    }());
+    exports.TestFunction = TestFunction;
 });
 
 var __extends = (this && this.__extends) || function (d, b) {
@@ -2144,14 +2209,6 @@ define('main/views/main-form',["require", "exports", "aurelia-framework", "../..
     exports.MainForm = MainForm;
 });
 
-define('forms/widget-services/index',["require", "exports", "./widget-creator-service"], function (require, exports, widget_creator_service_1) {
-    "use strict";
-    function __export(m) {
-        for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-    }
-    __export(widget_creator_service_1);
-});
-
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -2184,21 +2241,19 @@ define('stack-router/services/history-service',["require", "exports", "aurelia-f
         HistoryService.prototype.register = function () {
             var _this = this;
             window.addEventListener("popstate", function (e) {
-                var routeInfo = e.state && e.state.routeInfo
-                    ? e.state.routeInfo
-                    : null;
-                _this.navigate(routeInfo);
+                _this.navigate(e.state);
             });
         };
-        HistoryService.prototype.navigate = function (routeInfo) {
+        HistoryService.prototype.navigate = function (historyState) {
             var args = {
                 url: this.getUrl(),
-                routeInfo: routeInfo
+                historyState: historyState
             };
             this.eventAggregator.publish(this.NavigateEventName, args);
-            if (!routeInfo && args.routeInfo) {
+            if (!historyState && args.routeInfo) {
                 history.replaceState({
-                    routeInfo: args.routeInfo,
+                    id: args.routeInfo.id,
+                    url: args.url
                 }, args.routeInfo.route.title);
             }
         };
@@ -2245,9 +2300,12 @@ define('stack-router/components/stack-router',["require", "exports", "aurelia-fr
         StackRouter.prototype.registerNavigate = function () {
             var _this = this;
             this.eventAggregator.subscribe(this.history.NavigateEventName, function (e) {
-                var routeInfo = e.routeInfo || _this.router.getRoute(e.url);
+                var routeInfo = _this.router.getRoute(e.url);
                 if (routeInfo == void (0)) {
                     return;
+                }
+                if (e.historyState) {
+                    routeInfo.id = e.historyState.id;
                 }
                 e.routeInfo = routeInfo;
                 _this.navigate(routeInfo);
@@ -2280,6 +2338,10 @@ define('stack-router/components/stack-router',["require", "exports", "aurelia-fr
             aurelia_framework_1.ViewEngine])
     ], StackRouter);
     exports.StackRouter = StackRouter;
+});
+
+define('stack-router/interfaces/history-state',["require", "exports"], function (require, exports) {
+    "use strict";
 });
 
 define('text!app.html', ['module'], function(module) { module.exports = "<template>\r\n  <require from=\"bootstrap/css/bootstrap.min.css\"></require>\r\n  <require from=\"devextreme/css/dx.common.css\"></require>\r\n  <require from=\"devextreme/css/dx.light.compact.css\"></require>\r\n  <require from=\"./main/views/main-form\"></require>\r\n\r\n  <div class=\"container-fluid\">\r\n    <div class=\"row\">\r\n      <ul>\r\n        <li repeat.for=\"route of router.navigationRoutes\">\r\n          <a href=\"#${route.route}\">${route.title}</a>\r\n        </li>\r\n        <li>\r\n          <a href=\"#demo/1\">Demo 1</a>\r\n        </li>\r\n      </ul>\r\n\r\n      <stack-router></stack-router>\r\n    </div>\r\n  </div>\r\n</template>\r\n"; });

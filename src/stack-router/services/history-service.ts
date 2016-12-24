@@ -34,24 +34,21 @@ export class HistoryService {
 
 	private register() {
 		window.addEventListener("popstate", (e) => {
-			const routeInfo = e.state && e.state.routeInfo 
-				? e.state.routeInfo 
-				: null;
-
-			this.navigate(routeInfo);
+			this.navigate(e.state);
 		});
 	}
-	private navigate(routeInfo: Interfaces.IRouteInfo) {
+	private navigate(historyState: Interfaces.IHistoryState) {
 		const args: Interfaces.INavigateArgs = {
 			url: this.getUrl(),
-			routeInfo: routeInfo
+			historyState: historyState
 		}
 
 		this.eventAggregator.publish(this.NavigateEventName, args);
 
-		if (!routeInfo && args.routeInfo) {
-			history.replaceState({
-				routeInfo: args.routeInfo,
+		if (!historyState && args.routeInfo) {
+			history.replaceState(<Interfaces.IHistoryState>{
+				id: args.routeInfo.id,
+				url: args.url
 			},
 			args.routeInfo.route.title)
 		}

@@ -48,9 +48,13 @@ export class StackRouter {
 
   private registerNavigate() {
     this.eventAggregator.subscribe(this.history.NavigateEventName, (e: Interfaces.INavigateArgs) => {
-      const routeInfo = e.routeInfo || this.router.getRoute(e.url);
+      const routeInfo = this.router.getRoute(e.url);
       if (routeInfo == void (0)) {
         return;
+      }
+
+      if (e.historyState) {
+        routeInfo.id = e.historyState.id;
       }
 
       e.routeInfo = routeInfo;

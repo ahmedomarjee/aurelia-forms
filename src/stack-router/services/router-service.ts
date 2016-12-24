@@ -6,13 +6,13 @@ import * as Interfaces from "../interfaces";
 @autoinject
 export class RouterService {
   private routes: Interfaces.IRoute[];
-  private fallbackRoute: Interfaces.IRoute;
+  private fallbackRoute: string;
   private routeInfoId = 0;
 
   constructor()
   { }
 
-  navigationRoutes: Interfaces.IRoute[];
+  navigationRoutes: Interfaces.INavigationRoute[];
 
   getRoute(url: string): Interfaces.IRouteInfo {
     for (const route of this.routes) {
@@ -27,25 +27,72 @@ export class RouterService {
 
     return {
       id: this.routeInfoId++,
-      route: this.fallbackRoute,
+      route: this.getFallbackRoute(),
       parameters: {}
     };
   }
-  registerRoutes(routes: Interfaces.IRoute[], fallbackRoute: Interfaces.IRoute) {
-    this.routes = routes;
+  registerRoutes(routes: Interfaces.IRoute[], fallbackRoute: string) {
+    this.routes = this.validateRoutes(routes);
     this.fallbackRoute = fallbackRoute;
 
-    this.navigationRoutes = routes
-      .filter(r => r.isNavigation);
+    this.navigationRoutes = this.getNavigationRoutes(routes);
   }
 
+  private getFallbackRoute(): Interfaces.IRoute {
+    if (!this.fallbackRoute) {
+      return null;
+    }
+
+    const getRoute = (routes: Interfaces.IRoute[]): Interfaces.IRoute => {
+      for (const route of routes) {
+        if (route.route === this.fallbackRoute) {
+          return route;
+        }
+
+        for (const child of route.children) {
+          const route = getRoute(child.children);
+
+          if (route) {
+            return route;
+          }
+        }
+      }
+
+      return null;
+    };
+
+    return getRoute(this.routes);
+  }
+  private getNavigationRoutes(routes: Interfaces.IRoute[]): Interfaces.INavigationRoute[] {
+    const result: Interfaces.INavigationRoute[] = [];
+
+    for (const route of routes) {
+      if (!route.isNavigation) {
+        continue;
+      }
+      if (!route.canActivate()) {
+        continue;
+      }
+
+      const navigationRoute ={
+        title: route.title,
+        route: route.route[0],
+        children: this.getNavigationRoutes(route.children)
+      };
+      result.push(navigationRoute);
+    }
+
+    return result;
+  }
   private isRoute(route: Interfaces.IRoute, url: string): Interfaces.IRouteInfo {
     if (Array.isArray(route.route)) {
       for (const part of route.route) {
-        const result = this.isRouteEx(part, url);
+        const result = this.isRoutePattern(part, url);
 
         if (result == void (0)) {
-          return null;
+          continue;
+        } else if (!route.canActivate()) {
+          continue;
         } else {
           return {
             id: this.routeInfoId++,
@@ -57,20 +104,10 @@ export class RouterService {
 
       return null;
     } else {
-      const result = this.isRouteEx(route.route, url);
-
-      if (result == void (0)) {
-        return null;
-      } else {
-        return {
-          id: this.routeInfoId++,
-          route: route,
-          parameters: result
-        };
-      }
+      throw new Error()
     }
   }
-  private isRouteEx(route: string, url: string): any {
+  private isRoutePattern(route: string, url: string): any {
     const routeParts = route.split("/");
     const urlParts = url.split("/");
     const parameters: any = {};
@@ -89,5 +126,31 @@ export class RouterService {
     }
 
     return parameters;
+  }
+  private validateRoutes(routes: Interfaces.IRoute[]): Interfaces.IRoute[] {
+    for (const route of routes) {
+      if (route.route == void(0)) {
+        route.route = "";
+      }
+
+      if (typeof route.route === "string") {
+        route.route = [route.route];
+      }
+
+      if (route.canActivate == void(0)) {
+        route.canActivate = this.returnTrue;
+      }
+
+      route.children = route.children || [];
+
+      for (const child of route.children) {
+        this.validateRoutes(child.children);
+      }
+    }
+
+    return routes;
+  }
+  private returnTrue(): boolean {
+    return true;
   }
 }

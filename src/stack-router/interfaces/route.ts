@@ -3,4 +3,8 @@ export interface IRoute {
   title: string;
   viewModel: string;
   isNavigation?: boolean;
+
+  children?: IRoute[];
+
+  canActivate?(): boolean;
 }

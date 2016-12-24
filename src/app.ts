@@ -29,10 +29,6 @@ export class App {
         isNavigation: true
       }
     ],
-    {
-      viewModel: "main/views/demo-form",
-      title: "Demo",
-      route: null
-    })
+    "demo")
   }
 }
