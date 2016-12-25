@@ -5,19 +5,22 @@ import {
 import {
 	EventAggregator
 } from "aurelia-event-aggregator";
+import {
+	RouterService
+} from "./router-service";
 import * as Interfaces from "../interfaces";
 
 @autoinject
 export class HistoryService {
+	private isActive = false;
+
 	constructor(
 		private eventAggregator: EventAggregator,
-		private taskQueue: TaskQueue
+		private taskQueue: TaskQueue,
+		private router: RouterService
 	) {
 		this.register();
 	}
-
-	readonly NavigateEventName = "HistoryService:Navigate";
-	readonly GoBackEventName = "HistoryService:GoBack";
 
 	getUrl(): string {
 		let hash = location.hash;
@@ -29,28 +32,51 @@ export class HistoryService {
 		return hash.substr(1);
 	}
 	navigateCurrent() {
-		this.navigate(null);
-	}
-
-	private register() {
-		window.addEventListener("popstate", (e) => {
-			this.navigate(e.state);
+		this.guardedNavigate(() => {
+			this.navigate({
+				url: this.getUrl()
+			});
 		});
 	}
-	private navigate(historyState: Interfaces.IHistoryState) {
-		const args: Interfaces.INavigateArgs = {
-			url: this.getUrl(),
-			historyState: historyState
+	navigateByCode(url: string, clearStack: boolean) {
+		this.guardedNavigate(() => {
+			window.location.assign(url);
+
+			this.navigate({
+				url: url,
+				clearStack: clearStack
+			});
+		});
+	}
+
+	private guardedNavigate(action: {(): void}) {
+		if (this.isActive) {
+			return;
 		}
 
-		this.eventAggregator.publish(this.NavigateEventName, args);
+		this.isActive = true;
+		action();
+		this.isActive = false;
+	}
+	private register() {
+		window.addEventListener("popstate", (e) => {
+			this.guardedNavigate(() => {
+				this.navigate({
+					historyState: e.state,
+					url: this.getUrl()
+				});
+			});
+		});
+	}
+	private navigate(navigationArgs: Interfaces.INavigationArgs) {
+		this.router.navigate(navigationArgs);
 
-		if (!historyState && args.routeInfo) {
+		if (!navigationArgs.historyState && navigationArgs.routeInfo) {
 			history.replaceState(<Interfaces.IHistoryState>{
-				id: args.routeInfo.id,
-				url: args.url
+				id: navigationArgs.routeInfo.id,
+				url: navigationArgs.url
 			},
-			args.routeInfo.route.title)
+			navigationArgs.routeInfo.route.title)
 		}
 	}
 }

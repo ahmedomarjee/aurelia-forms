@@ -1,5 +1,6 @@
 import {
-  autoinject
+  autoinject,
+  computedFrom
 } from "aurelia-framework";
 import {
   LayoutService
@@ -14,6 +15,15 @@ export class Sidebar {
     private layout: LayoutService,
     private router: RouterService
   ) { }
+
+  @computedFrom("layout.isSidebarCollapsed")
+  get headerIcon(): string {
+    if (this.layout.isSidebarCollapsed) {
+      return "bars";
+    } else {
+      return "arrow-circle-left"
+    }
+  }
 
   onHeaderClicked() {
     this.layout.isSidebarCollapsed = !this.layout.isSidebarCollapsed;

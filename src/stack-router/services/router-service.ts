@@ -19,31 +19,28 @@ export class RouterService {
   viewStack: ViewItem[] = [];
   currentViewItem: ViewItem;
 
-  addViewItem(viewItem: ViewItem) {
-    this.viewStack.push(viewItem);
-    this.setCurrentViewItem();
-  }
-  removeLastViewItem() {
-    this.viewStack.pop();
-    this.setCurrentViewItem();
-  }
-
-  getRoute(url: string): Interfaces.IRouteInfo {
-    for (const route of this.routes) {
-      const routeInfo = this.isRoute(route, url);
-
-      if (routeInfo == void (0)) {
-        continue;
-      }
-
-      return routeInfo;
+  navigate(navigationArgs: Interfaces.INavigationArgs) {
+    const routeInfo = this.getRoute(navigationArgs.url);
+    if (routeInfo == void (0)) {
+      return;
     }
 
-    return {
-      id: this.routeInfoId++,
-      route: this.getFallbackRoute(),
-      parameters: {}
-    };
+    Object.assign(routeInfo.parameters, this.getParameters(navigationArgs.url));
+
+    if (navigationArgs.historyState) {
+      routeInfo.id = navigationArgs.historyState.id;
+    }
+
+    navigationArgs.routeInfo = routeInfo;
+
+    if (this.viewStack.length > 1 && this.viewStack[this.viewStack.length - 2].routeInfo.id === routeInfo.id) {
+      this.removeLastViewItem();
+      return;
+    } else if (navigationArgs.clearStack) {
+      this.viewStack.splice(0, this.viewStack.length);
+    }
+
+    this.addViewItem(new ViewItem(routeInfo));
   }
   registerRoutes(routes: Interfaces.IRoute[], fallbackRoute: string) {
     this.routes = this.validateRoutes(routes);
@@ -52,6 +49,14 @@ export class RouterService {
     this.navigationRoutes = this.getNavigationRoutes(routes);
   }
 
+  private addViewItem(viewItem: ViewItem) {
+    this.viewStack.push(viewItem);
+    this.setCurrentViewItem();
+  }
+  private removeLastViewItem() {
+    this.viewStack.pop();
+    this.setCurrentViewItem();
+  }
   private getFallbackRoute(): Interfaces.IRoute {
     if (!this.fallbackRoute) {
       return null;
@@ -99,6 +104,51 @@ export class RouterService {
 
     return result;
   }
+  private getParameters(url: string): any {
+    const result = {};
+
+    const indexQuestionMark = url.indexOf("?");
+    if (indexQuestionMark < 0) {
+      return result;
+    }
+
+    const parameterString = url.substr(indexQuestionMark + 1);
+    const parameters = parameterString.split("&");
+
+    for (const parameter of parameters) {
+      const parts = parameter.split("=");
+      
+      if (parts.length == 1) {
+        result[parts[0]] = true;
+      } else {
+        result[parts[0]] = parts[1];
+      }
+    }
+
+    return result;
+  }
+  private getRoute(url: string): Interfaces.IRouteInfo {
+    const indexQuestionMark = url.indexOf("?");
+    if (indexQuestionMark >= 0) {
+      url = url.substr(0, indexQuestionMark);
+    }
+
+    for (const route of this.routes) {
+      const routeInfo = this.isRoute(route, url);
+
+      if (routeInfo == void (0)) {
+        continue;
+      }
+
+      return routeInfo;
+    }
+
+    return {
+      id: this.routeInfoId++,
+      route: this.getFallbackRoute(),
+      parameters: {}
+    };
+  }
   private isRoute(route: Interfaces.IRoute, url: string): Interfaces.IRouteInfo {
     if (Array.isArray(route.route)) {
       for (const part of route.route) {
@@ -144,7 +194,7 @@ export class RouterService {
   }
   private validateRoutes(routes: Interfaces.IRoute[]): Interfaces.IRoute[] {
     for (const route of routes) {
-      if (route.route == void(0)) {
+      if (route.route == void (0)) {
         route.route = "";
       }
 
@@ -152,7 +202,7 @@ export class RouterService {
         route.route = [route.route];
       }
 
-      if (route.canActivate == void(0)) {
+      if (route.canActivate == void (0)) {
         route.canActivate = this.returnTrue;
       }
 

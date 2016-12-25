@@ -6,7 +6,7 @@
       Navigation
     </div>
     <div class="t--sidebar-header-icon">
-      <i class="fa fa-home"></i>
+      <i class="fa fa-${headerIcon}"></i>
     </div>
   </div>
 
@@ -14,7 +14,7 @@
     <li
       class="t--sidebar-item" 
       repeat.for="route of router.navigationRoutes">
-      <a href="#${route.route}">
+      <a href="#${route.route}" stack-router-link="clear-stack.bind: true">
         <span class="t--sidebar-item-title">
           ${route.title}
         </span>
