@@ -56,7 +56,7 @@ export class CustomEvent<T extends ICustomEventArgs> {
 
   private async fireQueue() {
     const argsQueue = this.argsQueue.slice(0);
-    this.argsQueue.length = 0;
+    this.argsQueue.splice(0, this.argsQueue.length);
 
     argsQueue.forEach(args => {
       this.taskQueue.queueTask(() => {

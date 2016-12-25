@@ -1034,7 +1034,7 @@ define('forms/base/custom-event',["require", "exports", "aurelia-framework", "..
                 var argsQueue;
                 return __generator(this, function (_a) {
                     argsQueue = this.argsQueue.slice(0);
-                    this.argsQueue.length = 0;
+                    this.argsQueue.splice(0, this.argsQueue.length);
                     argsQueue.forEach(function (args) {
                         _this.taskQueue.queueTask(function () {
                             return Promise.all(_this.delegates.map(function (item) { return item(args); }));
@@ -2338,8 +2338,8 @@ define('stack-router/services/history-service',["require", "exports", "aurelia-f
             this.isActive = false;
             this.register();
         }
-        HistoryService.prototype.getUrl = function () {
-            var hash = location.hash;
+        HistoryService.prototype.getUrl = function (url) {
+            var hash = url || location.hash;
             if (!hash) {
                 return "";
             }
@@ -2358,7 +2358,7 @@ define('stack-router/services/history-service',["require", "exports", "aurelia-f
             this.guardedNavigate(function () {
                 window.location.assign(url);
                 _this.navigate({
-                    url: url,
+                    url: _this.getUrl(url),
                     clearStack: clearStack
                 });
             });

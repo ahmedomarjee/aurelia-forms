@@ -22,8 +22,8 @@ export class HistoryService {
 		this.register();
 	}
 
-	getUrl(): string {
-		let hash = location.hash;
+	getUrl(url?: string): string {
+		let hash = url || location.hash;
 
 		if (!hash) {
 			return "";
@@ -43,7 +43,7 @@ export class HistoryService {
 			window.location.assign(url);
 
 			this.navigate({
-				url: url,
+				url: this.getUrl(url),
 				clearStack: clearStack
 			});
 		});
