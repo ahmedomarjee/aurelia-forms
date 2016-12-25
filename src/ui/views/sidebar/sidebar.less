@@ -1,17 +1,68 @@
 @import "../../styles/variables.less";
 
 .t--sidebar {
+  display: block;
   position: fixed;
   top: 0;
   bottom: 0;
   left: 0;
   z-index: 10;
-  background-color: darkgray;
   width: @sidebarExpandedWidth;
+  background-color: #2a2e35;
+
+  ul {
+    padding: 0;
+    list-style: none;
+  }
 }
 
 .t--sidebar-collapsed {
   .t--sidebar {
-    width: @sidebarCollapsedWidth;
+    left: (@sidebarCollapsedWidth - @sidebarExpandedWidth);
   }
+}
+
+.t--sidebar-header {
+  display: flex;
+  align-items: center;
+  height: @headerHeight;
+  background-color: #262930;
+  color: white;
+  cursor: pointer;
+}
+.t--sidebar-header-title {
+  flex-grow: 1;
+  font-size: 26px;
+  font-weight: 100;
+  padding: @padding;
+}
+.t--sidebar-header-icon {
+  display: flex;
+  width: @sidebarCollapsedWidth;
+  align-items: center;
+  justify-content: center;
+}
+
+.t--sidebar-item {
+  a {
+    display: flex;
+    align-items: center;
+    height: @headerHeight;
+    color: lightgray;
+    text-decoration: none;
+  }
+  a:hover {
+    background-color: @themeColor;
+    color: white;
+  }
+}
+.t--sidebar-item-title {
+  flex-grow: 1;
+  padding: @padding;
+}
+.t--sidebar-item-icon {
+  display: flex;
+  width: @sidebarCollapsedWidth;
+  align-items: center;
+  justify-content: center;
 }

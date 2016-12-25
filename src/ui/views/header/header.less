@@ -1,17 +1,15 @@
 @import "../../styles/variables.less";
 
 .t--header {
-  position: fixed;
-  top: 0;
-  left: @sidebarExpandedWidth;
-  right: 0;
+  display: flex;
+  align-items: center;
   height: @headerHeight;
-  z-index: 9;
-  background-color: lightgray;
+  margin-left: @sidebarExpandedWidth;
+  padding: 0 @padding;
 }
 
 .t--sidebar-collapsed {
   .t--header {
-    left: @sidebarCollapsedWidth;
+    margin-left: @sidebarCollapsedWidth;
   }
 }

@@ -13,7 +13,9 @@ export class Sidebar {
   constructor(
     private layout: LayoutService,
     private router: RouterService
-  ) {
+  ) { }
 
+  onHeaderClicked() {
+    this.layout.isSidebarCollapsed = !this.layout.isSidebarCollapsed;
   }
 }

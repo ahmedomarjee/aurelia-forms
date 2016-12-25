@@ -1,8 +1,9 @@
 @import "../../styles/variables.less";
 
 .t--content {
-  margin-top: @headerHeight;
+  display: block;
   margin-left: @sidebarExpandedWidth;
+  height: ~"calc(100% - @{headerHeight})";
 }
 
 .t--sidebar-collapsed {

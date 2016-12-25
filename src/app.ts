@@ -12,20 +12,22 @@ export class App {
   ) {
     router.registerRoutes([
       {
-        viewModel: "main/views/demo-form",
+        moduleId: "main/views/demo-form",
         title: "Demo",
+        icon: "book",
         route: "demo",
         isNavigation: true
       },
       {
-        viewModel: "main/views/demo-form",
+        moduleId: "main/views/demo-form",
         title: "Demo",
         route: "demo/:id"
       },
       {
-        viewModel: "main/views/form-test-form",
+        moduleId: "main/views/form-test-form",
         title: "Test",
         route: "test",
+        icon: "bug",
         isNavigation: true
       }
     ],

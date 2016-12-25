@@ -88,8 +88,9 @@ export class RouterService {
         continue;
       }
 
-      const navigationRoute ={
+      const navigationRoute: Interfaces.INavigationRoute = {
         title: route.title,
+        icon: route.icon,
         route: route.route[0],
         children: this.getNavigationRoutes(route.children)
       };

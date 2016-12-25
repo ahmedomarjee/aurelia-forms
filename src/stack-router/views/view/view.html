@@ -1,0 +1,18 @@
+<template class="t--view">
+  <require from="./view.css"></require>
+
+  <div class="t--view-toolbar">
+    <dx-widget name="dxToolbar" options.bind="toolbarOptions" view-model.ref="toolbar">
+  </div>
+  <div class="t--view-content">
+    <div class="container-fluid">
+      <div class="row">
+        <compose
+          view-model.ref="controller" 
+          view-model.bind="view.viewModel" 
+          model.bind="view.model" 
+          class="t--view-content"></compose>
+      </div>
+    </div>
+  </div>
+</template>
