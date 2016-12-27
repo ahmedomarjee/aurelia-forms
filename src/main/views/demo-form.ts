@@ -4,10 +4,13 @@ import {
 } from "aurelia-framework";
 import {
     FormBase
-} from "../../forms/base/form-base";
+} from "../../forms/classes/form-base";
 import {
     WidgetCreatorService
 } from "../../forms/widget-services/widget-creator-service";
+import {
+    TestFunction
+} from "../functions/test-function";
 
 @autoinject
 export class DemoForm extends FormBase {
@@ -39,6 +42,17 @@ export class DemoForm extends FormBase {
             "keyProperty": "Id",
             "filters": []
         });
+        this.addCommand({
+            "binding": {
+                "bindTo": "$f_Test.sayHelloCommand",
+                "bindToFQ": "function.$f_Test.sayHelloCommand",
+                "propertyPrefix": "$f_Test"
+            }
+        });
+        this.addFunction("$f_Test", new TestFunction(this, "function.$f_Test", {
+            "x": 1,
+            "y": 2
+        }));
         this.widgetCreator.addDataGrid(this, {
             "columns": [{
                 "caption": "Name",
@@ -50,8 +64,8 @@ export class DemoForm extends FormBase {
                 "bindTo": "Mandator.Name"
             }],
             "optionsToolbar": {
-                "optionsName": "idee8e7e493ad94958b374e08f6c589d1dToolbarOptions",
-                "optionsNameFQ": "idee8e7e493ad94958b374e08f6c589d1dToolbarOptions"
+                "optionsName": "ide66e04a1333e4544b20f4c3ac1d76a68ToolbarOptions",
+                "optionsNameFQ": "ide66e04a1333e4544b20f4c3ac1d76a68ToolbarOptions"
             },
             "binding": {
                 "dataContext": "$m_1",
@@ -63,10 +77,10 @@ export class DemoForm extends FormBase {
             "edits": [],
             "filters": [],
             "commands": [],
-            "id": "idee8e7e493ad94958b374e08f6c589d1d",
+            "id": "ide66e04a1333e4544b20f4c3ac1d76a68",
             "options": {
-                "optionsName": "idee8e7e493ad94958b374e08f6c589d1dOptions",
-                "optionsNameFQ": "idee8e7e493ad94958b374e08f6c589d1dOptions"
+                "optionsName": "ide66e04a1333e4544b20f4c3ac1d76a68Options",
+                "optionsNameFQ": "ide66e04a1333e4544b20f4c3ac1d76a68Options"
             }
         });
         this.widgetCreator.addDataGrid(this, {
@@ -77,8 +91,8 @@ export class DemoForm extends FormBase {
                 "sortOrder": "desc"
             }],
             "optionsToolbar": {
-                "optionsName": "id652863f48dcf411f846189137338aef7ToolbarOptions",
-                "optionsNameFQ": "id652863f48dcf411f846189137338aef7ToolbarOptions"
+                "optionsName": "id20ae03bc89ba4cfeb1c3619af5776dafToolbarOptions",
+                "optionsNameFQ": "id20ae03bc89ba4cfeb1c3619af5776dafToolbarOptions"
             },
             "binding": {
                 "dataContext": "$m_3",
@@ -88,10 +102,10 @@ export class DemoForm extends FormBase {
             "edits": [],
             "filters": [],
             "commands": [],
-            "id": "id652863f48dcf411f846189137338aef7",
+            "id": "id20ae03bc89ba4cfeb1c3619af5776daf",
             "options": {
-                "optionsName": "id652863f48dcf411f846189137338aef7Options",
-                "optionsNameFQ": "id652863f48dcf411f846189137338aef7Options"
+                "optionsName": "id20ae03bc89ba4cfeb1c3619af5776dafOptions",
+                "optionsNameFQ": "id20ae03bc89ba4cfeb1c3619af5776dafOptions"
             }
         });
     }

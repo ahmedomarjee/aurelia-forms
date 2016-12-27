@@ -4,7 +4,7 @@ import {
 } from "aurelia-framework";
 import {
     FormBase
-} from "../../forms/base/form-base";
+} from "../../forms/classes/form-base";
 import {
     WidgetCreatorService
 } from "../../forms/widget-services/widget-creator-service";
@@ -40,10 +40,10 @@ export class FormTestForm extends FormBase {
             "y": 2
         }));
         this.widgetCreator.addCommand(this, {
-            "id": "id96cf04a35a074cfda15495217fe53a86",
+            "id": "ide16526db93b344cda4befd0938c5fb9c",
             "options": {
-                "optionsName": "id96cf04a35a074cfda15495217fe53a86Options",
-                "optionsNameFQ": "id96cf04a35a074cfda15495217fe53a86Options"
+                "optionsName": "ide16526db93b344cda4befd0938c5fb9cOptions",
+                "optionsNameFQ": "ide16526db93b344cda4befd0938c5fb9cOptions"
             },
             "binding": {
                 "bindTo": "$f_Test.giveItToMe",
@@ -59,10 +59,10 @@ export class FormTestForm extends FormBase {
                 "bindToFQ": "model.data.$m_Dummy2.Name"
             },
             "validationRules": [],
-            "id": "idb2a72d4282da428c86be0030016dfcc9",
+            "id": "ide8f8e85d66f34c59bb500147dc963417",
             "options": {
-                "optionsName": "idb2a72d4282da428c86be0030016dfcc9Options",
-                "optionsNameFQ": "idb2a72d4282da428c86be0030016dfcc9Options"
+                "optionsName": "ide8f8e85d66f34c59bb500147dc963417Options",
+                "optionsNameFQ": "ide8f8e85d66f34c59bb500147dc963417Options"
             }
         });
         this.widgetCreator.addDateBox(this, {
@@ -73,10 +73,10 @@ export class FormTestForm extends FormBase {
                 "bindToFQ": "model.data.$m_Dummy2.ModifiedDate"
             },
             "validationRules": [],
-            "id": "idc58137d443774f57ae3c50f5e702e9d3",
+            "id": "idcfbdade73f6c4afdaf7056c020352326",
             "options": {
-                "optionsName": "idc58137d443774f57ae3c50f5e702e9d3Options",
-                "optionsNameFQ": "idc58137d443774f57ae3c50f5e702e9d3Options"
+                "optionsName": "idcfbdade73f6c4afdaf7056c020352326Options",
+                "optionsNameFQ": "idcfbdade73f6c4afdaf7056c020352326Options"
             }
         });
         this.widgetCreator.addNumberBox(this, {
@@ -87,10 +87,10 @@ export class FormTestForm extends FormBase {
                 "bindToFQ": "model.data.$m_Dummy2.IdMandator"
             },
             "validationRules": [],
-            "id": "id356d87d5e1364d8e931fcb834f487040",
+            "id": "ida6b756b5a6e14405bc33c6abae2b4e4a",
             "options": {
-                "optionsName": "id356d87d5e1364d8e931fcb834f487040Options",
-                "optionsNameFQ": "id356d87d5e1364d8e931fcb834f487040Options"
+                "optionsName": "ida6b756b5a6e14405bc33c6abae2b4e4aOptions",
+                "optionsNameFQ": "ida6b756b5a6e14405bc33c6abae2b4e4aOptions"
             }
         });
         this.widgetCreator.addTextArea(this, {
@@ -102,10 +102,10 @@ export class FormTestForm extends FormBase {
                 "bindToFQ": "model.data.$m_Dummy2.Name"
             },
             "validationRules": [],
-            "id": "idd1f2997c3c97428db09b7ebaaa9386ff",
+            "id": "id8a5ba60ff9814fe195d7be78dfe16764",
             "options": {
-                "optionsName": "idd1f2997c3c97428db09b7ebaaa9386ffOptions",
-                "optionsNameFQ": "idd1f2997c3c97428db09b7ebaaa9386ffOptions"
+                "optionsName": "id8a5ba60ff9814fe195d7be78dfe16764Options",
+                "optionsNameFQ": "id8a5ba60ff9814fe195d7be78dfe16764Options"
             }
         });
         this.widgetCreator.addCalendar(this, {
@@ -116,10 +116,10 @@ export class FormTestForm extends FormBase {
                 "bindToFQ": "model.data.$m_Dummy2.ModifiedDate"
             },
             "validationRules": [],
-            "id": "idbf9ec0185c1143f7a2120c53071b3c1a",
+            "id": "id0e8d1e8ab5344ccf9389c45473042259",
             "options": {
-                "optionsName": "idbf9ec0185c1143f7a2120c53071b3c1aOptions",
-                "optionsNameFQ": "idbf9ec0185c1143f7a2120c53071b3c1aOptions"
+                "optionsName": "id0e8d1e8ab5344ccf9389c45473042259Options",
+                "optionsNameFQ": "id0e8d1e8ab5344ccf9389c45473042259Options"
             }
         });
         this.widgetCreator.addTextArea(this, {
@@ -131,10 +131,10 @@ export class FormTestForm extends FormBase {
                 "bindToFQ": "model.data.$m_Dummy2.Name"
             },
             "validationRules": [],
-            "id": "ida2314b2c376542778ec789c3fa5394b6",
+            "id": "id446982385961420e9778602d75a93564",
             "options": {
-                "optionsName": "ida2314b2c376542778ec789c3fa5394b6Options",
-                "optionsNameFQ": "ida2314b2c376542778ec789c3fa5394b6Options"
+                "optionsName": "id446982385961420e9778602d75a93564Options",
+                "optionsNameFQ": "id446982385961420e9778602d75a93564Options"
             }
         });
         this.widgetCreator.addCalendar(this, {
@@ -145,10 +145,10 @@ export class FormTestForm extends FormBase {
                 "bindToFQ": "model.data.$m_Dummy2.ModifiedDate"
             },
             "validationRules": [],
-            "id": "idca54fcddd32b48b8bdc9cc17dda76170",
+            "id": "idd025a78e5a494c5fa7979af3cf7cd9f4",
             "options": {
-                "optionsName": "idca54fcddd32b48b8bdc9cc17dda76170Options",
-                "optionsNameFQ": "idca54fcddd32b48b8bdc9cc17dda76170Options"
+                "optionsName": "idd025a78e5a494c5fa7979af3cf7cd9f4Options",
+                "optionsNameFQ": "idd025a78e5a494c5fa7979af3cf7cd9f4Options"
             }
         });
         this.widgetCreator.addTextArea(this, {
@@ -160,10 +160,10 @@ export class FormTestForm extends FormBase {
                 "bindToFQ": "model.data.$m_Dummy3.Name"
             },
             "validationRules": [],
-            "id": "id50c9c76acc2e4a5888349dee8b107c0f",
+            "id": "id185b76b6e14d4e01a0516c9ad633ab17",
             "options": {
-                "optionsName": "id50c9c76acc2e4a5888349dee8b107c0fOptions",
-                "optionsNameFQ": "id50c9c76acc2e4a5888349dee8b107c0fOptions"
+                "optionsName": "id185b76b6e14d4e01a0516c9ad633ab17Options",
+                "optionsNameFQ": "id185b76b6e14d4e01a0516c9ad633ab17Options"
             }
         });
         this.widgetCreator.addCalendar(this, {
@@ -174,10 +174,10 @@ export class FormTestForm extends FormBase {
                 "bindToFQ": "model.data.$m_Dummy3.ModifiedDate"
             },
             "validationRules": [],
-            "id": "id475226ab938c4cc6ade6f732dd5b00dc",
+            "id": "id2f74424ab580475ead2fbb702b231e8b",
             "options": {
-                "optionsName": "id475226ab938c4cc6ade6f732dd5b00dcOptions",
-                "optionsNameFQ": "id475226ab938c4cc6ade6f732dd5b00dcOptions"
+                "optionsName": "id2f74424ab580475ead2fbb702b231e8bOptions",
+                "optionsNameFQ": "id2f74424ab580475ead2fbb702b231e8bOptions"
             }
         });
         this.widgetCreator.addTextBox(this, {
@@ -188,17 +188,17 @@ export class FormTestForm extends FormBase {
                 "bindToFQ": "model.data.$m_Dummy3.Name"
             },
             "validationRules": [],
-            "id": "idde5b290c467f41de9fa256f43310cd6a",
+            "id": "id0a80fca494a442d185aac57219c90e2f",
             "options": {
-                "optionsName": "idde5b290c467f41de9fa256f43310cd6aOptions",
-                "optionsNameFQ": "idde5b290c467f41de9fa256f43310cd6aOptions"
+                "optionsName": "id0a80fca494a442d185aac57219c90e2fOptions",
+                "optionsNameFQ": "id0a80fca494a442d185aac57219c90e2fOptions"
             }
         });
         this.widgetCreator.addTab(this, {
-            "id": "id1cafd4fdbd284d2dad9f1bc37b89db15",
+            "id": "id77ac534b89bf49bba87390dd8a98fe74",
             "options": {
-                "optionsName": "id1cafd4fdbd284d2dad9f1bc37b89db15Options",
-                "optionsNameFQ": "id1cafd4fdbd284d2dad9f1bc37b89db15Options"
+                "optionsName": "id77ac534b89bf49bba87390dd8a98fe74Options",
+                "optionsNameFQ": "id77ac534b89bf49bba87390dd8a98fe74Options"
             },
             "pages": [{
                 "caption": "Tab 1"
@@ -219,8 +219,8 @@ export class FormTestForm extends FormBase {
                 "bindTo": "ModifiedDate"
             }],
             "optionsToolbar": {
-                "optionsName": "id31c4cad9f87d4de6b6da3a6985e1b562ToolbarOptions",
-                "optionsNameFQ": "id31c4cad9f87d4de6b6da3a6985e1b562ToolbarOptions"
+                "optionsName": "idacf5823e349e478889f4b23a9da7dbe5ToolbarOptions",
+                "optionsNameFQ": "idacf5823e349e478889f4b23a9da7dbe5ToolbarOptions"
             },
             "binding": {
                 "dataContext": "$m_Dummy",
@@ -233,30 +233,30 @@ export class FormTestForm extends FormBase {
             "edits": [],
             "filters": [],
             "commands": [],
-            "id": "id31c4cad9f87d4de6b6da3a6985e1b562",
+            "id": "idacf5823e349e478889f4b23a9da7dbe5",
             "options": {
-                "optionsName": "id31c4cad9f87d4de6b6da3a6985e1b562Options",
-                "optionsNameFQ": "id31c4cad9f87d4de6b6da3a6985e1b562Options"
+                "optionsName": "idacf5823e349e478889f4b23a9da7dbe5Options",
+                "optionsNameFQ": "idacf5823e349e478889f4b23a9da7dbe5Options"
             }
         });
     }
     @computedFrom("function.$f_Test.downloadUrl")
-    get idf67a8fdb628644498a8e3de5b89f23fb() {
+    get id588f98a31e9d474c990e2180d26043d0() {
         return this.getFileDownloadUrl("function.$f_Test.downloadUrl");
     }
     @computedFrom("function.$f_Test.imageUrl")
-    get id357a3bb02485422e93600ad0cd857af9() {
+    get id625e2be9db894459b46931dd5d34b22c() {
         return this.getFileDownloadUrl("function.$f_Test.imageUrl");
     }
     @computedFrom("function.$f_Test.imageUrl")
-    get id3b017d067c6a49ac8268162a3d7c6c6b() {
+    get id1005e1c72c5c4d00b19bbc321c5961b7() {
         return {
-            'background-image': 'url(' + this.id357a3bb02485422e93600ad0cd857af9 + ')'
+            'background-image': 'url(' + this.id625e2be9db894459b46931dd5d34b22c + ')'
         };
     }
     @computedFrom("function.$f_Test.imageUrl")
-    get id44256a8a58944467b7347b6d8655e655() {
+    get id4a8763b36db547c896f97cd1a2b88098() {
         return this.getFileDownloadUrl("function.$f_Test.imageUrl");
     }
-    id1cafd4fdbd284d2dad9f1bc37b89db15Selected = 0;
+    id77ac534b89bf49bba87390dd8a98fe74Selected = 0;
 }

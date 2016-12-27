@@ -1,0 +1,42 @@
+.t--content {
+  display: block;
+  margin-left: 280px;
+  height: calc(100% - 60px);
+}
+.t--sidebar-collapsed .t--content {
+  margin-left: 60px;
+}
+.t--view-current {
+  display: block;
+}
+.t--view-history {
+  display: none;
+}
+.t--view-toolbar .dx-toolbar {
+  height: 60px;
+}
+.t--view-toolbar-item {
+  display: flex;
+  height: 60px;
+  padding: 0 12px;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  color: white;
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-user-select: none;
+}
+.t--view-toolbar-item i {
+  font-size: 16px;
+}
+.t--view-toolbar-item:hover {
+  background-color: #4F4F4F;
+}
+.dx-state-disabled .t--view-toolbar-item {
+  cursor: default;
+  color: lightgray;
+}
+.dx-state-disabled .t--view-toolbar-item:hover {
+  background-color: inherit;
+}

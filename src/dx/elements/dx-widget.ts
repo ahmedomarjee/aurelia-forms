@@ -19,7 +19,7 @@ export class DxWidget {
   @bindable validator: any;
 
   instance: any;
-  templates = new Map();
+  templates = {};
   bindingContext: any;
 
   constructor(
@@ -30,24 +30,20 @@ export class DxWidget {
   }
 
   created(owningView: any, myView: any) {
-    $(this.element)
-      .children("dx-template")
-      .each((index, item) => {
-        const name = $(item).attr("name");
-        this.templates.set(name, item);
-        $(item).remove();
-      });
+    this.extractTemplates();
   }
   bind(bindingContext: any, overrideContext: OverrideContext) {
     this.bindingContext = bindingContext;
-    this.__checkBindings();
+    this.checkBindings();
   }
   attached() {
-    this.__replaceTemplates(this.options);
-    this.__renderInline();
+    this.renderInline();
 
     this.options = this.options || {};
-    this.options.onOptionChanged = this.__onOptionChanged.bind(this);
+    this.options.onOptionChanged = this.onOptionChanged.bind(this);
+    this.options.integrationOptions = {
+      templates: this.templates
+    }
 
     const element = $(this.element);
     if (!element[this.name]) {
@@ -59,10 +55,56 @@ export class DxWidget {
       element[this.name](this.options)
 
     this.instance = element[this.name]("instance");
-    this.__registerBindings();
+    this.registerBindings();
+  }
+  detached() {
+    if (this.instance) {
+      this.instance._dispose();
+      this.instance = null;
+    }
+
+    if (this.options && this.options.bindingOptions) {
+      for (let binding of this.options.bindingOptions) {
+        if (binding.deepObserver) {
+          binding.deepObserver();
+          binding.deepObserver = null;
+        }
+      }
+    }
   }
 
-  private __registerBindings(): void {
+  private extractTemplates(): void {
+    $(this.element)
+      .children("dx-template")
+      .each((index, item) => {
+        const itemJQuery = $(item);
+        const name = itemJQuery.attr("name");
+        const alias = itemJQuery.attr("alias") || "data";
+
+        this.templates[name] = {
+          render: (renderData) => {
+            var newItem = item.cloneNode(true)
+            const newElement = $(newItem).appendTo(renderData.container);
+
+            let model: any = null;
+            if (renderData.model) {
+              model = {};
+              model[alias] = renderData.model;
+            }
+
+            const result = this.templatingEngine.enhance({
+              element: newElement.get(0),
+              bindingContext: model || this.bindingContext
+            });
+            result.attached();
+
+            return $(newElement);
+          }
+        };
+        $(item).remove();
+      });
+  }
+  private registerBindings(): void {
     if (!this.options.bindingOptions) {
       return;
     }
@@ -73,7 +115,7 @@ export class DxWidget {
       this.bindingEngine.expressionObserver(this.bindingContext, binding.expression)
         .subscribe((newValue, oldValue) => {
           this.instance.option(property, newValue);
-          this.__registerDeepObserver(binding, property, value);
+          this.registerDeepObserver(binding, property, value);
         });
 
       const value = binding.parsed.evaluate({
@@ -82,19 +124,19 @@ export class DxWidget {
       });
 
       this.instance.option(property, value);
-      this.__registerDeepObserver(binding, property, value);
+      this.registerDeepObserver(binding, property, value);
     }
   }
-  private __checkBindings(): void {
+  private checkBindings(): void {
     if (!this.options.bindingOptions) {
       return;
     }
 
     for (let property in this.options.bindingOptions) {
-      const binding = this.__checkBinding(property);
+      const binding = this.checkBinding(property);
     }
   }
-  private __checkBinding(property): void {
+  private checkBinding(property): void {
     const bindingOptions = this.options.bindingOptions;
 
     if (typeof bindingOptions[property] === "string") {
@@ -106,7 +148,7 @@ export class DxWidget {
     const binding = bindingOptions[property];
     binding.parsed = this.bindingEngine.parseExpression(binding.expression);
   }
-  private __registerDeepObserver(binding, property, value): void {
+  private registerDeepObserver(binding, property, value): void {
     if (binding.deepObserver) {
       binding.deepObserver();
       binding.deepObserver = null;
@@ -120,7 +162,7 @@ export class DxWidget {
       this.instance.option(property, value);
     });
   }
-  private __onOptionChanged(e): void {
+  private onOptionChanged(e): void {
     if (!this.options.bindingOptions) {
       return;
     }
@@ -139,7 +181,7 @@ export class DxWidget {
       overrideContext: null
     }, e.value);
   }
-  private __renderInline(): void {
+  private renderInline(): void {
     $(this.element).children().each((index, child) => {
       const result = this.templatingEngine.enhance({
         element: child,
@@ -148,51 +190,5 @@ export class DxWidget {
 
       result.attached();
     });
-  }
-  private __replaceTemplates(obj: any): void {
-    for (let key in obj) {
-      if (key.endsWith("Template") && typeof obj[key] === "string") {
-        obj[key] = this.__getTemplateRenderFunc(obj[key]);
-      } else if (typeof obj[key] === "object" && key !== "bindingOptions" && key != "dataSource") {
-        this.__replaceTemplates(obj[key]);
-      }
-    }
-  }
-  private __getTemplateRenderFunc(key: string): { (vm, itemIndex, container): any } {
-    return (vm, itemIndex, container) => {
-      const template = $(this.templates.get(key)).clone();
-
-      if (container === undefined) {
-        if (itemIndex === undefined) {
-          container = vm;
-          vm = undefined;
-        } else if (itemIndex instanceof $) {
-          container = itemIndex;
-          itemIndex = undefined;
-        } else {
-          container = vm;
-          vm = itemIndex;
-        }
-      } else if (itemIndex instanceof $) {
-        let cachedItemIndex = container;
-
-        container = itemIndex;
-        itemIndex = cachedItemIndex;
-      } else {
-        vm = {
-          data: vm
-        };
-      }
-
-      container.append(template);
-
-      const result = this.templatingEngine.enhance({
-        element: $(template).get(0),
-        bindingContext: vm || this.bindingContext
-      });
-      result.attached();
-
-      return template;
-    };
   }
 }

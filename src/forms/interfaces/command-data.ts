@@ -1,13 +1,16 @@
 export interface ICommandData {
     id: string;
-    title: string;
+    icon?: string;
+    title?: string;
     tooltip?: string;
     sort?: number;
     shortcut?: string;
     badgeText?: string;
     location?: string;
     locateInMenu?: string;
-    isEnabled?: string;
-    isVisible?: string;
-    execute?: string;
+    isEnabled?: boolean;
+    isEnabledExpression?: string
+    isVisible?: boolean;
+    isVisibleExpression?: string;
+    execute?: {(): void};
 }

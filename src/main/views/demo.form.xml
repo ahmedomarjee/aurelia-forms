@@ -11,6 +11,12 @@
             web-api-expand="{ Authgroup: null }"
             web-api-where="['IdProfile', '$m_2.Id']" />
     </models>
+    <functions>
+        <function id="$f_Test" file="../functions/test-function" class-name="TestFunction" custom-parameter="{ x: 1, y: 2}" />
+    </functions>
+    <commands>
+        <command bind-to="$f_Test.sayHelloCommand" />
+    </commands>
     <content>
         <data-grid data-context="$m_1" edit-data-context="$m_2" selection-mode="single">
             <data-grid-columns>

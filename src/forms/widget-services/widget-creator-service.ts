@@ -1,7 +1,7 @@
 import * as WidgetOptions from "../widget-options";
 import {
   FormBase
-} from "../base/form-base";
+} from "../classes/form-base";
 import {
   SimpleWidgetCreatorService
 } from "./simple-widget-creator-service";

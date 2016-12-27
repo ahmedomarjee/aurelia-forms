@@ -129,16 +129,6 @@
             "env": "dev"
           },
           {
-            "name": "bootstrap",
-            "path": "../node_modules/bootstrap/dist",
-            "main": "js/bootstrap.min.js",
-            "resources": [
-              "css/bootstrap.min.css"
-            ],
-            "deps": ["jquery"],
-            "exports": "$"
-          },
-          {
             "name": "devextreme",
             "path": "../node_modules/devextreme/dist",
             "main": "js/dx.web.debug.js",

@@ -1,4 +1,5 @@
-import {FormBase} from "../../forms/base/form-base";
+import {FormBase} from "../../forms/classes/form-base";
+import {ICommandData} from "../../forms/interfaces/command-data";
 
 export class TestFunction {
   constructor(private form: FormBase, private namespace: string, private parameters: any) {
@@ -36,4 +37,10 @@ export class TestFunction {
   icon = "fa-book";
   downloadUrl = "http://www.tip.co.at";
   imageUrl = "https://upload.wikimedia.org/wikipedia/commons/e/ec/Blume_mit_Schmetterling_und_Biene_1uf.JPG";
+
+  sayHelloCommand: ICommandData = {
+      id: "$sayHello",
+      title: "Sag Hallo",
+      execute: () => alert("Hallo")
+  }
 }
