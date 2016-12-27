@@ -76,6 +76,8 @@ define('stack-router/services/router-service',["require", "exports", "aurelia-fr
             this.routeInfoId = 0;
             this.viewStack = [];
         }
+        RouterService.prototype.deactivate = function () {
+        };
         RouterService.prototype.navigate = function (navigationArgs) {
             var routeInfo = this.getRoute(navigationArgs.url);
             if (routeInfo == void (0)) {
@@ -99,6 +101,10 @@ define('stack-router/services/router-service',["require", "exports", "aurelia-fr
             this.routes = this.validateRoutes(routes);
             this.fallbackRoute = fallbackRoute;
             this.navigationRoutes = this.getNavigationRoutes(routes);
+        };
+        RouterService.prototype.reset = function () {
+            this.viewStack.splice(0, this.viewStack.length);
+            this.navigationRoutes = [];
         };
         RouterService.prototype.addViewItem = function (viewItem) {
             this.viewStack.push(viewItem);
@@ -292,25 +298,19 @@ define('app',["require", "exports", "./stack-router/services/router-service", "a
             this.router = router;
             router.registerRoutes([
                 {
-                    moduleId: "main/views/demo-form",
-                    title: "Demo",
-                    icon: "book",
-                    route: "demo",
+                    moduleId: "security/views/authgroup/authgroup-list-form",
+                    title: "Berechtigungsgruppen",
+                    icon: "shield",
+                    route: "security/authgroup",
                     isNavigation: true
                 },
                 {
-                    moduleId: "main/views/demo-form",
-                    title: "Demo",
-                    route: "demo/:id"
-                },
-                {
-                    moduleId: "main/views/form-test-form",
-                    title: "Test",
-                    route: "test",
-                    icon: "bug",
-                    isNavigation: true
+                    moduleId: "security/views/authgroup/authgroup-edit-form",
+                    title: "Berechtigungsgruppen",
+                    icon: "shield",
+                    route: "security/authgroup/:id"
                 }
-            ], "demo");
+            ], "security/authgroup");
         }
         return App;
     }());
@@ -325,7 +325,7 @@ define('config',["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = {
-        baseUrl: "http://10.20.50.53/TIP.Aurelia/api/data"
+        baseUrl: "http://10.20.50.53/TIP.Aurelia/api"
     };
 });
 
@@ -350,16 +350,15 @@ define('main',["require", "exports", "./environment"], function (require, export
         aurelia.use
             .basicConfiguration()
             .feature("dx")
-            .feature("resources")
-            .feature("main")
-            .feature("stack-router");
+            .feature("stack-router")
+            .feature("security");
         if (environment_1.default.debug) {
             aurelia.use.developmentLogging();
         }
         if (environment_1.default.testing) {
             aurelia.use.plugin("aurelia-testing");
         }
-        aurelia.start().then(function () { return aurelia.setRoot(); });
+        aurelia.start().then(function () { return aurelia.setRoot("security/login-app"); });
     }
     exports.configure = configure;
 });
@@ -535,7 +534,11 @@ define('forms/interfaces/edit-popup',["require", "exports"], function (require, 
     "use strict";
 });
 
-define('forms/interfaces/rest-load-options',["require", "exports"], function (require, exports) {
+define('forms/interfaces/rest-get-options',["require", "exports"], function (require, exports) {
+    "use strict";
+});
+
+define('forms/interfaces/rest-post-options',["require", "exports"], function (require, exports) {
     "use strict";
 });
 
@@ -547,18 +550,44 @@ define('forms/index',["require", "exports"], function (require, exports) {
     "use strict";
 });
 
-define('main/index',["require", "exports"], function (require, exports) {
+define('security/index',["require", "exports"], function (require, exports) {
     "use strict";
     function configure(config) {
     }
     exports.configure = configure;
 });
 
-define('resources/index',["require", "exports"], function (require, exports) {
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+define('security/login-app',["require", "exports", "../stack-router/services/router-service", "aurelia-framework"], function (require, exports, router_service_1, aurelia_framework_1) {
     "use strict";
-    function configure(config) {
-    }
-    exports.configure = configure;
+    var LoginApp = (function () {
+        function LoginApp(router) {
+            this.router = router;
+            router.registerRoutes([
+                {
+                    moduleId: "security/views/login/login-form",
+                    title: "Anmelden",
+                    icon: "lock",
+                    route: "security/login",
+                    isNavigation: true
+                }
+            ], "security/login");
+        }
+        return LoginApp;
+    }());
+    LoginApp = __decorate([
+        aurelia_framework_1.autoinject,
+        __metadata("design:paramtypes", [router_service_1.RouterService])
+    ], LoginApp);
+    exports.LoginApp = LoginApp;
 });
 
 define('stack-router/index',["require", "exports"], function (require, exports) {
@@ -880,19 +909,6 @@ define('dx/elements/dx-widget',["require", "exports", "aurelia-framework", "../s
     exports.DxWidget = DxWidget;
 });
 
-define('forms/classes/command-server-data-instance',["require", "exports"], function (require, exports) {
-    "use strict";
-    var CommandServerDataInstance = (function () {
-        function CommandServerDataInstance() {
-        }
-        CommandServerDataInstance.prototype.add = function (id, data) {
-            this[id] = data;
-        };
-        return CommandServerDataInstance;
-    }());
-    exports.CommandServerDataInstance = CommandServerDataInstance;
-});
-
 define('forms/services/object-info-service',["require", "exports"], function (require, exports) {
     "use strict";
     var ObjectInfoService = (function () {
@@ -1057,12 +1073,59 @@ define('forms/services/rest-service',["require", "exports", "../../config", "aur
             if (options.getOptions) {
                 headers["X-GET-OPTIONS"] = JSON.stringify(options.getOptions);
             }
+            headers["Content-Type"] = "application/json";
+            headers["Accept"] = "application/json";
             return new Promise(function (success, error) {
                 client
                     .fetch(_this.getUrl(options.url), {
                     headers: headers
                 })
-                    .then(function (r) { return r.json(); })
+                    .then(function (r) {
+                    if (r.ok) {
+                        return r.json();
+                    }
+                    DevExpress.ui.notify(r.statusText, "error", 3000);
+                    error(r);
+                })
+                    .then(function (r) { return success(r); })
+                    .catch(function (r) {
+                    error(r);
+                });
+            });
+        };
+        RestService.prototype.post = function (options) {
+            var _this = this;
+            var client = new aurelia_fetch_client_1.HttpClient();
+            var headers = {};
+            headers["X-TIP-API-KEY"] = "61da30dc-46cc-45e6-b9a6-c6cfa65d65af";
+            if (options.getOptions) {
+                headers["X-GET-OPTIONS"] = JSON.stringify(options.getOptions);
+            }
+            headers["Content-Type"] = "application/json";
+            headers["Accept"] = "application/json";
+            var body = null;
+            if (options.data) {
+                if (typeof options.data === "string") {
+                    body = options.data;
+                }
+                else {
+                    body = JSON.stringify(options.data);
+                }
+            }
+            return new Promise(function (success, error) {
+                client
+                    .fetch(_this.getUrl(options.url), {
+                    headers: headers,
+                    method: "POST",
+                    body: body
+                })
+                    .then(function (r) {
+                    if (r.ok) {
+                        return r.json();
+                    }
+                    DevExpress.ui.notify(r.statusText, "error", 3000);
+                    error(r);
+                })
                     .then(function (r) { return success(r); })
                     .catch(function (r) {
                     error(r);
@@ -1091,7 +1154,7 @@ define('forms/classes/model-instance',["require", "exports", "./custom-event", "
                 if (args.model.key || args.model.autoLoad) {
                     var getOptions = _this.createGetOptions(args.model);
                     return _this.rest.get({
-                        url: args.model.webApiAction + "/" + _this.form.evaluateExpression(args.model.key),
+                        url: "data/" + args.model.webApiAction + "/" + _this.form.evaluateExpression(args.model.key),
                         getOptions: getOptions
                     }).then(function (r) {
                         _this.data[args.model.id] = r;
@@ -1118,7 +1181,7 @@ define('forms/classes/model-instance',["require", "exports", "./custom-event", "
                 byKey: function (key) {
                     var getOptions = _this.createGetOptions(model);
                     return _this.rest.get({
-                        url: model.webApiAction + "/" + key,
+                        url: "data/" + model.webApiAction + "/" + key,
                         getOptions: getOptions
                     });
                 },
@@ -1151,7 +1214,7 @@ define('forms/classes/model-instance',["require", "exports", "./custom-event", "
                         });
                     }
                     return _this.rest.get({
-                        url: model.webApiAction,
+                        url: "data/" + model.webApiAction,
                         getOptions: getOptions
                     }).then(function (r) {
                         if (options.requireTotalCount) {
@@ -1289,6 +1352,19 @@ define('forms/classes/variable-instance',["require", "exports"], function (requi
         return VariableInstance;
     }());
     exports.VariableInstance = VariableInstance;
+});
+
+define('forms/classes/command-server-data-instance',["require", "exports"], function (require, exports) {
+    "use strict";
+    var CommandServerDataInstance = (function () {
+        function CommandServerDataInstance() {
+        }
+        CommandServerDataInstance.prototype.add = function (id, data) {
+            this[id] = data;
+        };
+        return CommandServerDataInstance;
+    }());
+    exports.CommandServerDataInstance = CommandServerDataInstance;
 });
 
 define('forms/services/default-commands-service',["require", "exports"], function (require, exports) {
@@ -1456,8 +1532,10 @@ define('forms/classes/form-base',["require", "exports", "aurelia-framework", "./
             this.expression = new Map();
             this.toolbarOptions = this.toolbar.createToolbarOptions(this);
         }
-        FormBase.prototype.activate = function (parameters) {
-            return;
+        FormBase.prototype.activate = function (routeInfo) {
+            if (routeInfo && routeInfo.parameters && routeInfo.parameters.id) {
+                this.variable.data.$id = routeInfo.parameters.id;
+            }
         };
         FormBase.prototype.createObserver = function (expression, action, bindingContext) {
             return this
@@ -1502,6 +1580,25 @@ define('forms/classes/form-base',["require", "exports", "aurelia-framework", "./
         return FormBase;
     }());
     exports.FormBase = FormBase;
+});
+
+define('forms/classes/command-instance',["require", "exports"], function (require, exports) {
+    "use strict";
+    var CommandInstance = (function () {
+        function CommandInstance(form) {
+            this.form = form;
+            this.commands = [];
+        }
+        CommandInstance.prototype.addInfo = function (command) {
+            this.commands.push(command);
+        };
+        CommandInstance.prototype.getCommands = function () {
+            var _this = this;
+            return this.commands.map(function (i) { return _this.form.evaluateExpression(i.binding.bindToFQ); });
+        };
+        return CommandInstance;
+    }());
+    exports.CommandInstance = CommandInstance;
 });
 
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -1616,6 +1713,14 @@ define('forms/widget-services/data-grid-widget-creator-service',["require", "exp
                 clickActions.push(function (e) {
                     form.model.data[options.editDataContext] = e.data;
                 });
+            }
+            if (options.editUrl && options.dataModel) {
+                var model_2 = form.model.getInfo(options.dataModel);
+                if (model_2) {
+                    clickActions.push(function (e) {
+                        location.assign("#" + options.editUrl + "/" + e.data[model_2.keyProperty]);
+                    });
+                }
             }
             if (clickActions.length > 0) {
                 dataGridOptions.onRowClick = function (e) {
@@ -1958,538 +2063,44 @@ define('forms/widget-services/index',["require", "exports", "./widget-creator-se
     __export(widget_creator_service_1);
 });
 
-define('main/functions/test-function',["require", "exports"], function (require, exports) {
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+define('security/services/authorization-service',["require", "exports", "aurelia-framework", "../../forms/services/rest-service"], function (require, exports, aurelia_framework_1, rest_service_1) {
     "use strict";
-    var TestFunction = (function () {
-        function TestFunction(form, namespace, parameters) {
-            this.form = form;
-            this.namespace = namespace;
-            this.parameters = parameters;
-            this.dataList = [
-                {
-                    a: "A",
-                    b: "B"
-                },
-                {
-                    a: "A",
-                    b: "B"
-                },
-                {
-                    a: "A",
-                    b: "B"
-                }
-            ];
-            this.dummyText = {
-                placeholder: "This is a dummy"
-            };
-            this.giveItToMe = {
-                id: "giveItToMe",
-                title: "Test with Func",
-                execute: function () {
-                    alert('Hallo');
-                }
-            };
-            this.icon = "fa-book";
-            this.downloadUrl = "http://www.tip.co.at";
-            this.imageUrl = "https://upload.wikimedia.org/wikipedia/commons/e/ec/Blume_mit_Schmetterling_und_Biene_1uf.JPG";
-            this.sayHelloCommand = {
-                id: "$sayHello",
-                title: "Sag Hallo",
-                execute: function () { return alert("Hallo"); }
-            };
+    var AuthorizationService = (function () {
+        function AuthorizationService(rest, aurelia) {
+            this.rest = rest;
+            this.aurelia = aurelia;
         }
-        TestFunction.prototype.dummyRowClickFunc = function (e) {
-            alert("rowClick Data: " + e.data.a);
+        AuthorizationService.prototype.login = function (data) {
+            var _this = this;
+            return this.rest.post({
+                url: "base/Authorization/Login",
+                data: data
+            }).then(function (r) {
+                if (r.IsValid) {
+                    _this.aurelia.setRoot("app");
+                    return true;
+                }
+                DevExpress.ui.notify("Benutzer oder Passwort ungültig", "error", 3000);
+                return false;
+            });
         };
-        return TestFunction;
+        return AuthorizationService;
     }());
-    exports.TestFunction = TestFunction;
-});
-
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('main/views/demo-form',["require", "exports", "aurelia-framework", "../../forms/classes/form-base", "../../forms/widget-services/widget-creator-service", "../functions/test-function"], function (require, exports, aurelia_framework_1, form_base_1, widget_creator_service_1, test_function_1) {
-    "use strict";
-    var DemoForm = (function (_super) {
-        __extends(DemoForm, _super);
-        function DemoForm(widgetCreator) {
-            var _this = _super.call(this) || this;
-            _this.widgetCreator = widgetCreator;
-            _this.addModel({
-                "id": "$m_1",
-                "webApiAction": "base/Security/Profile",
-                "webApiExpand": {
-                    "Mandator": null
-                },
-                "keyProperty": "Id",
-                "filters": []
-            });
-            _this.addModel({
-                "id": "$m_2",
-                "filters": []
-            });
-            _this.addModel({
-                "id": "$m_3",
-                "webApiAction": "base/Security/AuthgroupProfile",
-                "webApiExpand": {
-                    "Authgroup": null
-                },
-                "webApiWhere": ["IdProfile", {
-                        "isBound": true,
-                        "expression": "model.data.$m_2.Id"
-                    }],
-                "keyProperty": "Id",
-                "filters": []
-            });
-            _this.addCommand({
-                "binding": {
-                    "bindTo": "$f_Test.sayHelloCommand",
-                    "bindToFQ": "function.$f_Test.sayHelloCommand",
-                    "propertyPrefix": "$f_Test"
-                }
-            });
-            _this.addFunction("$f_Test", new test_function_1.TestFunction(_this, "function.$f_Test", {
-                "x": 1,
-                "y": 2
-            }));
-            _this.widgetCreator.addDataGrid(_this, {
-                "columns": [{
-                        "caption": "Name",
-                        "bindTo": "Name",
-                        "sortIndex": 0,
-                        "sortOrder": "desc"
-                    }, {
-                        "caption": "Mandant",
-                        "bindTo": "Mandator.Name"
-                    }],
-                "optionsToolbar": {
-                    "optionsName": "ide66e04a1333e4544b20f4c3ac1d76a68ToolbarOptions",
-                    "optionsNameFQ": "ide66e04a1333e4544b20f4c3ac1d76a68ToolbarOptions"
-                },
-                "binding": {
-                    "dataContext": "$m_1",
-                    "bindToFQ": "model.data.$m_1."
-                },
-                "dataModel": "$m_1",
-                "editDataContext": "$m_2",
-                "selectionMode": 1,
-                "edits": [],
-                "filters": [],
-                "commands": [],
-                "id": "ide66e04a1333e4544b20f4c3ac1d76a68",
-                "options": {
-                    "optionsName": "ide66e04a1333e4544b20f4c3ac1d76a68Options",
-                    "optionsNameFQ": "ide66e04a1333e4544b20f4c3ac1d76a68Options"
-                }
-            });
-            _this.widgetCreator.addDataGrid(_this, {
-                "columns": [{
-                        "caption": "Berechtigungsgruppe",
-                        "bindTo": "Authgroup.Name",
-                        "sortIndex": 0,
-                        "sortOrder": "desc"
-                    }],
-                "optionsToolbar": {
-                    "optionsName": "id20ae03bc89ba4cfeb1c3619af5776dafToolbarOptions",
-                    "optionsNameFQ": "id20ae03bc89ba4cfeb1c3619af5776dafToolbarOptions"
-                },
-                "binding": {
-                    "dataContext": "$m_3",
-                    "bindToFQ": "model.data.$m_3."
-                },
-                "dataModel": "$m_3",
-                "edits": [],
-                "filters": [],
-                "commands": [],
-                "id": "id20ae03bc89ba4cfeb1c3619af5776daf",
-                "options": {
-                    "optionsName": "id20ae03bc89ba4cfeb1c3619af5776dafOptions",
-                    "optionsNameFQ": "id20ae03bc89ba4cfeb1c3619af5776dafOptions"
-                }
-            });
-            return _this;
-        }
-        return DemoForm;
-    }(form_base_1.FormBase));
-    DemoForm = __decorate([
+    AuthorizationService = __decorate([
         aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [widget_creator_service_1.WidgetCreatorService])
-    ], DemoForm);
-    exports.DemoForm = DemoForm;
-});
-
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('main/views/form-test-form',["require", "exports", "aurelia-framework", "../../forms/classes/form-base", "../../forms/widget-services/widget-creator-service", "../functions/test-function"], function (require, exports, aurelia_framework_1, form_base_1, widget_creator_service_1, test_function_1) {
-    "use strict";
-    var FormTestForm = (function (_super) {
-        __extends(FormTestForm, _super);
-        function FormTestForm(widgetCreator) {
-            var _this = _super.call(this) || this;
-            _this.widgetCreator = widgetCreator;
-            _this.id77ac534b89bf49bba87390dd8a98fe74Selected = 0;
-            _this.addModel({
-                "id": "$m_Dummy",
-                "webApiAction": "base/Security/Profile",
-                "keyProperty": "Id",
-                "filters": []
-            });
-            _this.addModel({
-                "id": "$m_Dummy2",
-                "webApiAction": "base/Security/Profile",
-                "keyProperty": "Id",
-                "filters": []
-            });
-            _this.addModel({
-                "id": "$m_Dummy3",
-                "webApiAction": "base/Security/Profile",
-                "key": "model.data.$m_Dummy2.Id",
-                "keyProperty": "Id",
-                "filters": []
-            });
-            _this.addFunction("$f_Test", new test_function_1.TestFunction(_this, "function.$f_Test", {
-                "x": 1,
-                "y": 2
-            }));
-            _this.widgetCreator.addCommand(_this, {
-                "id": "ide16526db93b344cda4befd0938c5fb9c",
-                "options": {
-                    "optionsName": "ide16526db93b344cda4befd0938c5fb9cOptions",
-                    "optionsNameFQ": "ide16526db93b344cda4befd0938c5fb9cOptions"
-                },
-                "binding": {
-                    "bindTo": "$f_Test.giveItToMe",
-                    "bindToFQ": "function.$f_Test.giveItToMe",
-                    "propertyPrefix": "$f_Test"
-                }
-            });
-            _this.widgetCreator.addTextBox(_this, {
-                "caption": "Name",
-                "binding": {
-                    "dataContext": "$m_Dummy2",
-                    "bindTo": "Name",
-                    "bindToFQ": "model.data.$m_Dummy2.Name"
-                },
-                "validationRules": [],
-                "id": "ide8f8e85d66f34c59bb500147dc963417",
-                "options": {
-                    "optionsName": "ide8f8e85d66f34c59bb500147dc963417Options",
-                    "optionsNameFQ": "ide8f8e85d66f34c59bb500147dc963417Options"
-                }
-            });
-            _this.widgetCreator.addDateBox(_this, {
-                "caption": "Date",
-                "binding": {
-                    "dataContext": "$m_Dummy2",
-                    "bindTo": "ModifiedDate",
-                    "bindToFQ": "model.data.$m_Dummy2.ModifiedDate"
-                },
-                "validationRules": [],
-                "id": "idcfbdade73f6c4afdaf7056c020352326",
-                "options": {
-                    "optionsName": "idcfbdade73f6c4afdaf7056c020352326Options",
-                    "optionsNameFQ": "idcfbdade73f6c4afdaf7056c020352326Options"
-                }
-            });
-            _this.widgetCreator.addNumberBox(_this, {
-                "caption": "Number",
-                "binding": {
-                    "dataContext": "$m_Dummy2",
-                    "bindTo": "IdMandator",
-                    "bindToFQ": "model.data.$m_Dummy2.IdMandator"
-                },
-                "validationRules": [],
-                "id": "ida6b756b5a6e14405bc33c6abae2b4e4a",
-                "options": {
-                    "optionsName": "ida6b756b5a6e14405bc33c6abae2b4e4aOptions",
-                    "optionsNameFQ": "ida6b756b5a6e14405bc33c6abae2b4e4aOptions"
-                }
-            });
-            _this.widgetCreator.addTextArea(_this, {
-                "height": "200px",
-                "caption": "Name",
-                "binding": {
-                    "dataContext": "$m_Dummy2",
-                    "bindTo": "Name",
-                    "bindToFQ": "model.data.$m_Dummy2.Name"
-                },
-                "validationRules": [],
-                "id": "id8a5ba60ff9814fe195d7be78dfe16764",
-                "options": {
-                    "optionsName": "id8a5ba60ff9814fe195d7be78dfe16764Options",
-                    "optionsNameFQ": "id8a5ba60ff9814fe195d7be78dfe16764Options"
-                }
-            });
-            _this.widgetCreator.addCalendar(_this, {
-                "caption": "Name",
-                "binding": {
-                    "dataContext": "$m_Dummy2",
-                    "bindTo": "ModifiedDate",
-                    "bindToFQ": "model.data.$m_Dummy2.ModifiedDate"
-                },
-                "validationRules": [],
-                "id": "id0e8d1e8ab5344ccf9389c45473042259",
-                "options": {
-                    "optionsName": "id0e8d1e8ab5344ccf9389c45473042259Options",
-                    "optionsNameFQ": "id0e8d1e8ab5344ccf9389c45473042259Options"
-                }
-            });
-            _this.widgetCreator.addTextArea(_this, {
-                "height": "200px",
-                "caption": "Name",
-                "binding": {
-                    "dataContext": "$m_Dummy2",
-                    "bindTo": "Name",
-                    "bindToFQ": "model.data.$m_Dummy2.Name"
-                },
-                "validationRules": [],
-                "id": "id446982385961420e9778602d75a93564",
-                "options": {
-                    "optionsName": "id446982385961420e9778602d75a93564Options",
-                    "optionsNameFQ": "id446982385961420e9778602d75a93564Options"
-                }
-            });
-            _this.widgetCreator.addCalendar(_this, {
-                "caption": "Name",
-                "binding": {
-                    "dataContext": "$m_Dummy2",
-                    "bindTo": "ModifiedDate",
-                    "bindToFQ": "model.data.$m_Dummy2.ModifiedDate"
-                },
-                "validationRules": [],
-                "id": "idd025a78e5a494c5fa7979af3cf7cd9f4",
-                "options": {
-                    "optionsName": "idd025a78e5a494c5fa7979af3cf7cd9f4Options",
-                    "optionsNameFQ": "idd025a78e5a494c5fa7979af3cf7cd9f4Options"
-                }
-            });
-            _this.widgetCreator.addTextArea(_this, {
-                "height": "200px",
-                "caption": "Name",
-                "binding": {
-                    "dataContext": "$m_Dummy3",
-                    "bindTo": "Name",
-                    "bindToFQ": "model.data.$m_Dummy3.Name"
-                },
-                "validationRules": [],
-                "id": "id185b76b6e14d4e01a0516c9ad633ab17",
-                "options": {
-                    "optionsName": "id185b76b6e14d4e01a0516c9ad633ab17Options",
-                    "optionsNameFQ": "id185b76b6e14d4e01a0516c9ad633ab17Options"
-                }
-            });
-            _this.widgetCreator.addCalendar(_this, {
-                "caption": "Name",
-                "binding": {
-                    "dataContext": "$m_Dummy3",
-                    "bindTo": "ModifiedDate",
-                    "bindToFQ": "model.data.$m_Dummy3.ModifiedDate"
-                },
-                "validationRules": [],
-                "id": "id2f74424ab580475ead2fbb702b231e8b",
-                "options": {
-                    "optionsName": "id2f74424ab580475ead2fbb702b231e8bOptions",
-                    "optionsNameFQ": "id2f74424ab580475ead2fbb702b231e8bOptions"
-                }
-            });
-            _this.widgetCreator.addTextBox(_this, {
-                "caption": "Bezeichnung",
-                "binding": {
-                    "dataContext": "$m_Dummy3",
-                    "bindTo": "Name",
-                    "bindToFQ": "model.data.$m_Dummy3.Name"
-                },
-                "validationRules": [],
-                "id": "id0a80fca494a442d185aac57219c90e2f",
-                "options": {
-                    "optionsName": "id0a80fca494a442d185aac57219c90e2fOptions",
-                    "optionsNameFQ": "id0a80fca494a442d185aac57219c90e2fOptions"
-                }
-            });
-            _this.widgetCreator.addTab(_this, {
-                "id": "id77ac534b89bf49bba87390dd8a98fe74",
-                "options": {
-                    "optionsName": "id77ac534b89bf49bba87390dd8a98fe74Options",
-                    "optionsNameFQ": "id77ac534b89bf49bba87390dd8a98fe74Options"
-                },
-                "pages": [{
-                        "caption": "Tab 1"
-                    }, {
-                        "caption": "Tab 2",
-                        "onActivated": "dummyx = 1"
-                    }, {
-                        "caption": "Tab 3"
-                    }]
-            });
-            _this.widgetCreator.addDataGrid(_this, {
-                "showFilterRow": true,
-                "columns": [{
-                        "caption": "Name",
-                        "bindTo": "Name"
-                    }, {
-                        "caption": "ModifiedDate",
-                        "bindTo": "ModifiedDate"
-                    }],
-                "optionsToolbar": {
-                    "optionsName": "idacf5823e349e478889f4b23a9da7dbe5ToolbarOptions",
-                    "optionsNameFQ": "idacf5823e349e478889f4b23a9da7dbe5ToolbarOptions"
-                },
-                "binding": {
-                    "dataContext": "$m_Dummy",
-                    "bindToFQ": "model.data.$m_Dummy."
-                },
-                "dataModel": "$m_Dummy",
-                "editDataContext": "$m_Dummy2",
-                "onItemClick": "$f_Test.dummyRowClickFunc(e)",
-                "selectionMode": 1,
-                "edits": [],
-                "filters": [],
-                "commands": [],
-                "id": "idacf5823e349e478889f4b23a9da7dbe5",
-                "options": {
-                    "optionsName": "idacf5823e349e478889f4b23a9da7dbe5Options",
-                    "optionsNameFQ": "idacf5823e349e478889f4b23a9da7dbe5Options"
-                }
-            });
-            return _this;
-        }
-        Object.defineProperty(FormTestForm.prototype, "id588f98a31e9d474c990e2180d26043d0", {
-            get: function () {
-                return this.getFileDownloadUrl("function.$f_Test.downloadUrl");
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(FormTestForm.prototype, "id625e2be9db894459b46931dd5d34b22c", {
-            get: function () {
-                return this.getFileDownloadUrl("function.$f_Test.imageUrl");
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(FormTestForm.prototype, "id1005e1c72c5c4d00b19bbc321c5961b7", {
-            get: function () {
-                return {
-                    'background-image': 'url(' + this.id625e2be9db894459b46931dd5d34b22c + ')'
-                };
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(FormTestForm.prototype, "id4a8763b36db547c896f97cd1a2b88098", {
-            get: function () {
-                return this.getFileDownloadUrl("function.$f_Test.imageUrl");
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return FormTestForm;
-    }(form_base_1.FormBase));
-    __decorate([
-        aurelia_framework_1.computedFrom("function.$f_Test.downloadUrl"),
-        __metadata("design:type", Object),
-        __metadata("design:paramtypes", [])
-    ], FormTestForm.prototype, "id588f98a31e9d474c990e2180d26043d0", null);
-    __decorate([
-        aurelia_framework_1.computedFrom("function.$f_Test.imageUrl"),
-        __metadata("design:type", Object),
-        __metadata("design:paramtypes", [])
-    ], FormTestForm.prototype, "id625e2be9db894459b46931dd5d34b22c", null);
-    __decorate([
-        aurelia_framework_1.computedFrom("function.$f_Test.imageUrl"),
-        __metadata("design:type", Object),
-        __metadata("design:paramtypes", [])
-    ], FormTestForm.prototype, "id1005e1c72c5c4d00b19bbc321c5961b7", null);
-    __decorate([
-        aurelia_framework_1.computedFrom("function.$f_Test.imageUrl"),
-        __metadata("design:type", Object),
-        __metadata("design:paramtypes", [])
-    ], FormTestForm.prototype, "id4a8763b36db547c896f97cd1a2b88098", null);
-    FormTestForm = __decorate([
-        aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [widget_creator_service_1.WidgetCreatorService])
-    ], FormTestForm);
-    exports.FormTestForm = FormTestForm;
-});
-
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('main/views/main-form',["require", "exports", "aurelia-framework", "../../forms/classes/form-base", "../../forms/widget-services/widget-creator-service"], function (require, exports, aurelia_framework_1, form_base_1, widget_creator_service_1) {
-    "use strict";
-    var MainForm = (function (_super) {
-        __extends(MainForm, _super);
-        function MainForm(widgetCreator) {
-            var _this = _super.call(this) || this;
-            _this.widgetCreator = widgetCreator;
-            _this.id5faeef8cfbb9413bba76a157d78c24deSelected = 0;
-            _this.widgetCreator.addTab(_this, {
-                "id": "id5faeef8cfbb9413bba76a157d78c24de",
-                "options": {
-                    "optionsName": "id5faeef8cfbb9413bba76a157d78c24deOptions",
-                    "optionsNameFQ": "id5faeef8cfbb9413bba76a157d78c24deOptions"
-                },
-                "pages": [{
-                        "caption": "Demo"
-                    }, {
-                        "caption": "Demo"
-                    }]
-            });
-            return _this;
-        }
-        return MainForm;
-    }(form_base_1.FormBase));
-    MainForm = __decorate([
-        aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [widget_creator_service_1.WidgetCreatorService])
-    ], MainForm);
-    exports.MainForm = MainForm;
-});
-
-define('ui/services/layout-service',["require", "exports"], function (require, exports) {
-    "use strict";
-    var LayoutService = (function () {
-        function LayoutService() {
-            this.isSidebarCollapsed = false;
-        }
-        return LayoutService;
-    }());
-    exports.LayoutService = LayoutService;
+        __metadata("design:paramtypes", [rest_service_1.RestService,
+            aurelia_framework_1.Aurelia])
+    ], AuthorizationService);
+    exports.AuthorizationService = AuthorizationService;
 });
 
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -2575,6 +2186,22 @@ define('stack-router/services/history-service',["require", "exports", "aurelia-f
     exports.HistoryService = HistoryService;
 });
 
+define('ui/services/layout-service',["require", "exports"], function (require, exports) {
+    "use strict";
+    var LayoutService = (function () {
+        function LayoutService() {
+            this.isSidebarCollapsed = false;
+        }
+        return LayoutService;
+    }());
+    exports.LayoutService = LayoutService;
+});
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -2584,19 +2211,373 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-define('ui/views/content/content',["require", "exports", "aurelia-framework", "../../services/layout-service"], function (require, exports, aurelia_framework_1, layout_service_1) {
+define('security/views/authgroup/authgroup-edit-form',["require", "exports", "aurelia-framework", "../../../forms/classes/form-base", "../../../forms/widget-services/widget-creator-service"], function (require, exports, aurelia_framework_1, form_base_1, widget_creator_service_1) {
     "use strict";
-    var Content = (function () {
-        function Content(layout) {
-            this.layout = layout;
+    var AuthgroupEditForm = (function (_super) {
+        __extends(AuthgroupEditForm, _super);
+        function AuthgroupEditForm(widgetCreator) {
+            var _this = _super.call(this) || this;
+            _this.widgetCreator = widgetCreator;
+            _this.addModel({
+                "id": "$m_A",
+                "webApiAction": "base/Security/Authgroup",
+                "key": "variable.data.$id",
+                "keyProperty": "Id",
+                "postOnSave": true,
+                "isMain": true,
+                "filters": []
+            });
+            _this.widgetCreator.addTextBox(_this, {
+                "caption": "Bezeichnung",
+                "binding": {
+                    "dataContext": "$m_A",
+                    "bindTo": "Name",
+                    "bindToFQ": "model.data.$m_A.Name"
+                },
+                "validationRules": [],
+                "id": "idfdbf14e7a737433389e32e2282ff2359",
+                "options": {
+                    "optionsName": "idfdbf14e7a737433389e32e2282ff2359Options",
+                    "optionsNameFQ": "idfdbf14e7a737433389e32e2282ff2359Options"
+                }
+            });
+            _this.widgetCreator.addSelectBox(_this, {
+                "idSelect": "mandator",
+                "caption": "Mandant",
+                "binding": {
+                    "dataContext": "$m_A",
+                    "bindTo": "IdMandator",
+                    "bindToFQ": "model.data.$m_A.IdMandator"
+                },
+                "validationRules": [],
+                "id": "id87fa138693ba41899042ba41fb8b34ab",
+                "options": {
+                    "optionsName": "id87fa138693ba41899042ba41fb8b34abOptions",
+                    "optionsNameFQ": "id87fa138693ba41899042ba41fb8b34abOptions"
+                }
+            }, {
+                "id": "mandator",
+                "elementName": "select-box",
+                "valueMember": "Id",
+                "displayMember": "Name",
+                "action": "base/Security/Mandator",
+                "columns": ["Name", "Id"]
+            });
+            return _this;
         }
-        return Content;
-    }());
-    Content = __decorate([
+        return AuthgroupEditForm;
+    }(form_base_1.FormBase));
+    AuthgroupEditForm = __decorate([
         aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [layout_service_1.LayoutService])
-    ], Content);
-    exports.Content = Content;
+        __metadata("design:paramtypes", [widget_creator_service_1.WidgetCreatorService])
+    ], AuthgroupEditForm);
+    exports.AuthgroupEditForm = AuthgroupEditForm;
+});
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+define('security/views/authgroup/authgroup-list-form',["require", "exports", "aurelia-framework", "../../../forms/classes/form-base", "../../../forms/widget-services/widget-creator-service"], function (require, exports, aurelia_framework_1, form_base_1, widget_creator_service_1) {
+    "use strict";
+    var AuthgroupListForm = (function (_super) {
+        __extends(AuthgroupListForm, _super);
+        function AuthgroupListForm(widgetCreator) {
+            var _this = _super.call(this) || this;
+            _this.widgetCreator = widgetCreator;
+            _this.addModel({
+                "id": "$m_A",
+                "webApiAction": "base/Security/Authgroup",
+                "webApiExpand": {
+                    "Mandator": null
+                },
+                "keyProperty": "Id",
+                "filters": []
+            });
+            _this.widgetCreator.addDataGrid(_this, {
+                "columns": [{
+                        "bindTo": "Name",
+                        "sortIndex": 0,
+                        "sortOrder": "asc"
+                    }, {
+                        "caption": "Mandant",
+                        "bindTo": "Mandator.Name"
+                    }],
+                "binding": {
+                    "dataContext": "$m_A",
+                    "bindToFQ": "model.data.$m_A."
+                },
+                "dataModel": "$m_A",
+                "editUrl": "security/authgroup",
+                "addShortscuts": true,
+                "isMainList": true,
+                "edits": [],
+                "filters": [],
+                "commands": [],
+                "id": "id46c7b627cf294b7ea8d0c08634c0e37b",
+                "options": {
+                    "optionsName": "id46c7b627cf294b7ea8d0c08634c0e37bOptions",
+                    "optionsNameFQ": "id46c7b627cf294b7ea8d0c08634c0e37bOptions"
+                }
+            });
+            return _this;
+        }
+        return AuthgroupListForm;
+    }(form_base_1.FormBase));
+    AuthgroupListForm = __decorate([
+        aurelia_framework_1.autoinject,
+        __metadata("design:paramtypes", [widget_creator_service_1.WidgetCreatorService])
+    ], AuthgroupListForm);
+    exports.AuthgroupListForm = AuthgroupListForm;
+});
+
+define('security/views/login/login.funcs',["require", "exports", "aurelia-framework", "../../services/authorization-service"], function (require, exports, aurelia_framework_1, authorization_service_1) {
+    "use strict";
+    var LoginFuncs = (function () {
+        function LoginFuncs(form, namespace) {
+            var _this = this;
+            this.form = form;
+            this.namespace = namespace;
+            this.loginCommand = {
+                id: "$login",
+                title: "Anmelden",
+                execute: function () {
+                    _this.authorization.login(_this.form.model.data.$m_login);
+                }
+            };
+            this.authorization = aurelia_framework_1.Container.instance.get(authorization_service_1.AuthorizationService);
+            form.model.data.$m_login = {
+                StayLoggedOn: false
+            };
+        }
+        return LoginFuncs;
+    }());
+    exports.LoginFuncs = LoginFuncs;
+});
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+define('security/views/login/login-form',["require", "exports", "aurelia-framework", "../../../forms/classes/form-base", "../../../forms/widget-services/widget-creator-service", "./login.funcs"], function (require, exports, aurelia_framework_1, form_base_1, widget_creator_service_1, login_funcs_1) {
+    "use strict";
+    var LoginForm = (function (_super) {
+        __extends(LoginForm, _super);
+        function LoginForm(widgetCreator) {
+            var _this = _super.call(this) || this;
+            _this.widgetCreator = widgetCreator;
+            _this.addModel({
+                "id": "$m_login",
+                "filters": []
+            });
+            _this.addFunction("$f", new login_funcs_1.LoginFuncs(_this, "function.$f"));
+            _this.widgetCreator.addTextBox(_this, {
+                "caption": "Benutzername",
+                "binding": {
+                    "dataContext": "$m_login",
+                    "bindTo": "Username",
+                    "bindToFQ": "model.data.$m_login.Username"
+                },
+                "validationRules": [],
+                "id": "id01362b21f9c84022804a1fb73694c986",
+                "options": {
+                    "optionsName": "id01362b21f9c84022804a1fb73694c986Options",
+                    "optionsNameFQ": "id01362b21f9c84022804a1fb73694c986Options"
+                }
+            });
+            _this.widgetCreator.addTextBox(_this, {
+                "caption": "Passwort",
+                "binding": {
+                    "dataContext": "$m_login",
+                    "bindTo": "Password",
+                    "bindToFQ": "model.data.$m_login.Password"
+                },
+                "validationRules": [],
+                "id": "id7d0ab6f9c336408e8c47b4a30960872b",
+                "options": {
+                    "optionsName": "id7d0ab6f9c336408e8c47b4a30960872bOptions",
+                    "optionsNameFQ": "id7d0ab6f9c336408e8c47b4a30960872bOptions"
+                }
+            });
+            _this.widgetCreator.addCheckBox(_this, {
+                "caption": "Angemeldet bleiben",
+                "binding": {
+                    "dataContext": "$m_login",
+                    "bindTo": "StayLoggedOn",
+                    "bindToFQ": "model.data.$m_login.StayLoggedOn"
+                },
+                "validationRules": [],
+                "id": "idd888ec1707324b3bbb9653f7ae2fc1a0",
+                "options": {
+                    "optionsName": "idd888ec1707324b3bbb9653f7ae2fc1a0Options",
+                    "optionsNameFQ": "idd888ec1707324b3bbb9653f7ae2fc1a0Options"
+                }
+            });
+            _this.widgetCreator.addCommand(_this, {
+                "id": "idae9f0b156b2d44689e184cee65cde798",
+                "options": {
+                    "optionsName": "idae9f0b156b2d44689e184cee65cde798Options",
+                    "optionsNameFQ": "idae9f0b156b2d44689e184cee65cde798Options"
+                },
+                "binding": {
+                    "bindTo": "$f.loginCommand",
+                    "bindToFQ": "function.$f.loginCommand",
+                    "propertyPrefix": "$f"
+                }
+            });
+            return _this;
+        }
+        return LoginForm;
+    }(form_base_1.FormBase));
+    LoginForm = __decorate([
+        aurelia_framework_1.autoinject,
+        __metadata("design:paramtypes", [widget_creator_service_1.WidgetCreatorService])
+    ], LoginForm);
+    exports.LoginForm = LoginForm;
+});
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+define('stack-router/attributes/stack-router-link/stack-router-link',["require", "exports", "aurelia-framework", "../../services/history-service"], function (require, exports, aurelia_framework_1, history_service_1) {
+    "use strict";
+    var StackRouterLinkCustomAttribute = (function () {
+        function StackRouterLinkCustomAttribute(element, history) {
+            this.element = element;
+            this.history = history;
+        }
+        StackRouterLinkCustomAttribute.prototype.bind = function () {
+            var _this = this;
+            this.element.addEventListener("click", function (e) {
+                var event = window.event;
+                if (!event.ctrlKey
+                    && !event.altKey
+                    && !event.shiftKey
+                    && !event.metaKey) {
+                    _this.history.navigateByCode(_this.element.getAttribute("href"), _this.clearStack);
+                    e.preventDefault();
+                }
+            });
+        };
+        return StackRouterLinkCustomAttribute;
+    }());
+    __decorate([
+        aurelia_framework_1.bindable,
+        __metadata("design:type", Boolean)
+    ], StackRouterLinkCustomAttribute.prototype, "clearStack", void 0);
+    StackRouterLinkCustomAttribute = __decorate([
+        aurelia_framework_1.autoinject,
+        __metadata("design:paramtypes", [Element,
+            history_service_1.HistoryService])
+    ], StackRouterLinkCustomAttribute);
+    exports.StackRouterLinkCustomAttribute = StackRouterLinkCustomAttribute;
+});
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+define('stack-router/views/view/view',["require", "exports", "aurelia-framework"], function (require, exports, aurelia_framework_1) {
+    "use strict";
+    var View = (function () {
+        function View(bindingEngine) {
+            this.bindingEngine = bindingEngine;
+        }
+        Object.defineProperty(View.prototype, "toolbarOptions", {
+            get: function () {
+                if (!this.controller || !this.controller.currentViewModel) {
+                    return null;
+                }
+                return this.controller.currentViewModel.toolbarOptions;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return View;
+    }());
+    __decorate([
+        aurelia_framework_1.bindable,
+        __metadata("design:type", Object)
+    ], View.prototype, "view", void 0);
+    __decorate([
+        aurelia_framework_1.computedFrom("controller.currentViewModel.toolbarOptions"),
+        __metadata("design:type", Object),
+        __metadata("design:paramtypes", [])
+    ], View.prototype, "toolbarOptions", null);
+    View = __decorate([
+        aurelia_framework_1.autoinject,
+        __metadata("design:paramtypes", [aurelia_framework_1.BindingEngine])
+    ], View);
+    exports.View = View;
+});
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+define('stack-router/views/stack-router/stack-router',["require", "exports", "aurelia-framework", "aurelia-event-aggregator", "../../services/router-service", "../../services/history-service"], function (require, exports, aurelia_framework_1, aurelia_event_aggregator_1, router_service_1, history_service_1) {
+    "use strict";
+    var StackRouter = (function () {
+        function StackRouter(history, router, eventAggregator) {
+            this.history = history;
+            this.router = router;
+            this.eventAggregator = eventAggregator;
+        }
+        StackRouter.prototype.created = function (owningView) {
+            this.owningView = owningView;
+        };
+        StackRouter.prototype.bind = function (bindingContext, overrideContext) {
+            this.bindingContext = bindingContext;
+            this.overrideContext = overrideContext;
+        };
+        StackRouter.prototype.attached = function () {
+            this.history.navigateCurrent();
+        };
+        return StackRouter;
+    }());
+    StackRouter = __decorate([
+        aurelia_framework_1.autoinject,
+        __metadata("design:paramtypes", [history_service_1.HistoryService,
+            router_service_1.RouterService,
+            aurelia_event_aggregator_1.EventAggregator])
+    ], StackRouter);
+    exports.StackRouter = StackRouter;
 });
 
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -2635,6 +2616,30 @@ define('ui/views/container/container',["require", "exports", "aurelia-framework"
         __metadata("design:paramtypes", [layout_service_1.LayoutService])
     ], Container);
     exports.Container = Container;
+});
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+define('ui/views/content/content',["require", "exports", "aurelia-framework", "../../services/layout-service"], function (require, exports, aurelia_framework_1, layout_service_1) {
+    "use strict";
+    var Content = (function () {
+        function Content(layout) {
+            this.layout = layout;
+        }
+        return Content;
+    }());
+    Content = __decorate([
+        aurelia_framework_1.autoinject,
+        __metadata("design:paramtypes", [layout_service_1.LayoutService])
+    ], Content);
+    exports.Content = Content;
 });
 
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -2707,167 +2712,24 @@ define('ui/views/header/header',["require", "exports", "aurelia-framework", "../
     exports.Header = Header;
 });
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('stack-router/attributes/stack-router-link/stack-router-link',["require", "exports", "aurelia-framework", "../../services/history-service"], function (require, exports, aurelia_framework_1, history_service_1) {
-    "use strict";
-    var StackRouterLinkCustomAttribute = (function () {
-        function StackRouterLinkCustomAttribute(element, history) {
-            this.element = element;
-            this.history = history;
-        }
-        StackRouterLinkCustomAttribute.prototype.bind = function () {
-            var _this = this;
-            this.element.addEventListener("click", function (e) {
-                var event = window.event;
-                if (!event.ctrlKey
-                    && !event.altKey
-                    && !event.shiftKey
-                    && !event.metaKey) {
-                    _this.history.navigateByCode(_this.element.getAttribute("href"), _this.clearStack);
-                    e.preventDefault();
-                }
-            });
-        };
-        return StackRouterLinkCustomAttribute;
-    }());
-    __decorate([
-        aurelia_framework_1.bindable,
-        __metadata("design:type", Boolean)
-    ], StackRouterLinkCustomAttribute.prototype, "clearStack", void 0);
-    StackRouterLinkCustomAttribute = __decorate([
-        aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [Element,
-            history_service_1.HistoryService])
-    ], StackRouterLinkCustomAttribute);
-    exports.StackRouterLinkCustomAttribute = StackRouterLinkCustomAttribute;
-});
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('stack-router/views/stack-router/stack-router',["require", "exports", "aurelia-framework", "aurelia-event-aggregator", "../../services/router-service", "../../services/history-service"], function (require, exports, aurelia_framework_1, aurelia_event_aggregator_1, router_service_1, history_service_1) {
-    "use strict";
-    var StackRouter = (function () {
-        function StackRouter(history, router, eventAggregator) {
-            this.history = history;
-            this.router = router;
-            this.eventAggregator = eventAggregator;
-        }
-        StackRouter.prototype.created = function (owningView) {
-            this.owningView = owningView;
-        };
-        StackRouter.prototype.bind = function (bindingContext, overrideContext) {
-            this.bindingContext = bindingContext;
-            this.overrideContext = overrideContext;
-        };
-        StackRouter.prototype.attached = function () {
-            this.history.navigateCurrent();
-        };
-        return StackRouter;
-    }());
-    StackRouter = __decorate([
-        aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [history_service_1.HistoryService,
-            router_service_1.RouterService,
-            aurelia_event_aggregator_1.EventAggregator])
-    ], StackRouter);
-    exports.StackRouter = StackRouter;
-});
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('stack-router/views/view/view',["require", "exports", "aurelia-framework"], function (require, exports, aurelia_framework_1) {
-    "use strict";
-    var View = (function () {
-        function View(bindingEngine) {
-            this.bindingEngine = bindingEngine;
-        }
-        Object.defineProperty(View.prototype, "toolbarOptions", {
-            get: function () {
-                if (!this.controller || !this.controller.currentViewModel) {
-                    return null;
-                }
-                return this.controller.currentViewModel.toolbarOptions;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return View;
-    }());
-    __decorate([
-        aurelia_framework_1.bindable,
-        __metadata("design:type", Object)
-    ], View.prototype, "view", void 0);
-    __decorate([
-        aurelia_framework_1.computedFrom("controller.currentViewModel.toolbarOptions"),
-        __metadata("design:type", Object),
-        __metadata("design:paramtypes", [])
-    ], View.prototype, "toolbarOptions", null);
-    View = __decorate([
-        aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [aurelia_framework_1.BindingEngine])
-    ], View);
-    exports.View = View;
-});
-
-define('forms/classes/command-instance',["require", "exports"], function (require, exports) {
-    "use strict";
-    var CommandInstance = (function () {
-        function CommandInstance(form) {
-            this.form = form;
-            this.commands = [];
-        }
-        CommandInstance.prototype.addInfo = function (command) {
-            this.commands.push(command);
-        };
-        CommandInstance.prototype.getCommands = function () {
-            var _this = this;
-            return this.commands.map(function (i) { return _this.form.evaluateExpression(i.binding.bindToFQ); });
-        };
-        return CommandInstance;
-    }());
-    exports.CommandInstance = CommandInstance;
-});
-
 define('text!app.html', ['module'], function(module) { module.exports = "<template>\r\n  <require from=\"./ui/views/container/container\"></require>\r\n  <container></container>\r\n</template>\r\n"; });
+define('text!security/login-app.html', ['module'], function(module) { module.exports = "<template>\r\n  <require from=\"../ui/views/container/container\"></require>\r\n  <container></container>\r\n</template>\r\n"; });
+define('text!ui/styles/bootstrap.css', ['module'], function(module) { module.exports = "@-ms-viewport {\n  width: device-width;\n}\n.visible-xs,\n.visible-sm,\n.visible-md,\n.visible-lg {\n  display: none !important;\n}\n.visible-xs-block,\n.visible-xs-inline,\n.visible-xs-inline-block,\n.visible-sm-block,\n.visible-sm-inline,\n.visible-sm-inline-block,\n.visible-md-block,\n.visible-md-inline,\n.visible-md-inline-block,\n.visible-lg-block,\n.visible-lg-inline,\n.visible-lg-inline-block {\n  display: none !important;\n}\n@media (max-width: 767px) {\n  .visible-xs {\n    display: block !important;\n  }\n  table.visible-xs {\n    display: table;\n  }\n  tr.visible-xs {\n    display: table-row !important;\n  }\n  th.visible-xs,\n  td.visible-xs {\n    display: table-cell !important;\n  }\n}\n@media (max-width: 767px) {\n  .visible-xs-block {\n    display: block !important;\n  }\n}\n@media (max-width: 767px) {\n  .visible-xs-inline {\n    display: inline !important;\n  }\n}\n@media (max-width: 767px) {\n  .visible-xs-inline-block {\n    display: inline-block !important;\n  }\n}\n@media (min-width: 768px) and (max-width: 991px) {\n  .visible-sm {\n    display: block !important;\n  }\n  table.visible-sm {\n    display: table;\n  }\n  tr.visible-sm {\n    display: table-row !important;\n  }\n  th.visible-sm,\n  td.visible-sm {\n    display: table-cell !important;\n  }\n}\n@media (min-width: 768px) and (max-width: 991px) {\n  .visible-sm-block {\n    display: block !important;\n  }\n}\n@media (min-width: 768px) and (max-width: 991px) {\n  .visible-sm-inline {\n    display: inline !important;\n  }\n}\n@media (min-width: 768px) and (max-width: 991px) {\n  .visible-sm-inline-block {\n    display: inline-block !important;\n  }\n}\n@media (min-width: 992px) and (max-width: 1199px) {\n  .visible-md {\n    display: block !important;\n  }\n  table.visible-md {\n    display: table;\n  }\n  tr.visible-md {\n    display: table-row !important;\n  }\n  th.visible-md,\n  td.visible-md {\n    display: table-cell !important;\n  }\n}\n@media (min-width: 992px) and (max-width: 1199px) {\n  .visible-md-block {\n    display: block !important;\n  }\n}\n@media (min-width: 992px) and (max-width: 1199px) {\n  .visible-md-inline {\n    display: inline !important;\n  }\n}\n@media (min-width: 992px) and (max-width: 1199px) {\n  .visible-md-inline-block {\n    display: inline-block !important;\n  }\n}\n@media (min-width: 1200px) {\n  .visible-lg {\n    display: block !important;\n  }\n  table.visible-lg {\n    display: table;\n  }\n  tr.visible-lg {\n    display: table-row !important;\n  }\n  th.visible-lg,\n  td.visible-lg {\n    display: table-cell !important;\n  }\n}\n@media (min-width: 1200px) {\n  .visible-lg-block {\n    display: block !important;\n  }\n}\n@media (min-width: 1200px) {\n  .visible-lg-inline {\n    display: inline !important;\n  }\n}\n@media (min-width: 1200px) {\n  .visible-lg-inline-block {\n    display: inline-block !important;\n  }\n}\n@media (max-width: 767px) {\n  .hidden-xs {\n    display: none !important;\n  }\n}\n@media (min-width: 768px) and (max-width: 991px) {\n  .hidden-sm {\n    display: none !important;\n  }\n}\n@media (min-width: 992px) and (max-width: 1199px) {\n  .hidden-md {\n    display: none !important;\n  }\n}\n@media (min-width: 1200px) {\n  .hidden-lg {\n    display: none !important;\n  }\n}\n.visible-print {\n  display: none !important;\n}\n@media print {\n  .visible-print {\n    display: block !important;\n  }\n  table.visible-print {\n    display: table;\n  }\n  tr.visible-print {\n    display: table-row !important;\n  }\n  th.visible-print,\n  td.visible-print {\n    display: table-cell !important;\n  }\n}\n.visible-print-block {\n  display: none !important;\n}\n@media print {\n  .visible-print-block {\n    display: block !important;\n  }\n}\n.visible-print-inline {\n  display: none !important;\n}\n@media print {\n  .visible-print-inline {\n    display: inline !important;\n  }\n}\n.visible-print-inline-block {\n  display: none !important;\n}\n@media print {\n  .visible-print-inline-block {\n    display: inline-block !important;\n  }\n}\n@media print {\n  .hidden-print {\n    display: none !important;\n  }\n}\n.container {\n  margin-right: auto;\n  margin-left: auto;\n  padding-left: 15px;\n  padding-right: 15px;\n}\n@media (min-width: 768px) {\n  .container {\n    width: 750px;\n  }\n}\n@media (min-width: 992px) {\n  .container {\n    width: 970px;\n  }\n}\n@media (min-width: 1200px) {\n  .container {\n    width: 1170px;\n  }\n}\n.container-fluid {\n  margin-right: auto;\n  margin-left: auto;\n  padding-left: 15px;\n  padding-right: 15px;\n}\n.row {\n  margin-left: -15px;\n  margin-right: -15px;\n}\n.col,\n.col-xs-1,\n.col-sm-1,\n.col-md-1,\n.col-lg-1,\n.col-xs-2,\n.col-sm-2,\n.col-md-2,\n.col-lg-2,\n.col-xs-3,\n.col-sm-3,\n.col-md-3,\n.col-lg-3,\n.col-xs-4,\n.col-sm-4,\n.col-md-4,\n.col-lg-4,\n.col-xs-5,\n.col-sm-5,\n.col-md-5,\n.col-lg-5,\n.col-xs-6,\n.col-sm-6,\n.col-md-6,\n.col-lg-6,\n.col-xs-7,\n.col-sm-7,\n.col-md-7,\n.col-lg-7,\n.col-xs-8,\n.col-sm-8,\n.col-md-8,\n.col-lg-8,\n.col-xs-9,\n.col-sm-9,\n.col-md-9,\n.col-lg-9,\n.col-xs-10,\n.col-sm-10,\n.col-md-10,\n.col-lg-10,\n.col-xs-11,\n.col-sm-11,\n.col-md-11,\n.col-lg-11,\n.col-xs-12,\n.col-sm-12,\n.col-md-12,\n.col-lg-12 {\n  position: relative;\n  min-height: 1px;\n  padding-left: 15px;\n  padding-right: 15px;\n}\n.col,\n.col-xs-1,\n.col-xs-2,\n.col-xs-3,\n.col-xs-4,\n.col-xs-5,\n.col-xs-6,\n.col-xs-7,\n.col-xs-8,\n.col-xs-9,\n.col-xs-10,\n.col-xs-11,\n.col-xs-12 {\n  float: left;\n}\n.col-xs-12 {\n  width: 100%;\n}\n.col-xs-11 {\n  width: 91.66666667%;\n}\n.col-xs-10 {\n  width: 83.33333333%;\n}\n.col-xs-9 {\n  width: 75%;\n}\n.col-xs-8 {\n  width: 66.66666667%;\n}\n.col-xs-7 {\n  width: 58.33333333%;\n}\n.col-xs-6 {\n  width: 50%;\n}\n.col-xs-5 {\n  width: 41.66666667%;\n}\n.col-xs-4 {\n  width: 33.33333333%;\n}\n.col-xs-3 {\n  width: 25%;\n}\n.col-xs-2 {\n  width: 16.66666667%;\n}\n.col-xs-1 {\n  width: 8.33333333%;\n}\n.col-xs-pull-12 {\n  right: 100%;\n}\n.col-xs-pull-11 {\n  right: 91.66666667%;\n}\n.col-xs-pull-10 {\n  right: 83.33333333%;\n}\n.col-xs-pull-9 {\n  right: 75%;\n}\n.col-xs-pull-8 {\n  right: 66.66666667%;\n}\n.col-xs-pull-7 {\n  right: 58.33333333%;\n}\n.col-xs-pull-6 {\n  right: 50%;\n}\n.col-xs-pull-5 {\n  right: 41.66666667%;\n}\n.col-xs-pull-4 {\n  right: 33.33333333%;\n}\n.col-xs-pull-3 {\n  right: 25%;\n}\n.col-xs-pull-2 {\n  right: 16.66666667%;\n}\n.col-xs-pull-1 {\n  right: 8.33333333%;\n}\n.col-xs-pull-0 {\n  right: auto;\n}\n.col-xs-push-12 {\n  left: 100%;\n}\n.col-xs-push-11 {\n  left: 91.66666667%;\n}\n.col-xs-push-10 {\n  left: 83.33333333%;\n}\n.col-xs-push-9 {\n  left: 75%;\n}\n.col-xs-push-8 {\n  left: 66.66666667%;\n}\n.col-xs-push-7 {\n  left: 58.33333333%;\n}\n.col-xs-push-6 {\n  left: 50%;\n}\n.col-xs-push-5 {\n  left: 41.66666667%;\n}\n.col-xs-push-4 {\n  left: 33.33333333%;\n}\n.col-xs-push-3 {\n  left: 25%;\n}\n.col-xs-push-2 {\n  left: 16.66666667%;\n}\n.col-xs-push-1 {\n  left: 8.33333333%;\n}\n.col-xs-push-0 {\n  left: auto;\n}\n.col-xs-offset-12 {\n  margin-left: 100%;\n}\n.col-xs-offset-11 {\n  margin-left: 91.66666667%;\n}\n.col-xs-offset-10 {\n  margin-left: 83.33333333%;\n}\n.col-xs-offset-9 {\n  margin-left: 75%;\n}\n.col-xs-offset-8 {\n  margin-left: 66.66666667%;\n}\n.col-xs-offset-7 {\n  margin-left: 58.33333333%;\n}\n.col-xs-offset-6 {\n  margin-left: 50%;\n}\n.col-xs-offset-5 {\n  margin-left: 41.66666667%;\n}\n.col-xs-offset-4 {\n  margin-left: 33.33333333%;\n}\n.col-xs-offset-3 {\n  margin-left: 25%;\n}\n.col-xs-offset-2 {\n  margin-left: 16.66666667%;\n}\n.col-xs-offset-1 {\n  margin-left: 8.33333333%;\n}\n.col-xs-offset-0 {\n  margin-left: 0%;\n}\n@media (min-width: 768px) {\n  .col,\n  .col-sm-1,\n  .col-sm-2,\n  .col-sm-3,\n  .col-sm-4,\n  .col-sm-5,\n  .col-sm-6,\n  .col-sm-7,\n  .col-sm-8,\n  .col-sm-9,\n  .col-sm-10,\n  .col-sm-11,\n  .col-sm-12 {\n    float: left;\n  }\n  .col-sm-12 {\n    width: 100%;\n  }\n  .col-sm-11 {\n    width: 91.66666667%;\n  }\n  .col-sm-10 {\n    width: 83.33333333%;\n  }\n  .col-sm-9 {\n    width: 75%;\n  }\n  .col-sm-8 {\n    width: 66.66666667%;\n  }\n  .col-sm-7 {\n    width: 58.33333333%;\n  }\n  .col-sm-6 {\n    width: 50%;\n  }\n  .col-sm-5 {\n    width: 41.66666667%;\n  }\n  .col-sm-4 {\n    width: 33.33333333%;\n  }\n  .col-sm-3 {\n    width: 25%;\n  }\n  .col-sm-2 {\n    width: 16.66666667%;\n  }\n  .col-sm-1 {\n    width: 8.33333333%;\n  }\n  .col-sm-pull-12 {\n    right: 100%;\n  }\n  .col-sm-pull-11 {\n    right: 91.66666667%;\n  }\n  .col-sm-pull-10 {\n    right: 83.33333333%;\n  }\n  .col-sm-pull-9 {\n    right: 75%;\n  }\n  .col-sm-pull-8 {\n    right: 66.66666667%;\n  }\n  .col-sm-pull-7 {\n    right: 58.33333333%;\n  }\n  .col-sm-pull-6 {\n    right: 50%;\n  }\n  .col-sm-pull-5 {\n    right: 41.66666667%;\n  }\n  .col-sm-pull-4 {\n    right: 33.33333333%;\n  }\n  .col-sm-pull-3 {\n    right: 25%;\n  }\n  .col-sm-pull-2 {\n    right: 16.66666667%;\n  }\n  .col-sm-pull-1 {\n    right: 8.33333333%;\n  }\n  .col-sm-pull-0 {\n    right: auto;\n  }\n  .col-sm-push-12 {\n    left: 100%;\n  }\n  .col-sm-push-11 {\n    left: 91.66666667%;\n  }\n  .col-sm-push-10 {\n    left: 83.33333333%;\n  }\n  .col-sm-push-9 {\n    left: 75%;\n  }\n  .col-sm-push-8 {\n    left: 66.66666667%;\n  }\n  .col-sm-push-7 {\n    left: 58.33333333%;\n  }\n  .col-sm-push-6 {\n    left: 50%;\n  }\n  .col-sm-push-5 {\n    left: 41.66666667%;\n  }\n  .col-sm-push-4 {\n    left: 33.33333333%;\n  }\n  .col-sm-push-3 {\n    left: 25%;\n  }\n  .col-sm-push-2 {\n    left: 16.66666667%;\n  }\n  .col-sm-push-1 {\n    left: 8.33333333%;\n  }\n  .col-sm-push-0 {\n    left: auto;\n  }\n  .col-sm-offset-12 {\n    margin-left: 100%;\n  }\n  .col-sm-offset-11 {\n    margin-left: 91.66666667%;\n  }\n  .col-sm-offset-10 {\n    margin-left: 83.33333333%;\n  }\n  .col-sm-offset-9 {\n    margin-left: 75%;\n  }\n  .col-sm-offset-8 {\n    margin-left: 66.66666667%;\n  }\n  .col-sm-offset-7 {\n    margin-left: 58.33333333%;\n  }\n  .col-sm-offset-6 {\n    margin-left: 50%;\n  }\n  .col-sm-offset-5 {\n    margin-left: 41.66666667%;\n  }\n  .col-sm-offset-4 {\n    margin-left: 33.33333333%;\n  }\n  .col-sm-offset-3 {\n    margin-left: 25%;\n  }\n  .col-sm-offset-2 {\n    margin-left: 16.66666667%;\n  }\n  .col-sm-offset-1 {\n    margin-left: 8.33333333%;\n  }\n  .col-sm-offset-0 {\n    margin-left: 0%;\n  }\n}\n@media (min-width: 992px) {\n  .col,\n  .col-md-1,\n  .col-md-2,\n  .col-md-3,\n  .col-md-4,\n  .col-md-5,\n  .col-md-6,\n  .col-md-7,\n  .col-md-8,\n  .col-md-9,\n  .col-md-10,\n  .col-md-11,\n  .col-md-12 {\n    float: left;\n  }\n  .col-md-12 {\n    width: 100%;\n  }\n  .col-md-11 {\n    width: 91.66666667%;\n  }\n  .col-md-10 {\n    width: 83.33333333%;\n  }\n  .col-md-9 {\n    width: 75%;\n  }\n  .col-md-8 {\n    width: 66.66666667%;\n  }\n  .col-md-7 {\n    width: 58.33333333%;\n  }\n  .col-md-6 {\n    width: 50%;\n  }\n  .col-md-5 {\n    width: 41.66666667%;\n  }\n  .col-md-4 {\n    width: 33.33333333%;\n  }\n  .col-md-3 {\n    width: 25%;\n  }\n  .col-md-2 {\n    width: 16.66666667%;\n  }\n  .col-md-1 {\n    width: 8.33333333%;\n  }\n  .col-md-pull-12 {\n    right: 100%;\n  }\n  .col-md-pull-11 {\n    right: 91.66666667%;\n  }\n  .col-md-pull-10 {\n    right: 83.33333333%;\n  }\n  .col-md-pull-9 {\n    right: 75%;\n  }\n  .col-md-pull-8 {\n    right: 66.66666667%;\n  }\n  .col-md-pull-7 {\n    right: 58.33333333%;\n  }\n  .col-md-pull-6 {\n    right: 50%;\n  }\n  .col-md-pull-5 {\n    right: 41.66666667%;\n  }\n  .col-md-pull-4 {\n    right: 33.33333333%;\n  }\n  .col-md-pull-3 {\n    right: 25%;\n  }\n  .col-md-pull-2 {\n    right: 16.66666667%;\n  }\n  .col-md-pull-1 {\n    right: 8.33333333%;\n  }\n  .col-md-pull-0 {\n    right: auto;\n  }\n  .col-md-push-12 {\n    left: 100%;\n  }\n  .col-md-push-11 {\n    left: 91.66666667%;\n  }\n  .col-md-push-10 {\n    left: 83.33333333%;\n  }\n  .col-md-push-9 {\n    left: 75%;\n  }\n  .col-md-push-8 {\n    left: 66.66666667%;\n  }\n  .col-md-push-7 {\n    left: 58.33333333%;\n  }\n  .col-md-push-6 {\n    left: 50%;\n  }\n  .col-md-push-5 {\n    left: 41.66666667%;\n  }\n  .col-md-push-4 {\n    left: 33.33333333%;\n  }\n  .col-md-push-3 {\n    left: 25%;\n  }\n  .col-md-push-2 {\n    left: 16.66666667%;\n  }\n  .col-md-push-1 {\n    left: 8.33333333%;\n  }\n  .col-md-push-0 {\n    left: auto;\n  }\n  .col-md-offset-12 {\n    margin-left: 100%;\n  }\n  .col-md-offset-11 {\n    margin-left: 91.66666667%;\n  }\n  .col-md-offset-10 {\n    margin-left: 83.33333333%;\n  }\n  .col-md-offset-9 {\n    margin-left: 75%;\n  }\n  .col-md-offset-8 {\n    margin-left: 66.66666667%;\n  }\n  .col-md-offset-7 {\n    margin-left: 58.33333333%;\n  }\n  .col-md-offset-6 {\n    margin-left: 50%;\n  }\n  .col-md-offset-5 {\n    margin-left: 41.66666667%;\n  }\n  .col-md-offset-4 {\n    margin-left: 33.33333333%;\n  }\n  .col-md-offset-3 {\n    margin-left: 25%;\n  }\n  .col-md-offset-2 {\n    margin-left: 16.66666667%;\n  }\n  .col-md-offset-1 {\n    margin-left: 8.33333333%;\n  }\n  .col-md-offset-0 {\n    margin-left: 0%;\n  }\n}\n@media (min-width: 1200px) {\n  .col,\n  .col-lg-1,\n  .col-lg-2,\n  .col-lg-3,\n  .col-lg-4,\n  .col-lg-5,\n  .col-lg-6,\n  .col-lg-7,\n  .col-lg-8,\n  .col-lg-9,\n  .col-lg-10,\n  .col-lg-11,\n  .col-lg-12 {\n    float: left;\n  }\n  .col-lg-12 {\n    width: 100%;\n  }\n  .col-lg-11 {\n    width: 91.66666667%;\n  }\n  .col-lg-10 {\n    width: 83.33333333%;\n  }\n  .col-lg-9 {\n    width: 75%;\n  }\n  .col-lg-8 {\n    width: 66.66666667%;\n  }\n  .col-lg-7 {\n    width: 58.33333333%;\n  }\n  .col-lg-6 {\n    width: 50%;\n  }\n  .col-lg-5 {\n    width: 41.66666667%;\n  }\n  .col-lg-4 {\n    width: 33.33333333%;\n  }\n  .col-lg-3 {\n    width: 25%;\n  }\n  .col-lg-2 {\n    width: 16.66666667%;\n  }\n  .col-lg-1 {\n    width: 8.33333333%;\n  }\n  .col-lg-pull-12 {\n    right: 100%;\n  }\n  .col-lg-pull-11 {\n    right: 91.66666667%;\n  }\n  .col-lg-pull-10 {\n    right: 83.33333333%;\n  }\n  .col-lg-pull-9 {\n    right: 75%;\n  }\n  .col-lg-pull-8 {\n    right: 66.66666667%;\n  }\n  .col-lg-pull-7 {\n    right: 58.33333333%;\n  }\n  .col-lg-pull-6 {\n    right: 50%;\n  }\n  .col-lg-pull-5 {\n    right: 41.66666667%;\n  }\n  .col-lg-pull-4 {\n    right: 33.33333333%;\n  }\n  .col-lg-pull-3 {\n    right: 25%;\n  }\n  .col-lg-pull-2 {\n    right: 16.66666667%;\n  }\n  .col-lg-pull-1 {\n    right: 8.33333333%;\n  }\n  .col-lg-pull-0 {\n    right: auto;\n  }\n  .col-lg-push-12 {\n    left: 100%;\n  }\n  .col-lg-push-11 {\n    left: 91.66666667%;\n  }\n  .col-lg-push-10 {\n    left: 83.33333333%;\n  }\n  .col-lg-push-9 {\n    left: 75%;\n  }\n  .col-lg-push-8 {\n    left: 66.66666667%;\n  }\n  .col-lg-push-7 {\n    left: 58.33333333%;\n  }\n  .col-lg-push-6 {\n    left: 50%;\n  }\n  .col-lg-push-5 {\n    left: 41.66666667%;\n  }\n  .col-lg-push-4 {\n    left: 33.33333333%;\n  }\n  .col-lg-push-3 {\n    left: 25%;\n  }\n  .col-lg-push-2 {\n    left: 16.66666667%;\n  }\n  .col-lg-push-1 {\n    left: 8.33333333%;\n  }\n  .col-lg-push-0 {\n    left: auto;\n  }\n  .col-lg-offset-12 {\n    margin-left: 100%;\n  }\n  .col-lg-offset-11 {\n    margin-left: 91.66666667%;\n  }\n  .col-lg-offset-10 {\n    margin-left: 83.33333333%;\n  }\n  .col-lg-offset-9 {\n    margin-left: 75%;\n  }\n  .col-lg-offset-8 {\n    margin-left: 66.66666667%;\n  }\n  .col-lg-offset-7 {\n    margin-left: 58.33333333%;\n  }\n  .col-lg-offset-6 {\n    margin-left: 50%;\n  }\n  .col-lg-offset-5 {\n    margin-left: 41.66666667%;\n  }\n  .col-lg-offset-4 {\n    margin-left: 33.33333333%;\n  }\n  .col-lg-offset-3 {\n    margin-left: 25%;\n  }\n  .col-lg-offset-2 {\n    margin-left: 16.66666667%;\n  }\n  .col-lg-offset-1 {\n    margin-left: 8.33333333%;\n  }\n  .col-lg-offset-0 {\n    margin-left: 0%;\n  }\n}\n.clearfix,\n.clearfix:before,\n.clearfix:after,\n.container:before,\n.container:after,\n.container-fluid:before,\n.container-fluid:after,\n.row:before,\n.row:after {\n  content: \" \";\n  display: table;\n}\n.clearfix:after,\n.container:after,\n.container-fluid:after,\n.row:after {\n  clear: both;\n}\n.center-block {\n  display: block;\n  margin-left: auto;\n  margin-right: auto;\n}\n.pull-right {\n  float: right !important;\n}\n.pull-left {\n  float: left !important;\n}\n*,\n*:before,\n*:after {\n  -webkit-box-sizing: border-box;\n  -moz-box-sizing: border-box;\n  box-sizing: border-box;\n}\n"; });
 define('text!ui/styles/variables.css', ['module'], function(module) { module.exports = ""; });
 define('text!dx/elements/dx-widget.html', ['module'], function(module) { module.exports = "<template class=\"dx-widget\">\r\n    <require from=\"devextreme\"></require>\r\n</template>"; });
-define('text!main/htmls/dummy.html', ['module'], function(module) { module.exports = "<div>\r\n    Ich bin ein Dummy-Html\r\n</div>"; });
-define('text!main/views/demo-form.html', ['module'], function(module) { module.exports = "<template>\n    <div class=\"col-xs-12\">\n        <dx-widget name=\"dxDataGrid\" options.bind=\"ide66e04a1333e4544b20f4c3ac1d76a68Options\"></dx-widget>\n    </div>\n    <div class=\"col-xs-12\">\n        <dx-widget name=\"dxDataGrid\" options.bind=\"id20ae03bc89ba4cfeb1c3619af5776dafOptions\"></dx-widget>\n    </div>\n</template>"; });
-define('text!main/views/form-test-form.html', ['module'], function(module) { module.exports = "<template>\n    <div class=\"col-xs-12\">\n        <div class=\"tip-form-element-flex-box\">\n            <div class=\"tip-margin-top\">\n                <h1>${model.data.$m_Dummy2.Name} asdf</h1>\n            </div>\n            <div class=\"tip-margin-top\">\n                <h2>${model.data.$m_Dummy2.Name}</h2>\n            </div>\n            <div class=\"tip-margin-top\">\n                <h3>${model.data.$m_Dummy2.Name}</h3>\n            </div>\n            <div class=\"tip-margin-top\">\n                <h4>${model.data.$m_Dummy2.Name}</h4>\n            </div>\n            <div class=\"tip-margin-top\">\n                <h5>${model.data.$m_Dummy2.Name}</h5>\n            </div>\n            <div class=\"tip-margin-top\">\n                <h6>${model.data.$m_Dummy2.Name}</h6>\n            </div>\n        </div>\n    </div>\n    <div class=\"tip-margin-top col-xs-12\">\n        <div class=\"tip-editor-caption\">&nbsp;</div>\n        <a class=\"tip-form-element-file-download-link\" target=\"_blank\" href=\"http://www.vol.at\">Download</a>\n    </div>\n    <div class=\"tip-margin-top col-xs-12\">\n        <div class=\"tip-editor-caption\">&nbsp;</div>\n        <a class=\"tip-form-element-file-download-link\" target=\"_blank\" href.bind=\"id588f98a31e9d474c990e2180d26043d0\">Download</a>\n    </div>\n    <div class=\"tip-margin-top col-xs-12\">\n        <i class=\"fa fa-home\"></i>\n    </div>\n    <div class=\"tip-margin-top col-xs-12\">\n        <i class=\"fa\" class.bind=\"function.$f_Test.icon\"></i>\n    </div>\n    <div class=\"tip-margin-top col-xs-12\">\n        <div class=\"tip-form-element-image-inline tip-form-element-image\" style=\"height: 150px;background-size: contain;background-image: url('https://upload.wikimedia.org/wikipedia/commons/e/ec/Blume_mit_Schmetterling_und_Biene_1uf.JPG');\"></div>\n    </div>\n    <div class=\"tip-margin-top col-xs-12\">\n        <div class=\"tip-form-element-image-inline tip-form-element-image\" css.bind=\"id1005e1c72c5c4d00b19bbc321c5961b7\" style=\"height: 150px;background-size: contain;\"></div>\n    </div>\n    <div class=\"tip-margin-top col-xs-12\">\n        <img class=\"tip-form-element-image\" src.bind=\"id4a8763b36db547c896f97cd1a2b88098\"></img>\n    </div>\n    <div class=\"col-xs-12\">\n        <div class=\"tip-editor-caption\">&nbsp;</div>\n        <div>\n            <div>\n                Ich bin ein Dummy-Html\n            </div>\n        </div>\n    </div>\n    <div class=\"tip-margin-top col-xs-12\">\n        <div class=\"tip-editor-caption\">&nbsp;</div>\n        <dx-widget name=\"dxButton\" options.bind=\"ide16526db93b344cda4befd0938c5fb9cOptions\"></dx-widget>\n    </div>\n    <div class=\"tip-margin-top col-xs-6\">\n        <div class=\"tip-editor-caption\">Name</div>\n        <dx-widget name=\"dxTextBox\" options.bind=\"ide8f8e85d66f34c59bb500147dc963417Options\"></dx-widget>\n    </div>\n    <div class=\"tip-margin-top col-xs-6\">\n        <div class=\"tip-editor-caption\">Date</div>\n        <dx-widget name=\"dxDateBox\" options.bind=\"idcfbdade73f6c4afdaf7056c020352326Options\"></dx-widget>\n    </div>\n    <div class=\"tip-margin-top col-xs-6\">\n        <div class=\"tip-editor-caption\">Number</div>\n        <dx-widget name=\"dxNumberBox\" options.bind=\"ida6b756b5a6e14405bc33c6abae2b4e4aOptions\"></dx-widget>\n    </div>\n    <div class=\"col-xs-12\">\n        <div class=\"row\">\n            <div class=\"tip-margin-top col-xs-6\">\n                <div class=\"tip-editor-caption\">Name</div>\n                <dx-widget name=\"dxTextArea\" options.bind=\"id8a5ba60ff9814fe195d7be78dfe16764Options\"></dx-widget>\n            </div>\n            <div class=\"tip-margin-top col-xs-6\">\n                <div class=\"tip-editor-caption\">Name</div>\n                <dx-widget name=\"dxCalendar\" options.bind=\"id0e8d1e8ab5344ccf9389c45473042259Options\"></dx-widget>\n            </div>\n        </div>\n    </div>\n    <div class=\"col-xs-12\">\n        <div>\n            <div class=\"row\">\n                <div class=\"tip-margin-top col-xs-6\">\n                    <div class=\"tip-editor-caption\">Name</div>\n                    <dx-widget name=\"dxTextArea\" options.bind=\"id446982385961420e9778602d75a93564Options\"></dx-widget>\n                </div>\n                <div class=\"tip-margin-top col-xs-6\">\n                    <div class=\"tip-editor-caption\">Name</div>\n                    <dx-widget name=\"dxCalendar\" options.bind=\"idd025a78e5a494c5fa7979af3cf7cd9f4Options\"></dx-widget>\n                </div>\n            </div>\n        </div>\n    </div>\n    <div class=\"tip-margin-top col-xs-12\">\n        <h1>Dummy 3</h1>\n    </div>\n    <div class=\"col-xs-12\">\n        <div>\n            <div class=\"row\">\n                <div class=\"tip-margin-top col-xs-6\">\n                    <div class=\"tip-editor-caption\">Name</div>\n                    <dx-widget name=\"dxTextArea\" options.bind=\"id185b76b6e14d4e01a0516c9ad633ab17Options\"></dx-widget>\n                </div>\n                <div class=\"tip-margin-top col-xs-6\">\n                    <div class=\"tip-editor-caption\">Name</div>\n                    <dx-widget name=\"dxCalendar\" options.bind=\"id2f74424ab580475ead2fbb702b231e8bOptions\"></dx-widget>\n                </div>\n            </div>\n        </div>\n    </div>\n    <div class=\"tip-margin-top col-xs-12\">\n        <div class=\"tip-editor-caption\">Bezeichnung</div>\n        <dx-widget name=\"dxTextBox\" options.bind=\"id0a80fca494a442d185aac57219c90e2fOptions\"></dx-widget>\n    </div>\n    <div class=\"tip-margin-top col-xs-12\">\n        <div>\n            <b>${model.data.$m_Dummy.Test}</b> ist am ${model.data.$m_Dummy.Date} ${model.data.$m_Dummy.Number}x hier gewesen!\n        </div>\n    </div>\n    <div class=\"tip-margin-top col-xs-12\">\n        <div class=\"tip-editor-caption\">Dummy</div>\n        <dx-widget name=\"dxTextBox\" options.bind=\"function.$f_Test.dummyText\"></dx-widget>\n    </div>\n    <div class=\"col-xs-12\">\n        <div repeat.for=\" of function.$f_Test.dataList\">\n            <div class=\"row\">\n                <div class=\"tip-margin-top col-xs-12\">\n                    <div>${item.a} ${item.b}</div>\n                </div>\n            </div>\n        </div>\n    </div>\n    <div class=\"col-xs-12\">\n        <div class=\"tip-repeat-side-by-side\" repeat.for=\" of function.$f_Test.dataList\">\n            <div class=\"tip-margin-top\">\n                <div>${item.a} ${item.b}</div>\n            </div>\n        </div>\n    </div>\n    <div class=\"tip-margin-top col-xs-12\">\n        <dx-widget name=\"dxTabs\" options.bind=\"id77ac534b89bf49bba87390dd8a98fe74Options\"></dx-widget>\n    </div>\n    <div show.bind=\"id77ac534b89bf49bba87390dd8a98fe74Selected === 0\">\n        <div class=\"tip-margin-top col-xs-12\">\n            <div>Ich bin ein Text 1</div>\n        </div>\n        <div class=\"col-xs-12\">\n            <dx-widget name=\"dxDataGrid\" options.bind=\"idacf5823e349e478889f4b23a9da7dbe5Options\"></dx-widget>\n        </div>\n    </div>\n    <div show.bind=\"id77ac534b89bf49bba87390dd8a98fe74Selected === 1\">\n        <div class=\"tip-margin-top col-xs-12\">\n            <div>Ich bin ein Text 2</div>\n        </div>\n    </div>\n    <div show.bind=\"id77ac534b89bf49bba87390dd8a98fe74Selected === 2\">\n        <div class=\"tip-margin-top col-xs-12\">\n            <div>Ich bin ein Text 3</div>\n        </div>\n    </div>\n</template>"; });
-define('text!ui/views/container/container.css', ['module'], function(module) { module.exports = "body {\n  margin: 0;\n  padding: 0;\n  font-family: \"Helvetica Neue\", \"Segoe UI\", Helvetica, Verdana, sans-serif;\n}\n.t--container {\n  display: block;\n  width: 100vw;\n  height: 100vh;\n}\n"; });
-define('text!main/views/main-form.html', ['module'], function(module) { module.exports = "<template>\n    <require from=\"./demo-form\"></require>\n    <require from=\"./form-test-form\"></require>\n    <div class=\"tip-margin-top col-xs-12\">\n        <dx-widget name=\"dxTabs\" options.bind=\"id5faeef8cfbb9413bba76a157d78c24deOptions\"></dx-widget>\n    </div>\n    <div show.bind=\"id5faeef8cfbb9413bba76a157d78c24deSelected === 0\">\n        <demo-form is-nested=\"true\"></demo-form>\n    </div>\n    <div show.bind=\"id5faeef8cfbb9413bba76a157d78c24deSelected === 1\">\n        <form-test-form is-nested=\"true\"></form-test-form>\n    </div>\n</template>"; });
-define('text!ui/views/container/container.html', ['module'], function(module) { module.exports = "<template class=\"t--container\" class.bind=\"className\">\r\n  <require from=\"../../styles/bootstrap.css\"></require>\r\n  <require from=\"devextreme/css/dx.common.css\"></require>\r\n  <require from=\"devextreme/css/dx.light.compact.css\"></require>\r\n  <require from=\"./container.css\"></require>\r\n  \r\n  <require from=\"../sidebar/sidebar\"></require>\r\n  <require from=\"../header/header\"></require>\r\n  <require from=\"../content/content\"></require>\r\n\r\n  <sidebar></sidebar>\r\n  <header></header>\r\n  <content></content>\r\n</template>\r\n"; });
-define('text!ui/views/content/content.css', ['module'], function(module) { module.exports = ".t--content {\n  display: block;\n  margin-left: 280px;\n  height: calc(100% - 60px);\n}\n.t--sidebar-collapsed .t--content {\n  margin-left: 60px;\n}\n.t--view-current {\n  display: block;\n}\n.t--view-history {\n  display: none;\n}\n.t--view-toolbar .dx-toolbar {\n  height: 60px;\n}\n.t--view-toolbar-item {\n  display: flex;\n  height: 60px;\n  padding: 0 12px;\n  justify-content: center;\n  align-items: center;\n  text-align: center;\n  color: white;\n  text-decoration: none;\n  cursor: pointer;\n  -webkit-user-select: none;\n}\n.t--view-toolbar-item i {\n  font-size: 16px;\n}\n.t--view-toolbar-item:hover {\n  background-color: #4F4F4F;\n}\n.dx-state-disabled .t--view-toolbar-item {\n  cursor: default;\n  color: lightgray;\n}\n.dx-state-disabled .t--view-toolbar-item:hover {\n  background-color: inherit;\n}\n"; });
-define('text!ui/views/content/content.html', ['module'], function(module) { module.exports = "<template class=\"t--content\">\r\n  <require from=\"./content.css\"></require>\r\n\r\n  <stack-router></stack-router>\r\n</template>\r\n"; });
-define('text!ui/views/header/header.html', ['module'], function(module) { module.exports = "<template class=\"t--header\">\r\n  <require from=\"./header.css\"></require>\r\n\r\n  <div>\r\n    ${router.currentViewItem.title}\r\n  </div>\r\n</template>"; });
-define('text!ui/views/header/header.css', ['module'], function(module) { module.exports = ".t--header {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  margin-left: 280px;\n  padding: 0 12px;\n}\n.t--sidebar-collapsed .t--header {\n  margin-left: 60px;\n}\n"; });
-define('text!ui/views/sidebar/sidebar.html', ['module'], function(module) { module.exports = "<template class=\"t--sidebar\">\r\n  <require from=\"./sidebar.css\"></require>\r\n\r\n  <div class=\"t--sidebar-header\" click.delegate=\"onHeaderClicked()\">\r\n    <div class=\"t--sidebar-header-title\">\r\n      Navigation\r\n    </div>\r\n    <div class=\"t--sidebar-header-icon\">\r\n      <i class=\"fa fa-${headerIcon}\"></i>\r\n    </div>\r\n  </div>\r\n\r\n  <ul>\r\n    <li\r\n      class=\"t--sidebar-item\" \r\n      repeat.for=\"route of router.navigationRoutes\">\r\n      <a href=\"#${route.route}\" stack-router-link=\"clear-stack.bind: true\">\r\n        <span class=\"t--sidebar-item-title\">\r\n          ${route.title}\r\n        </span>\r\n        <span class=\"t--sidebar-item-icon\" if.bind=\"route.icon\">\r\n          <i class=\"fa fa-${route.icon}\"></i>\r\n        </span>\r\n      </a>\r\n    </li>\r\n  </ul>\r\n</template>\r\n"; });
+define('text!security/views/authgroup/authgroup-edit-form.html', ['module'], function(module) { module.exports = "<template>\n    <div class=\"t--margin-top col-xs-12 col-md-6\">\n        <div class=\"t--editor-caption\">Bezeichnung</div>\n        <dx-widget name=\"dxTextBox\" options.bind=\"idfdbf14e7a737433389e32e2282ff2359Options\"></dx-widget>\n    </div>\n    <div class=\"t--margin-top col-xs-12 col-md-6\">\n        <div class=\"t--editor-caption\">Mandant</div>\n        <dx-widget name=\"dxSelectBox\" options.bind=\"id87fa138693ba41899042ba41fb8b34abOptions\"></dx-widget>\n    </div>\n</template>"; });
+define('text!security/views/authgroup/authgroup-list-form.html', ['module'], function(module) { module.exports = "<template>\n    <div class=\"col-xs-12\">\n        <dx-widget name=\"dxDataGrid\" options.bind=\"id46c7b627cf294b7ea8d0c08634c0e37bOptions\"></dx-widget>\n    </div>\n</template>"; });
+define('text!stack-router/views/stack-router/stack-router.css', ['module'], function(module) { module.exports = ".t--stack-router,\n.t--stack-router-item {\n  display: block;\n  height: 100%;\n}\n"; });
+define('text!security/views/login/login-form.html', ['module'], function(module) { module.exports = "<template>\n    <div class=\"t--margin-top col-xs-12\">\n        <div class=\"t--editor-caption\">Benutzername</div>\n        <dx-widget name=\"dxTextBox\" options.bind=\"id01362b21f9c84022804a1fb73694c986Options\"></dx-widget>\n    </div>\n    <div class=\"t--margin-top col-xs-12\">\n        <div class=\"t--editor-caption\">Passwort</div>\n        <dx-widget name=\"dxTextBox\" options.bind=\"id7d0ab6f9c336408e8c47b4a30960872bOptions\"></dx-widget>\n    </div>\n    <div class=\"t--margin-top col-xs-12\">\n        <div class=\"t--editor-caption\">&nbsp;</div>\n        <dx-widget name=\"dxCheckBox\" options.bind=\"idd888ec1707324b3bbb9653f7ae2fc1a0Options\"></dx-widget>\n    </div>\n    <div class=\"t--margin-top col-xs-12\">\n        <div class=\"t--editor-caption\">&nbsp;</div>\n        <dx-widget name=\"dxButton\" options.bind=\"idae9f0b156b2d44689e184cee65cde798Options\"></dx-widget>\n    </div>\n</template>"; });
+define('text!stack-router/views/view/view.css', ['module'], function(module) { module.exports = ".t--view {\n  display: block;\n  position: relative;\n  height: 100%;\n}\n.t--view-toolbar {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  background-color: #808080;\n  color: white;\n}\n.t--view-toolbar .dx-toolbar {\n  background-color: transparent;\n}\n.t--view-toolbar-title {\n  font-size: 26px;\n  font-weight: 100;\n  color: white;\n  padding: 0 12px;\n}\n.t--view-content {\n  height: calc(100% - 60px);\n  overflow-x: hidden;\n  overflow-y: scroll;\n  -webkit-overflow-scrolling: touch;\n}\n"; });
 define('text!stack-router/views/stack-router/stack-router.html', ['module'], function(module) { module.exports = "<template class=\"t--stack-router\">\r\n  <require from=\"./stack-router.css\"></require>\r\n  <require from=\"../view/view\"></require>\r\n\r\n  <div \r\n    class=\"t--stack-router-item\" \r\n    class.bind=\"item.className\"\r\n    repeat.for=\"item of router.viewStack\">\r\n    <view view.bind=\"item\"></view>\r\n  </div>\r\n</template>"; });
 define('text!stack-router/views/view/view.html', ['module'], function(module) { module.exports = "<template class=\"t--view\">\r\n  <require from=\"./view.css\"></require>\r\n\r\n  <div class=\"t--view-toolbar\">\r\n    <dx-widget if.bind=\"toolbarOptions\" name=\"dxToolbar\" options.bind=\"toolbarOptions\">\r\n      <dx-template name=\"itemTemplate\">\r\n        <a class=\"t--view-toolbar-item\" click.delegate=\"data.guardedExecute()\">\r\n          <div if.bind=\"data.command.badgeText\" class=\"t--view-toolbar-item-badge\">\r\n            ${data.command.badgeText}\r\n          </div>\r\n          <div>\r\n            <div if.bind=\"data.command.icon\" class=\"t--view-toolbar-item-icon\">\r\n              <i class=\"fa fa-fw fa-${data.command.icon}\"></i>\r\n            </div>\r\n            <div if.bind=\"data.command.title\" class=\"t--view-toolbar-item-title\">\r\n              ${data.command.title}\r\n            </div>\r\n          </div>\r\n        </a>\r\n      </dx-template>\r\n    </dx-widget>\r\n  </div>\r\n  <div class=\"t--view-content\">\r\n    <div class=\"container-fluid\">\r\n      <div class=\"row\">\r\n        <compose\r\n          view-model.ref=\"controller\" \r\n          view-model.bind=\"view.viewModel\" \r\n          model.bind=\"view.model\" \r\n          class=\"t--view-content\"></compose>\r\n      </div>\r\n    </div>\r\n  </div>\r\n</template>"; });
+define('text!ui/views/container/container.html', ['module'], function(module) { module.exports = "<template class=\"t--container\" class.bind=\"className\">\r\n  <require from=\"../../styles/bootstrap.css\"></require>\r\n  <require from=\"devextreme/css/dx.common.css\"></require>\r\n  <require from=\"devextreme/css/dx.light.compact.css\"></require>\r\n  <require from=\"./container.css\"></require>\r\n  \r\n  <require from=\"../sidebar/sidebar\"></require>\r\n  <require from=\"../header/header\"></require>\r\n  <require from=\"../content/content\"></require>\r\n\r\n  <sidebar></sidebar>\r\n  <header></header>\r\n  <content></content>\r\n</template>\r\n"; });
+define('text!ui/views/container/container.css', ['module'], function(module) { module.exports = "body {\n  margin: 0;\n  padding: 0;\n  font-family: \"Helvetica Neue\", \"Segoe UI\", Helvetica, Verdana, sans-serif;\n  font-size: 12px;\n}\n.t--container {\n  display: block;\n  width: 100vw;\n  height: 100vh;\n}\n.t--margin-top {\n  margin-top: 12px;\n}\n.t--editor-caption {\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n"; });
+define('text!ui/views/content/content.html', ['module'], function(module) { module.exports = "<template class=\"t--content\">\r\n  <require from=\"./content.css\"></require>\r\n\r\n  <stack-router></stack-router>\r\n</template>\r\n"; });
+define('text!ui/views/sidebar/sidebar.html', ['module'], function(module) { module.exports = "<template class=\"t--sidebar\">\r\n  <require from=\"./sidebar.css\"></require>\r\n\r\n  <div class=\"t--sidebar-header\" click.delegate=\"onHeaderClicked()\">\r\n    <div class=\"t--sidebar-header-title\">\r\n      Navigation\r\n    </div>\r\n    <div class=\"t--sidebar-header-icon\">\r\n      <i class=\"fa fa-${headerIcon}\"></i>\r\n    </div>\r\n  </div>\r\n\r\n  <ul>\r\n    <li\r\n      class=\"t--sidebar-item\" \r\n      repeat.for=\"route of router.navigationRoutes\">\r\n      <a href=\"#${route.route}\" stack-router-link=\"clear-stack.bind: true\">\r\n        <span class=\"t--sidebar-item-title\">\r\n          ${route.title}\r\n        </span>\r\n        <span class=\"t--sidebar-item-icon\" if.bind=\"route.icon\">\r\n          <i class=\"fa fa-${route.icon}\"></i>\r\n        </span>\r\n      </a>\r\n    </li>\r\n  </ul>\r\n</template>\r\n"; });
+define('text!ui/views/content/content.css', ['module'], function(module) { module.exports = ".t--content {\n  display: block;\n  margin-left: 280px;\n  height: calc(100% - 60px);\n}\n.t--sidebar-collapsed .t--content {\n  margin-left: 60px;\n}\n.t--view-current {\n  display: block;\n}\n.t--view-history {\n  display: none;\n}\n.t--view-toolbar .dx-toolbar {\n  height: 60px;\n}\n.t--view-toolbar-item {\n  display: flex;\n  height: 60px;\n  padding: 0 12px;\n  justify-content: center;\n  align-items: center;\n  text-align: center;\n  color: white;\n  text-decoration: none;\n  cursor: pointer;\n  -webkit-user-select: none;\n}\n.t--view-toolbar-item i {\n  font-size: 16px;\n}\n.t--view-toolbar-item:hover {\n  background-color: #4F4F4F;\n}\n.dx-state-disabled .t--view-toolbar-item {\n  cursor: default;\n  color: lightgray;\n}\n.dx-state-disabled .t--view-toolbar-item:hover {\n  background-color: inherit;\n}\n"; });
+define('text!ui/views/header/header.html', ['module'], function(module) { module.exports = "<template class=\"t--header\">\r\n  <require from=\"./header.css\"></require>\r\n\r\n  <div>\r\n    ${router.currentViewItem.title}\r\n  </div>\r\n</template>"; });
 define('text!ui/views/sidebar/sidebar.css', ['module'], function(module) { module.exports = ".t--sidebar {\n  display: block;\n  position: fixed;\n  top: 0;\n  bottom: 0;\n  left: 0;\n  z-index: 10;\n  width: 280px;\n  background-color: #2a2e35;\n}\n.t--sidebar ul {\n  padding: 0;\n  margin: 0;\n  list-style: none;\n}\n.t--sidebar-collapsed .t--sidebar {\n  left: -220px;\n}\n.t--sidebar-header {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  background-color: #262930;\n  color: white;\n  cursor: pointer;\n}\n.t--sidebar-header-title {\n  flex-grow: 1;\n  font-size: 26px;\n  font-weight: 100;\n  padding: 12px;\n}\n.t--sidebar-header-icon {\n  display: flex;\n  width: 60px;\n  align-items: center;\n  justify-content: center;\n}\n.t--sidebar-item a {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  color: lightgray;\n  text-decoration: none;\n}\n.t--sidebar-item a:hover {\n  background-color: #17C4BB;\n  color: white;\n}\n.t--sidebar-item-title {\n  flex-grow: 1;\n  padding: 12px;\n}\n.t--sidebar-item-icon {\n  display: flex;\n  width: 60px;\n  align-items: center;\n  justify-content: center;\n}\n"; });
-define('text!stack-router/views/stack-router/stack-router.css', ['module'], function(module) { module.exports = ".t--stack-router,\n.t--stack-router-item {\n  display: block;\n  height: 100%;\n}\n"; });
-define('text!stack-router/views/view/view.css', ['module'], function(module) { module.exports = ".t--view {\n  display: block;\n  position: relative;\n  height: 100%;\n}\n.t--view-toolbar {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  background-color: #808080;\n  color: white;\n}\n.t--view-toolbar .dx-toolbar {\n  background-color: transparent;\n}\n.t--view-toolbar-title {\n  font-size: 26px;\n  font-weight: 100;\n  color: white;\n  padding: 0 12px;\n}\n.t--view-content {\n  height: calc(100% - 60px);\n  overflow-x: hidden;\n  overflow-y: scroll;\n  -webkit-overflow-scrolling: touch;\n}\n"; });
-define('text!ui/styles/bootstrap.css', ['module'], function(module) { module.exports = "@-ms-viewport {\n  width: device-width;\n}\n.visible-xs,\n.visible-sm,\n.visible-md,\n.visible-lg {\n  display: none !important;\n}\n.visible-xs-block,\n.visible-xs-inline,\n.visible-xs-inline-block,\n.visible-sm-block,\n.visible-sm-inline,\n.visible-sm-inline-block,\n.visible-md-block,\n.visible-md-inline,\n.visible-md-inline-block,\n.visible-lg-block,\n.visible-lg-inline,\n.visible-lg-inline-block {\n  display: none !important;\n}\n@media (max-width: 767px) {\n  .visible-xs {\n    display: block !important;\n  }\n  table.visible-xs {\n    display: table;\n  }\n  tr.visible-xs {\n    display: table-row !important;\n  }\n  th.visible-xs,\n  td.visible-xs {\n    display: table-cell !important;\n  }\n}\n@media (max-width: 767px) {\n  .visible-xs-block {\n    display: block !important;\n  }\n}\n@media (max-width: 767px) {\n  .visible-xs-inline {\n    display: inline !important;\n  }\n}\n@media (max-width: 767px) {\n  .visible-xs-inline-block {\n    display: inline-block !important;\n  }\n}\n@media (min-width: 768px) and (max-width: 991px) {\n  .visible-sm {\n    display: block !important;\n  }\n  table.visible-sm {\n    display: table;\n  }\n  tr.visible-sm {\n    display: table-row !important;\n  }\n  th.visible-sm,\n  td.visible-sm {\n    display: table-cell !important;\n  }\n}\n@media (min-width: 768px) and (max-width: 991px) {\n  .visible-sm-block {\n    display: block !important;\n  }\n}\n@media (min-width: 768px) and (max-width: 991px) {\n  .visible-sm-inline {\n    display: inline !important;\n  }\n}\n@media (min-width: 768px) and (max-width: 991px) {\n  .visible-sm-inline-block {\n    display: inline-block !important;\n  }\n}\n@media (min-width: 992px) and (max-width: 1199px) {\n  .visible-md {\n    display: block !important;\n  }\n  table.visible-md {\n    display: table;\n  }\n  tr.visible-md {\n    display: table-row !important;\n  }\n  th.visible-md,\n  td.visible-md {\n    display: table-cell !important;\n  }\n}\n@media (min-width: 992px) and (max-width: 1199px) {\n  .visible-md-block {\n    display: block !important;\n  }\n}\n@media (min-width: 992px) and (max-width: 1199px) {\n  .visible-md-inline {\n    display: inline !important;\n  }\n}\n@media (min-width: 992px) and (max-width: 1199px) {\n  .visible-md-inline-block {\n    display: inline-block !important;\n  }\n}\n@media (min-width: 1200px) {\n  .visible-lg {\n    display: block !important;\n  }\n  table.visible-lg {\n    display: table;\n  }\n  tr.visible-lg {\n    display: table-row !important;\n  }\n  th.visible-lg,\n  td.visible-lg {\n    display: table-cell !important;\n  }\n}\n@media (min-width: 1200px) {\n  .visible-lg-block {\n    display: block !important;\n  }\n}\n@media (min-width: 1200px) {\n  .visible-lg-inline {\n    display: inline !important;\n  }\n}\n@media (min-width: 1200px) {\n  .visible-lg-inline-block {\n    display: inline-block !important;\n  }\n}\n@media (max-width: 767px) {\n  .hidden-xs {\n    display: none !important;\n  }\n}\n@media (min-width: 768px) and (max-width: 991px) {\n  .hidden-sm {\n    display: none !important;\n  }\n}\n@media (min-width: 992px) and (max-width: 1199px) {\n  .hidden-md {\n    display: none !important;\n  }\n}\n@media (min-width: 1200px) {\n  .hidden-lg {\n    display: none !important;\n  }\n}\n.visible-print {\n  display: none !important;\n}\n@media print {\n  .visible-print {\n    display: block !important;\n  }\n  table.visible-print {\n    display: table;\n  }\n  tr.visible-print {\n    display: table-row !important;\n  }\n  th.visible-print,\n  td.visible-print {\n    display: table-cell !important;\n  }\n}\n.visible-print-block {\n  display: none !important;\n}\n@media print {\n  .visible-print-block {\n    display: block !important;\n  }\n}\n.visible-print-inline {\n  display: none !important;\n}\n@media print {\n  .visible-print-inline {\n    display: inline !important;\n  }\n}\n.visible-print-inline-block {\n  display: none !important;\n}\n@media print {\n  .visible-print-inline-block {\n    display: inline-block !important;\n  }\n}\n@media print {\n  .hidden-print {\n    display: none !important;\n  }\n}\n.container {\n  margin-right: auto;\n  margin-left: auto;\n  padding-left: 15px;\n  padding-right: 15px;\n}\n@media (min-width: 768px) {\n  .container {\n    width: 750px;\n  }\n}\n@media (min-width: 992px) {\n  .container {\n    width: 970px;\n  }\n}\n@media (min-width: 1200px) {\n  .container {\n    width: 1170px;\n  }\n}\n.container-fluid {\n  margin-right: auto;\n  margin-left: auto;\n  padding-left: 15px;\n  padding-right: 15px;\n}\n.row {\n  margin-left: -15px;\n  margin-right: -15px;\n}\n.col,\n.col-xs-1,\n.col-sm-1,\n.col-md-1,\n.col-lg-1,\n.col-xs-2,\n.col-sm-2,\n.col-md-2,\n.col-lg-2,\n.col-xs-3,\n.col-sm-3,\n.col-md-3,\n.col-lg-3,\n.col-xs-4,\n.col-sm-4,\n.col-md-4,\n.col-lg-4,\n.col-xs-5,\n.col-sm-5,\n.col-md-5,\n.col-lg-5,\n.col-xs-6,\n.col-sm-6,\n.col-md-6,\n.col-lg-6,\n.col-xs-7,\n.col-sm-7,\n.col-md-7,\n.col-lg-7,\n.col-xs-8,\n.col-sm-8,\n.col-md-8,\n.col-lg-8,\n.col-xs-9,\n.col-sm-9,\n.col-md-9,\n.col-lg-9,\n.col-xs-10,\n.col-sm-10,\n.col-md-10,\n.col-lg-10,\n.col-xs-11,\n.col-sm-11,\n.col-md-11,\n.col-lg-11,\n.col-xs-12,\n.col-sm-12,\n.col-md-12,\n.col-lg-12 {\n  position: relative;\n  min-height: 1px;\n  padding-left: 15px;\n  padding-right: 15px;\n}\n.col,\n.col-xs-1,\n.col-xs-2,\n.col-xs-3,\n.col-xs-4,\n.col-xs-5,\n.col-xs-6,\n.col-xs-7,\n.col-xs-8,\n.col-xs-9,\n.col-xs-10,\n.col-xs-11,\n.col-xs-12 {\n  float: left;\n}\n.col-xs-12 {\n  width: 100%;\n}\n.col-xs-11 {\n  width: 91.66666667%;\n}\n.col-xs-10 {\n  width: 83.33333333%;\n}\n.col-xs-9 {\n  width: 75%;\n}\n.col-xs-8 {\n  width: 66.66666667%;\n}\n.col-xs-7 {\n  width: 58.33333333%;\n}\n.col-xs-6 {\n  width: 50%;\n}\n.col-xs-5 {\n  width: 41.66666667%;\n}\n.col-xs-4 {\n  width: 33.33333333%;\n}\n.col-xs-3 {\n  width: 25%;\n}\n.col-xs-2 {\n  width: 16.66666667%;\n}\n.col-xs-1 {\n  width: 8.33333333%;\n}\n.col-xs-pull-12 {\n  right: 100%;\n}\n.col-xs-pull-11 {\n  right: 91.66666667%;\n}\n.col-xs-pull-10 {\n  right: 83.33333333%;\n}\n.col-xs-pull-9 {\n  right: 75%;\n}\n.col-xs-pull-8 {\n  right: 66.66666667%;\n}\n.col-xs-pull-7 {\n  right: 58.33333333%;\n}\n.col-xs-pull-6 {\n  right: 50%;\n}\n.col-xs-pull-5 {\n  right: 41.66666667%;\n}\n.col-xs-pull-4 {\n  right: 33.33333333%;\n}\n.col-xs-pull-3 {\n  right: 25%;\n}\n.col-xs-pull-2 {\n  right: 16.66666667%;\n}\n.col-xs-pull-1 {\n  right: 8.33333333%;\n}\n.col-xs-pull-0 {\n  right: auto;\n}\n.col-xs-push-12 {\n  left: 100%;\n}\n.col-xs-push-11 {\n  left: 91.66666667%;\n}\n.col-xs-push-10 {\n  left: 83.33333333%;\n}\n.col-xs-push-9 {\n  left: 75%;\n}\n.col-xs-push-8 {\n  left: 66.66666667%;\n}\n.col-xs-push-7 {\n  left: 58.33333333%;\n}\n.col-xs-push-6 {\n  left: 50%;\n}\n.col-xs-push-5 {\n  left: 41.66666667%;\n}\n.col-xs-push-4 {\n  left: 33.33333333%;\n}\n.col-xs-push-3 {\n  left: 25%;\n}\n.col-xs-push-2 {\n  left: 16.66666667%;\n}\n.col-xs-push-1 {\n  left: 8.33333333%;\n}\n.col-xs-push-0 {\n  left: auto;\n}\n.col-xs-offset-12 {\n  margin-left: 100%;\n}\n.col-xs-offset-11 {\n  margin-left: 91.66666667%;\n}\n.col-xs-offset-10 {\n  margin-left: 83.33333333%;\n}\n.col-xs-offset-9 {\n  margin-left: 75%;\n}\n.col-xs-offset-8 {\n  margin-left: 66.66666667%;\n}\n.col-xs-offset-7 {\n  margin-left: 58.33333333%;\n}\n.col-xs-offset-6 {\n  margin-left: 50%;\n}\n.col-xs-offset-5 {\n  margin-left: 41.66666667%;\n}\n.col-xs-offset-4 {\n  margin-left: 33.33333333%;\n}\n.col-xs-offset-3 {\n  margin-left: 25%;\n}\n.col-xs-offset-2 {\n  margin-left: 16.66666667%;\n}\n.col-xs-offset-1 {\n  margin-left: 8.33333333%;\n}\n.col-xs-offset-0 {\n  margin-left: 0%;\n}\n@media (min-width: 768px) {\n  .col,\n  .col-sm-1,\n  .col-sm-2,\n  .col-sm-3,\n  .col-sm-4,\n  .col-sm-5,\n  .col-sm-6,\n  .col-sm-7,\n  .col-sm-8,\n  .col-sm-9,\n  .col-sm-10,\n  .col-sm-11,\n  .col-sm-12 {\n    float: left;\n  }\n  .col-sm-12 {\n    width: 100%;\n  }\n  .col-sm-11 {\n    width: 91.66666667%;\n  }\n  .col-sm-10 {\n    width: 83.33333333%;\n  }\n  .col-sm-9 {\n    width: 75%;\n  }\n  .col-sm-8 {\n    width: 66.66666667%;\n  }\n  .col-sm-7 {\n    width: 58.33333333%;\n  }\n  .col-sm-6 {\n    width: 50%;\n  }\n  .col-sm-5 {\n    width: 41.66666667%;\n  }\n  .col-sm-4 {\n    width: 33.33333333%;\n  }\n  .col-sm-3 {\n    width: 25%;\n  }\n  .col-sm-2 {\n    width: 16.66666667%;\n  }\n  .col-sm-1 {\n    width: 8.33333333%;\n  }\n  .col-sm-pull-12 {\n    right: 100%;\n  }\n  .col-sm-pull-11 {\n    right: 91.66666667%;\n  }\n  .col-sm-pull-10 {\n    right: 83.33333333%;\n  }\n  .col-sm-pull-9 {\n    right: 75%;\n  }\n  .col-sm-pull-8 {\n    right: 66.66666667%;\n  }\n  .col-sm-pull-7 {\n    right: 58.33333333%;\n  }\n  .col-sm-pull-6 {\n    right: 50%;\n  }\n  .col-sm-pull-5 {\n    right: 41.66666667%;\n  }\n  .col-sm-pull-4 {\n    right: 33.33333333%;\n  }\n  .col-sm-pull-3 {\n    right: 25%;\n  }\n  .col-sm-pull-2 {\n    right: 16.66666667%;\n  }\n  .col-sm-pull-1 {\n    right: 8.33333333%;\n  }\n  .col-sm-pull-0 {\n    right: auto;\n  }\n  .col-sm-push-12 {\n    left: 100%;\n  }\n  .col-sm-push-11 {\n    left: 91.66666667%;\n  }\n  .col-sm-push-10 {\n    left: 83.33333333%;\n  }\n  .col-sm-push-9 {\n    left: 75%;\n  }\n  .col-sm-push-8 {\n    left: 66.66666667%;\n  }\n  .col-sm-push-7 {\n    left: 58.33333333%;\n  }\n  .col-sm-push-6 {\n    left: 50%;\n  }\n  .col-sm-push-5 {\n    left: 41.66666667%;\n  }\n  .col-sm-push-4 {\n    left: 33.33333333%;\n  }\n  .col-sm-push-3 {\n    left: 25%;\n  }\n  .col-sm-push-2 {\n    left: 16.66666667%;\n  }\n  .col-sm-push-1 {\n    left: 8.33333333%;\n  }\n  .col-sm-push-0 {\n    left: auto;\n  }\n  .col-sm-offset-12 {\n    margin-left: 100%;\n  }\n  .col-sm-offset-11 {\n    margin-left: 91.66666667%;\n  }\n  .col-sm-offset-10 {\n    margin-left: 83.33333333%;\n  }\n  .col-sm-offset-9 {\n    margin-left: 75%;\n  }\n  .col-sm-offset-8 {\n    margin-left: 66.66666667%;\n  }\n  .col-sm-offset-7 {\n    margin-left: 58.33333333%;\n  }\n  .col-sm-offset-6 {\n    margin-left: 50%;\n  }\n  .col-sm-offset-5 {\n    margin-left: 41.66666667%;\n  }\n  .col-sm-offset-4 {\n    margin-left: 33.33333333%;\n  }\n  .col-sm-offset-3 {\n    margin-left: 25%;\n  }\n  .col-sm-offset-2 {\n    margin-left: 16.66666667%;\n  }\n  .col-sm-offset-1 {\n    margin-left: 8.33333333%;\n  }\n  .col-sm-offset-0 {\n    margin-left: 0%;\n  }\n}\n@media (min-width: 992px) {\n  .col,\n  .col-md-1,\n  .col-md-2,\n  .col-md-3,\n  .col-md-4,\n  .col-md-5,\n  .col-md-6,\n  .col-md-7,\n  .col-md-8,\n  .col-md-9,\n  .col-md-10,\n  .col-md-11,\n  .col-md-12 {\n    float: left;\n  }\n  .col-md-12 {\n    width: 100%;\n  }\n  .col-md-11 {\n    width: 91.66666667%;\n  }\n  .col-md-10 {\n    width: 83.33333333%;\n  }\n  .col-md-9 {\n    width: 75%;\n  }\n  .col-md-8 {\n    width: 66.66666667%;\n  }\n  .col-md-7 {\n    width: 58.33333333%;\n  }\n  .col-md-6 {\n    width: 50%;\n  }\n  .col-md-5 {\n    width: 41.66666667%;\n  }\n  .col-md-4 {\n    width: 33.33333333%;\n  }\n  .col-md-3 {\n    width: 25%;\n  }\n  .col-md-2 {\n    width: 16.66666667%;\n  }\n  .col-md-1 {\n    width: 8.33333333%;\n  }\n  .col-md-pull-12 {\n    right: 100%;\n  }\n  .col-md-pull-11 {\n    right: 91.66666667%;\n  }\n  .col-md-pull-10 {\n    right: 83.33333333%;\n  }\n  .col-md-pull-9 {\n    right: 75%;\n  }\n  .col-md-pull-8 {\n    right: 66.66666667%;\n  }\n  .col-md-pull-7 {\n    right: 58.33333333%;\n  }\n  .col-md-pull-6 {\n    right: 50%;\n  }\n  .col-md-pull-5 {\n    right: 41.66666667%;\n  }\n  .col-md-pull-4 {\n    right: 33.33333333%;\n  }\n  .col-md-pull-3 {\n    right: 25%;\n  }\n  .col-md-pull-2 {\n    right: 16.66666667%;\n  }\n  .col-md-pull-1 {\n    right: 8.33333333%;\n  }\n  .col-md-pull-0 {\n    right: auto;\n  }\n  .col-md-push-12 {\n    left: 100%;\n  }\n  .col-md-push-11 {\n    left: 91.66666667%;\n  }\n  .col-md-push-10 {\n    left: 83.33333333%;\n  }\n  .col-md-push-9 {\n    left: 75%;\n  }\n  .col-md-push-8 {\n    left: 66.66666667%;\n  }\n  .col-md-push-7 {\n    left: 58.33333333%;\n  }\n  .col-md-push-6 {\n    left: 50%;\n  }\n  .col-md-push-5 {\n    left: 41.66666667%;\n  }\n  .col-md-push-4 {\n    left: 33.33333333%;\n  }\n  .col-md-push-3 {\n    left: 25%;\n  }\n  .col-md-push-2 {\n    left: 16.66666667%;\n  }\n  .col-md-push-1 {\n    left: 8.33333333%;\n  }\n  .col-md-push-0 {\n    left: auto;\n  }\n  .col-md-offset-12 {\n    margin-left: 100%;\n  }\n  .col-md-offset-11 {\n    margin-left: 91.66666667%;\n  }\n  .col-md-offset-10 {\n    margin-left: 83.33333333%;\n  }\n  .col-md-offset-9 {\n    margin-left: 75%;\n  }\n  .col-md-offset-8 {\n    margin-left: 66.66666667%;\n  }\n  .col-md-offset-7 {\n    margin-left: 58.33333333%;\n  }\n  .col-md-offset-6 {\n    margin-left: 50%;\n  }\n  .col-md-offset-5 {\n    margin-left: 41.66666667%;\n  }\n  .col-md-offset-4 {\n    margin-left: 33.33333333%;\n  }\n  .col-md-offset-3 {\n    margin-left: 25%;\n  }\n  .col-md-offset-2 {\n    margin-left: 16.66666667%;\n  }\n  .col-md-offset-1 {\n    margin-left: 8.33333333%;\n  }\n  .col-md-offset-0 {\n    margin-left: 0%;\n  }\n}\n@media (min-width: 1200px) {\n  .col,\n  .col-lg-1,\n  .col-lg-2,\n  .col-lg-3,\n  .col-lg-4,\n  .col-lg-5,\n  .col-lg-6,\n  .col-lg-7,\n  .col-lg-8,\n  .col-lg-9,\n  .col-lg-10,\n  .col-lg-11,\n  .col-lg-12 {\n    float: left;\n  }\n  .col-lg-12 {\n    width: 100%;\n  }\n  .col-lg-11 {\n    width: 91.66666667%;\n  }\n  .col-lg-10 {\n    width: 83.33333333%;\n  }\n  .col-lg-9 {\n    width: 75%;\n  }\n  .col-lg-8 {\n    width: 66.66666667%;\n  }\n  .col-lg-7 {\n    width: 58.33333333%;\n  }\n  .col-lg-6 {\n    width: 50%;\n  }\n  .col-lg-5 {\n    width: 41.66666667%;\n  }\n  .col-lg-4 {\n    width: 33.33333333%;\n  }\n  .col-lg-3 {\n    width: 25%;\n  }\n  .col-lg-2 {\n    width: 16.66666667%;\n  }\n  .col-lg-1 {\n    width: 8.33333333%;\n  }\n  .col-lg-pull-12 {\n    right: 100%;\n  }\n  .col-lg-pull-11 {\n    right: 91.66666667%;\n  }\n  .col-lg-pull-10 {\n    right: 83.33333333%;\n  }\n  .col-lg-pull-9 {\n    right: 75%;\n  }\n  .col-lg-pull-8 {\n    right: 66.66666667%;\n  }\n  .col-lg-pull-7 {\n    right: 58.33333333%;\n  }\n  .col-lg-pull-6 {\n    right: 50%;\n  }\n  .col-lg-pull-5 {\n    right: 41.66666667%;\n  }\n  .col-lg-pull-4 {\n    right: 33.33333333%;\n  }\n  .col-lg-pull-3 {\n    right: 25%;\n  }\n  .col-lg-pull-2 {\n    right: 16.66666667%;\n  }\n  .col-lg-pull-1 {\n    right: 8.33333333%;\n  }\n  .col-lg-pull-0 {\n    right: auto;\n  }\n  .col-lg-push-12 {\n    left: 100%;\n  }\n  .col-lg-push-11 {\n    left: 91.66666667%;\n  }\n  .col-lg-push-10 {\n    left: 83.33333333%;\n  }\n  .col-lg-push-9 {\n    left: 75%;\n  }\n  .col-lg-push-8 {\n    left: 66.66666667%;\n  }\n  .col-lg-push-7 {\n    left: 58.33333333%;\n  }\n  .col-lg-push-6 {\n    left: 50%;\n  }\n  .col-lg-push-5 {\n    left: 41.66666667%;\n  }\n  .col-lg-push-4 {\n    left: 33.33333333%;\n  }\n  .col-lg-push-3 {\n    left: 25%;\n  }\n  .col-lg-push-2 {\n    left: 16.66666667%;\n  }\n  .col-lg-push-1 {\n    left: 8.33333333%;\n  }\n  .col-lg-push-0 {\n    left: auto;\n  }\n  .col-lg-offset-12 {\n    margin-left: 100%;\n  }\n  .col-lg-offset-11 {\n    margin-left: 91.66666667%;\n  }\n  .col-lg-offset-10 {\n    margin-left: 83.33333333%;\n  }\n  .col-lg-offset-9 {\n    margin-left: 75%;\n  }\n  .col-lg-offset-8 {\n    margin-left: 66.66666667%;\n  }\n  .col-lg-offset-7 {\n    margin-left: 58.33333333%;\n  }\n  .col-lg-offset-6 {\n    margin-left: 50%;\n  }\n  .col-lg-offset-5 {\n    margin-left: 41.66666667%;\n  }\n  .col-lg-offset-4 {\n    margin-left: 33.33333333%;\n  }\n  .col-lg-offset-3 {\n    margin-left: 25%;\n  }\n  .col-lg-offset-2 {\n    margin-left: 16.66666667%;\n  }\n  .col-lg-offset-1 {\n    margin-left: 8.33333333%;\n  }\n  .col-lg-offset-0 {\n    margin-left: 0%;\n  }\n}\n.clearfix,\n.clearfix:before,\n.clearfix:after,\n.container:before,\n.container:after,\n.container-fluid:before,\n.container-fluid:after,\n.row:before,\n.row:after {\n  content: \" \";\n  display: table;\n}\n.clearfix:after,\n.container:after,\n.container-fluid:after,\n.row:after {\n  clear: both;\n}\n.center-block {\n  display: block;\n  margin-left: auto;\n  margin-right: auto;\n}\n.pull-right {\n  float: right !important;\n}\n.pull-left {\n  float: left !important;\n}\n*,\n*:before,\n*:after {\n  -webkit-box-sizing: border-box;\n  -moz-box-sizing: border-box;\n  box-sizing: border-box;\n}\n"; });
+define('text!ui/views/header/header.css', ['module'], function(module) { module.exports = ".t--header {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  margin-left: 280px;\n  padding: 0 12px;\n}\n.t--sidebar-collapsed .t--header {\n  margin-left: 60px;\n}\n"; });
 //# sourceMappingURL=app-bundle.js.map

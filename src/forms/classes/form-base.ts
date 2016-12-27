@@ -49,8 +49,10 @@ export class FormBase {
   readonly commandServerData: CommandServerDataInstance;
   protected readonly expression: Map<string, Expression>;
 
-  activate(parameters: any) {
-    return;
+  activate(routeInfo: any) {
+    if (routeInfo && routeInfo.parameters && routeInfo.parameters.id) {
+      this.variable.data.$id = routeInfo.parameters.id;
+    }
   }
 
   createObserver(expression: string, action: {(newValue?: any, oldValue?: any): void}, bindingContext?: any): {(): void} {

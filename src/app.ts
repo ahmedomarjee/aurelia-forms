@@ -12,25 +12,19 @@ export class App {
   ) {
     router.registerRoutes([
       {
-        moduleId: "main/views/demo-form",
-        title: "Demo",
-        icon: "book",
-        route: "demo",
+        moduleId: "security/views/authgroup/authgroup-list-form",
+        title: "Berechtigungsgruppen",
+        icon: "shield",
+        route: "security/authgroup",
         isNavigation: true
       },
       {
-        moduleId: "main/views/demo-form",
-        title: "Demo",
-        route: "demo/:id"
-      },
-      {
-        moduleId: "main/views/form-test-form",
-        title: "Test",
-        route: "test",
-        icon: "bug",
-        isNavigation: true
+        moduleId: "security/views/authgroup/authgroup-edit-form",
+        title: "Berechtigungsgruppen",
+        icon: "shield",
+        route: "security/authgroup/:id"
       }
     ],
-    "demo")
+    "security/authgroup")
   }
 }

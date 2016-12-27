@@ -13,9 +13,8 @@ export function configure(aurelia: Aurelia) {
   aurelia.use
     .basicConfiguration()
     .feature("dx")
-    .feature("resources")
-    .feature("main")
-    .feature("stack-router");
+    .feature("stack-router")
+    .feature("security");
 
   if (environment.debug) {
     aurelia.use.developmentLogging();
@@ -25,5 +24,5 @@ export function configure(aurelia: Aurelia) {
     aurelia.use.plugin("aurelia-testing");
   }
 
-  aurelia.start().then(() => aurelia.setRoot());
+  aurelia.start().then(() => aurelia.setRoot("security/login-app"));
 }

@@ -32,7 +32,7 @@ export class ModelInstance {
         const getOptions = this.createGetOptions(args.model);
 
         return this.rest.get({
-          url: args.model.webApiAction + "/" + this.form.evaluateExpression(args.model.key),
+          url: `data/${args.model.webApiAction}/${this.form.evaluateExpression(args.model.key)}`,
           getOptions
         }).then(r => {
           this.data[args.model.id] = r;
@@ -67,7 +67,7 @@ export class ModelInstance {
         const getOptions = this.createGetOptions(model);
 
         return this.rest.get({
-          url: model.webApiAction + "/" + key,
+          url: `data/${model.webApiAction}/${key}`,
           getOptions
         });
       },
@@ -103,7 +103,7 @@ export class ModelInstance {
         }
 
         return this.rest.get({
-          url: model.webApiAction,
+          url: `data/${model.webApiAction}`,
           getOptions
         }).then(r => {
           if (options.requireTotalCount) {

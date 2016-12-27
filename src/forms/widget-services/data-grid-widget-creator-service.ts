@@ -80,14 +80,23 @@ export class DataGridWidgetCreatorService {
     let clickActions: { (e: any): void }[] = [];
 
     if (options.onItemClick) {
-      clickActions.push((e) => {
+      clickActions.push(e => {
         form.evaluateExpression(options.onItemClick, { e })
       });
     }
     if (options.editDataContext) {
-      clickActions.push((e) => {
+      clickActions.push(e => {
         form.model.data[options.editDataContext] = e.data;
       });
+    }
+    if (options.editUrl && options.dataModel) {
+      const model = form.model.getInfo(options.dataModel);
+
+      if (model) {
+        clickActions.push(e => {
+          location.assign(`#${options.editUrl}/${e.data[model.keyProperty]}`);
+        });
+      }
     }
 
     if (clickActions.length > 0) {

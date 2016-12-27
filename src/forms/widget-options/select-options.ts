@@ -4,5 +4,6 @@ import {IValidationRule} from "./validation-rule";
 import {IEditorOptions} from "./editor-options";
 
 export interface ISelectOptions extends IEditorOptions {
+    idSelect?: string;
     filter?: string;
 }

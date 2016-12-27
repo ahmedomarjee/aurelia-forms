@@ -7,4 +7,5 @@ export * from "./mapping";
 export * from "./model";
 export * from "./variable";
 export * from "./edit-popup";
-export * from "./rest-load-options";
+export * from "./rest-get-options";
+export * from "./rest-post-options";

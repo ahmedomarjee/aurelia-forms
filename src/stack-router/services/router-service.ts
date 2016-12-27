@@ -19,6 +19,8 @@ export class RouterService {
   viewStack: ViewItem[] = [];
   currentViewItem: ViewItem;
 
+  deactivate() {
+  }
   navigate(navigationArgs: Interfaces.INavigationArgs) {
     const routeInfo = this.getRoute(navigationArgs.url);
     if (routeInfo == void (0)) {
@@ -47,6 +49,10 @@ export class RouterService {
     this.fallbackRoute = fallbackRoute;
 
     this.navigationRoutes = this.getNavigationRoutes(routes);
+  }
+  reset() {
+    this.viewStack.splice(0, this.viewStack.length);
+    this.navigationRoutes = [];
   }
 
   private addViewItem(viewItem: ViewItem) {
