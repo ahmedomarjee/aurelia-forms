@@ -79,9 +79,10 @@ export class SimpleWidgetCreatorService {
       command = form.evaluateExpression(options.binding.bindToFQ);
     }
 
-    const buttonOptions = <any>{};
+    const buttonOptions: DevExpress.ui.dxButtonOptions = {};
     buttonOptions.text = command.title;
     buttonOptions.hint = command.tooltip;
+    buttonOptions.width = "100%";
     buttonOptions.onClick = () => {
       if (typeof command.execute === "function") {
         command.execute();

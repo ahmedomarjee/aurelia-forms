@@ -10,15 +10,6 @@ export class LoginApp {
   constructor(
     private router: RouterService
   ) {
-    router.registerRoutes([
-      {
-        moduleId: "framework/security/views/login/login-form",
-        title: "Anmelden",
-        icon: "lock",
-        route: "security/login",
-        isNavigation: true
-      }
-    ],
-    "security/login");
+    router.reset();
   }
 }

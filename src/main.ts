@@ -13,8 +13,10 @@ export function configure(aurelia: Aurelia) {
   aurelia.use
     .basicConfiguration()
     .globalResources("devextreme")
-    .feature("framework/dx")
     .feature("framework/base")
+    .feature("framework/dx")
+    .feature("framework/forms")
+    .feature("framework/default-ui")
     .feature("framework/stack-router")
     .feature("framework/security");
 

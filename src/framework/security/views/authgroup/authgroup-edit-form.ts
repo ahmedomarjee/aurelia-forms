@@ -51,10 +51,10 @@ export class AuthgroupEditForm extends FormBase {
                 "bindToFQ": "models.data.$m_A.Name"
             },
             "validationRules": [],
-            "id": "idb89fe9cf87814577bf85abd0ef5cac63",
+            "id": "id465bd0e23a5c45139b7c26db6e464a03",
             "options": {
-                "optionsName": "idb89fe9cf87814577bf85abd0ef5cac63Options",
-                "optionsNameFQ": "idb89fe9cf87814577bf85abd0ef5cac63Options"
+                "optionsName": "id465bd0e23a5c45139b7c26db6e464a03Options",
+                "optionsNameFQ": "id465bd0e23a5c45139b7c26db6e464a03Options"
             }
         });
         this.widgetCreator.addSelectBox(this, {
@@ -66,10 +66,10 @@ export class AuthgroupEditForm extends FormBase {
                 "bindToFQ": "models.data.$m_A.IdMandator"
             },
             "validationRules": [],
-            "id": "id0d9ea5edd3a447ef8aeade32e0608059",
+            "id": "id5670e89d8cbd43d68d04941187f44687",
             "options": {
-                "optionsName": "id0d9ea5edd3a447ef8aeade32e0608059Options",
-                "optionsNameFQ": "id0d9ea5edd3a447ef8aeade32e0608059Options"
+                "optionsName": "id5670e89d8cbd43d68d04941187f44687Options",
+                "optionsNameFQ": "id5670e89d8cbd43d68d04941187f44687Options"
             }
         }, {
             "id": "mandator",

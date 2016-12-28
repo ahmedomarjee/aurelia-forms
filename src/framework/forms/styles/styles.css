@@ -1,0 +1,14 @@
+.t--form-element-flex-box {
+  display: flex;
+}
+.t--form-element-flex-box-with-padding > *:not(:first-child) {
+  margin-left: 12px;
+}
+.t--form-element-image-inline {
+  background-size: contain;
+  background-position: center center;
+  background-repeat: no-repeat;
+}
+.t--form-element-image {
+  max-width: 100%;
+}

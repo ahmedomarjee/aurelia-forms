@@ -1,0 +1,20 @@
+<form>
+  <models>
+    <model id="$m_login" />
+  </models>
+  <functions>
+    <function id="$f" file="./login.funcs" class-name="LoginFuncs" />
+  </functions>
+  <content>
+    <image class="t--login-logo" src="http://2014.erp-future.com/sites/2014.erp-future.com/files/1_business/Logo_U_TIP.png" />
+    <h2>Anmeldedaten</h2>
+    <data-context data-context="$m_login">
+      <text add-margin-top="false">Geben Sie hier Ihren Benutzernamen und Passwort ein und klicken Sie auf "Anmelden".</text>
+      <text-box caption="Benutzername" bind-to="Username" />
+      <text-box caption="Passwort" bind-to="Password" />
+      <check-box caption="Angemeldet bleiben" bind-to="StayLoggedOn" />
+    </data-context>
+
+    <command bind-to="$f.loginCommand" />
+  </content>
+</form>
