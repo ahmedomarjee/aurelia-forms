@@ -48,6 +48,11 @@ export class HistoryService {
 			});
 		});
 	}
+	setUrlWithoutNavigation(url: string) {
+		this.guardedNavigate(() => {
+			window.location.assign(url);
+		});
+	}
 
 	private guardedNavigate(action: {(): void}) {
 		if (this.isActive) {

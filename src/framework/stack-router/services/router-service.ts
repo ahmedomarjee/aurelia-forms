@@ -8,7 +8,7 @@ import * as Interfaces from "../interfaces/export";
 
 @autoinject
 export class RouterService {
-  private routes: Interfaces.IRoute[];
+  private routes: Interfaces.IRoute[] = [];
   private fallbackRoute: string;
   private routeInfoId = 0;
 
@@ -45,6 +45,8 @@ export class RouterService {
     this.addViewItem(new ViewItem(routeInfo));
   }
   registerRoutes(routes: Interfaces.IRoute[], fallbackRoute: string) {
+    routes = routes || [];
+
     this.routes = this.validateRoutes(routes);
     this.fallbackRoute = fallbackRoute;
 

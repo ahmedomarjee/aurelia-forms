@@ -3,6 +3,6 @@ export default {
   apiUrl: "http://10.20.50.53/TIP.Aurelia/api",
   webApiUrl: "http://10.20.50.53/TIP.Aurelia/api/data",
 
-  loginApp: "framework/security/views/login/login",
+  loginApp: "framework/login/login",
   mainApp: "app"
 }

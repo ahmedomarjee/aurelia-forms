@@ -28,6 +28,12 @@ import {
 import {
   WidgetCreatorService
 } from "../widget-services/widget-creator-service";
+import {
+  CustomEvent
+} from "../../base/export";
+import {
+  IFormAttachedEventArgs
+} from "../event-args/export";
 
 export class FormBase {
   constructor(
@@ -40,6 +46,7 @@ export class FormBase {
     public functions: Functions,
     public commands: Commands,
     public commandServerData: CommandServerData,
+    public onFormAttached: CustomEvent<IFormAttachedEventArgs>
   ) {
     this.expression = new Map();
 
@@ -56,6 +63,11 @@ export class FormBase {
 
   protected readonly expression: Map<string, Expression>;
 
+  attached() {
+    return this.onFormAttached.fire({
+      form: this
+    });
+  }
   activate(routeInfo: any) {
     if (routeInfo && routeInfo.parameters && routeInfo.parameters.id) {
       this.variables.data.$id = routeInfo.parameters.id;

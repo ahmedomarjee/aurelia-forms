@@ -6,6 +6,9 @@ import {
     FormBase
 } from "../../../forms/classes/form-base";
 import {
+    IFormAttachedEventArgs
+} from "../../../forms/event-args/form-attached";
+import {
     BindingEngine
 } from "aurelia-framework";
 import {
@@ -32,11 +35,14 @@ import {
 import {
     CommandServerData
 } from "../../../forms/classes/command-server-data";
+import {
+    CustomEvent
+} from "../../../base/classes/custom-event";
 
 @autoinject
 export class AuthgroupEditForm extends FormBase {
-    constructor(bindingEngine: BindingEngine, widgetCreator: WidgetCreatorService, command: CommandService, toolbar: ToolbarService, models: Models, variables: Variables, functions: Functions, commands: Commands, commandServerData: CommandServerData) {
-        super(bindingEngine, widgetCreator, command, toolbar, models, variables, functions, commands, commandServerData);
+    constructor(bindingEngine: BindingEngine, widgetCreator: WidgetCreatorService, command: CommandService, toolbar: ToolbarService, models: Models, variables: Variables, functions: Functions, commands: Commands, commandServerData: CommandServerData, onFormAttached: CustomEvent < IFormAttachedEventArgs > ) {
+        super(bindingEngine, widgetCreator, command, toolbar, models, variables, functions, commands, commandServerData, onFormAttached);
         this.addModel({
             "id": "$m_A",
             "webApiAction": "base/Security/Authgroup",
@@ -54,10 +60,10 @@ export class AuthgroupEditForm extends FormBase {
                 "bindToFQ": "models.data.$m_A.Name"
             },
             "validationRules": [],
-            "id": "iddcc7a5f1c567446b95ec7ae6cf773e2e",
+            "id": "idc2102f10fd6d473c85ef52abb6c16aed",
             "options": {
-                "optionsName": "iddcc7a5f1c567446b95ec7ae6cf773e2eOptions",
-                "optionsNameFQ": "iddcc7a5f1c567446b95ec7ae6cf773e2eOptions"
+                "optionsName": "idc2102f10fd6d473c85ef52abb6c16aedOptions",
+                "optionsNameFQ": "idc2102f10fd6d473c85ef52abb6c16aedOptions"
             }
         });
         this.widgetCreator.addSelectBox(this, {
@@ -69,10 +75,10 @@ export class AuthgroupEditForm extends FormBase {
                 "bindToFQ": "models.data.$m_A.IdMandator"
             },
             "validationRules": [],
-            "id": "id4a5bba95221e4f0293b4468c52c70c92",
+            "id": "ida4592fc6512745da923694bfae480b25",
             "options": {
-                "optionsName": "id4a5bba95221e4f0293b4468c52c70c92Options",
-                "optionsNameFQ": "id4a5bba95221e4f0293b4468c52c70c92Options"
+                "optionsName": "ida4592fc6512745da923694bfae480b25Options",
+                "optionsNameFQ": "ida4592fc6512745da923694bfae480b25Options"
             }
         }, {
             "id": "mandator",

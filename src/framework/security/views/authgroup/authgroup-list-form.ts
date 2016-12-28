@@ -6,6 +6,9 @@ import {
     FormBase
 } from "../../../forms/classes/form-base";
 import {
+    IFormAttachedEventArgs
+} from "../../../forms/event-args/form-attached";
+import {
     BindingEngine
 } from "aurelia-framework";
 import {
@@ -32,11 +35,14 @@ import {
 import {
     CommandServerData
 } from "../../../forms/classes/command-server-data";
+import {
+    CustomEvent
+} from "../../../base/classes/custom-event";
 
 @autoinject
 export class AuthgroupListForm extends FormBase {
-    constructor(bindingEngine: BindingEngine, widgetCreator: WidgetCreatorService, command: CommandService, toolbar: ToolbarService, models: Models, variables: Variables, functions: Functions, commands: Commands, commandServerData: CommandServerData) {
-        super(bindingEngine, widgetCreator, command, toolbar, models, variables, functions, commands, commandServerData);
+    constructor(bindingEngine: BindingEngine, widgetCreator: WidgetCreatorService, command: CommandService, toolbar: ToolbarService, models: Models, variables: Variables, functions: Functions, commands: Commands, commandServerData: CommandServerData, onFormAttached: CustomEvent < IFormAttachedEventArgs > ) {
+        super(bindingEngine, widgetCreator, command, toolbar, models, variables, functions, commands, commandServerData, onFormAttached);
         this.addModel({
             "id": "$m_A",
             "webApiAction": "base/Security/Authgroup",
@@ -66,10 +72,10 @@ export class AuthgroupListForm extends FormBase {
             "edits": [],
             "filters": [],
             "commands": [],
-            "id": "id959ad9f6fcd94b7d89aad8b54413eff6",
+            "id": "idc3891eded234452db40c6fa6e07e8e91",
             "options": {
-                "optionsName": "id959ad9f6fcd94b7d89aad8b54413eff6Options",
-                "optionsNameFQ": "id959ad9f6fcd94b7d89aad8b54413eff6Options"
+                "optionsName": "idc3891eded234452db40c6fa6e07e8e91Options",
+                "optionsNameFQ": "idc3891eded234452db40c6fa6e07e8e91Options"
             }
         });
     }

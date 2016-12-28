@@ -73,6 +73,7 @@ define('framework/stack-router/services/router-service',["require", "exports", "
     "use strict";
     var RouterService = (function () {
         function RouterService() {
+            this.routes = [];
             this.routeInfoId = 0;
             this.viewStack = [];
         }
@@ -98,6 +99,7 @@ define('framework/stack-router/services/router-service',["require", "exports", "
             this.addViewItem(new view_item_1.ViewItem(routeInfo));
         };
         RouterService.prototype.registerRoutes = function (routes, fallbackRoute) {
+            routes = routes || [];
             this.routes = this.validateRoutes(routes);
             this.fallbackRoute = fallbackRoute;
             this.navigationRoutes = this.getNavigationRoutes(routes);
@@ -330,7 +332,7 @@ define('config',["require", "exports"], function (require, exports) {
         baseUrl: "http://10.20.50.53/TIP.Aurelia",
         apiUrl: "http://10.20.50.53/TIP.Aurelia/api",
         webApiUrl: "http://10.20.50.53/TIP.Aurelia/api/data",
-        loginApp: "framework/security/views/login/login",
+        loginApp: "framework/login/login",
         mainApp: "app"
     };
 });
@@ -342,6 +344,170 @@ define('environment',["require", "exports"], function (require, exports) {
         debug: true,
         testing: true
     };
+});
+
+define('framework/base/interfaces/rest-get-options',["require", "exports"], function (require, exports) {
+    "use strict";
+});
+
+define('framework/base/interfaces/rest-post-options',["require", "exports"], function (require, exports) {
+    "use strict";
+});
+
+define('framework/base/interfaces/export',["require", "exports"], function (require, exports) {
+    "use strict";
+});
+
+define('framework/base/services/rest-service',["require", "exports", "aurelia-fetch-client", "../../../config"], function (require, exports, aurelia_fetch_client_1, config_1) {
+    "use strict";
+    var RestService = (function () {
+        function RestService() {
+        }
+        RestService.prototype.get = function (options) {
+            return this.execute("GET", options);
+        };
+        RestService.prototype.post = function (options) {
+            var body = null;
+            if (options.data) {
+                if (typeof options.data === "string") {
+                    body = options.data;
+                }
+                else {
+                    body = JSON.stringify(options.data);
+                }
+            }
+            return this.execute("POST", options, body);
+        };
+        RestService.prototype.getUrl = function (suffix) {
+            return config_1.default.baseUrl + "/" + suffix;
+        };
+        RestService.prototype.getApiUrl = function (suffix) {
+            return config_1.default.apiUrl + "/" + suffix;
+        };
+        RestService.prototype.getWebApiUrl = function (suffix) {
+            return config_1.default.webApiUrl + "/" + suffix;
+        };
+        RestService.prototype.createHeader = function (options) {
+            var headers = {};
+            if (options.getOptions) {
+                headers["X-GET-OPTIONS"] = JSON.stringify(options.getOptions);
+            }
+            headers["Content-Type"] = "application/json";
+            headers["Accept"] = "application/json";
+            if (this.getAuthHeader) {
+                Object.assign(headers, this.getAuthHeader());
+            }
+            return headers;
+        };
+        RestService.prototype.execute = function (method, options, body) {
+            var client = new aurelia_fetch_client_1.HttpClient();
+            var headers = this.createHeader(options);
+            return new Promise(function (success, error) {
+                client
+                    .fetch(options.url, {
+                    method: method,
+                    headers: headers,
+                    body: body
+                })
+                    .then(function (r) {
+                    if (r.ok) {
+                        return r.json();
+                    }
+                    DevExpress.ui.notify(r.statusText, "error", 3000);
+                    error(r);
+                })
+                    .then(function (r) { return success(r); })
+                    .catch(function (r) {
+                    error(r);
+                });
+            });
+        };
+        return RestService;
+    }());
+    exports.RestService = RestService;
+});
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+define('framework/base/services/authorization-service',["require", "exports", "aurelia-framework", "./rest-service", "../../../config"], function (require, exports, aurelia_framework_1, rest_service_1, config_1) {
+    "use strict";
+    var AuthorizationService = (function () {
+        function AuthorizationService(rest, aurelia, bindingEngine) {
+            this.rest = rest;
+            this.aurelia = aurelia;
+            this.bindingEngine = bindingEngine;
+            this.X_TIP_AUTH = "X-TIP-AUTH";
+            this.isLoggedIn = null;
+            this.bindingEngine
+                .expressionObserver(this, "isLoggedIn")
+                .subscribe(function (newValue, oldValue) {
+                aurelia.setRoot(newValue ? config_1.default.mainApp : config_1.default.loginApp);
+            });
+            this.rest.getAuthHeader = this.getAuthorizationHeaders.bind(this);
+        }
+        AuthorizationService.prototype.openApp = function () {
+            var _this = this;
+            if (this.isLoggedIn) {
+                return;
+            }
+            if (!localStorage.getItem(this.X_TIP_AUTH)) {
+                this.isLoggedIn = false;
+                return;
+            }
+            this.rest.get({
+                url: this.rest.getApiUrl("base/Authorization/IsLoggedIn")
+            }).then(function (r) {
+                _this.isLoggedIn = r.IsValid;
+            });
+        };
+        AuthorizationService.prototype.login = function (data) {
+            var _this = this;
+            return this.rest.post({
+                url: this.rest.getApiUrl("base/Authorization/Login"),
+                data: data
+            }).then(function (r) {
+                if (r.IsValid) {
+                    _this.isLoggedIn = true;
+                    localStorage.setItem(_this.X_TIP_AUTH, r.AuthenticationToken);
+                    return true;
+                }
+                DevExpress.ui.notify("Benutzer oder Passwort ungültig", "error", 3000);
+                return false;
+            });
+        };
+        AuthorizationService.prototype.logout = function () {
+            var _this = this;
+            return this.rest.get({
+                url: this.rest.getApiUrl("base/Authorization/Logout")
+            }).then(function () {
+                _this.isLoggedIn = false;
+                localStorage.removeItem(_this.X_TIP_AUTH);
+            });
+        };
+        AuthorizationService.prototype.getAuthorizationHeaders = function () {
+            var headers = {};
+            var auth = localStorage.getItem(this.X_TIP_AUTH);
+            if (auth) {
+                headers[this.X_TIP_AUTH] = auth;
+            }
+            return headers;
+        };
+        return AuthorizationService;
+    }());
+    AuthorizationService = __decorate([
+        aurelia_framework_1.autoinject,
+        __metadata("design:paramtypes", [rest_service_1.RestService,
+            aurelia_framework_1.Aurelia,
+            aurelia_framework_1.BindingEngine])
+    ], AuthorizationService);
+    exports.AuthorizationService = AuthorizationService;
 });
 
 define('main',["require", "exports", "./environment", "./framework/base/services/authorization-service"], function (require, exports, environment_1, authorization_service_1) {
@@ -372,6 +538,46 @@ define('main',["require", "exports", "./environment", "./framework/base/services
             var authorization = aurelia.container.get(authorization_service_1.AuthorizationService);
             authorization.openApp();
         });
+    }
+    exports.configure = configure;
+});
+
+define('framework/default-ui/services/layout-service',["require", "exports"], function (require, exports) {
+    "use strict";
+    var LayoutService = (function () {
+        function LayoutService() {
+            this.isSidebarCollapsed = false;
+        }
+        return LayoutService;
+    }());
+    exports.LayoutService = LayoutService;
+});
+
+define('framework/default-ui/services/export',["require", "exports", "./layout-service"], function (require, exports, layout_service_1) {
+    "use strict";
+    exports.LayoutService = layout_service_1.LayoutService;
+});
+
+define('framework/default-ui/export',["require", "exports", "./services/export"], function (require, exports, export_1) {
+    "use strict";
+    function __export(m) {
+        for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+    }
+    __export(export_1);
+});
+
+define('framework/default-ui/index',["require", "exports"], function (require, exports) {
+    "use strict";
+    function configure(config) {
+    }
+    exports.configure = configure;
+});
+
+define('framework/dx/index',["require", "exports"], function (require, exports) {
+    "use strict";
+    function configure(config) {
+        config
+            .globalResources("./elements/dx-widget");
     }
     exports.configure = configure;
 });
@@ -546,170 +752,6 @@ define('framework/base/event-args/export',["require", "exports"], function (requ
     "use strict";
 });
 
-define('framework/base/interfaces/rest-get-options',["require", "exports"], function (require, exports) {
-    "use strict";
-});
-
-define('framework/base/interfaces/rest-post-options',["require", "exports"], function (require, exports) {
-    "use strict";
-});
-
-define('framework/base/interfaces/export',["require", "exports"], function (require, exports) {
-    "use strict";
-});
-
-define('framework/base/services/rest-service',["require", "exports", "aurelia-fetch-client", "../../../config"], function (require, exports, aurelia_fetch_client_1, config_1) {
-    "use strict";
-    var RestService = (function () {
-        function RestService() {
-        }
-        RestService.prototype.get = function (options) {
-            return this.execute("GET", options);
-        };
-        RestService.prototype.post = function (options) {
-            var body = null;
-            if (options.data) {
-                if (typeof options.data === "string") {
-                    body = options.data;
-                }
-                else {
-                    body = JSON.stringify(options.data);
-                }
-            }
-            return this.execute("POST", options, body);
-        };
-        RestService.prototype.getUrl = function (suffix) {
-            return config_1.default.baseUrl + "/" + suffix;
-        };
-        RestService.prototype.getApiUrl = function (suffix) {
-            return config_1.default.apiUrl + "/" + suffix;
-        };
-        RestService.prototype.getWebApiUrl = function (suffix) {
-            return config_1.default.webApiUrl + "/" + suffix;
-        };
-        RestService.prototype.createHeader = function (options) {
-            var headers = {};
-            if (options.getOptions) {
-                headers["X-GET-OPTIONS"] = JSON.stringify(options.getOptions);
-            }
-            headers["Content-Type"] = "application/json";
-            headers["Accept"] = "application/json";
-            if (this.getAuthHeader) {
-                Object.assign(headers, this.getAuthHeader());
-            }
-            return headers;
-        };
-        RestService.prototype.execute = function (method, options, body) {
-            var client = new aurelia_fetch_client_1.HttpClient();
-            var headers = this.createHeader(options);
-            return new Promise(function (success, error) {
-                client
-                    .fetch(options.url, {
-                    method: method,
-                    headers: headers,
-                    body: body
-                })
-                    .then(function (r) {
-                    if (r.ok) {
-                        return r.json();
-                    }
-                    DevExpress.ui.notify(r.statusText, "error", 3000);
-                    error(r);
-                })
-                    .then(function (r) { return success(r); })
-                    .catch(function (r) {
-                    error(r);
-                });
-            });
-        };
-        return RestService;
-    }());
-    exports.RestService = RestService;
-});
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/base/services/authorization-service',["require", "exports", "aurelia-framework", "./rest-service", "../../../config"], function (require, exports, aurelia_framework_1, rest_service_1, config_1) {
-    "use strict";
-    var AuthorizationService = (function () {
-        function AuthorizationService(rest, aurelia, bindingEngine) {
-            this.rest = rest;
-            this.aurelia = aurelia;
-            this.bindingEngine = bindingEngine;
-            this.X_TIP_AUTH = "X-TIP-AUTH";
-            this.isLoggedIn = null;
-            this.bindingEngine
-                .expressionObserver(this, "isLoggedIn")
-                .subscribe(function (newValue, oldValue) {
-                aurelia.setRoot(newValue ? config_1.default.mainApp : config_1.default.loginApp);
-            });
-            this.rest.getAuthHeader = this.getAuthorizationHeaders.bind(this);
-        }
-        AuthorizationService.prototype.openApp = function () {
-            var _this = this;
-            if (this.isLoggedIn) {
-                return;
-            }
-            if (!localStorage.getItem(this.X_TIP_AUTH)) {
-                this.isLoggedIn = false;
-                return;
-            }
-            this.rest.get({
-                url: this.rest.getApiUrl("base/Authorization/IsLoggedIn")
-            }).then(function (r) {
-                _this.isLoggedIn = r.IsValid;
-            });
-        };
-        AuthorizationService.prototype.login = function (data) {
-            var _this = this;
-            return this.rest.post({
-                url: this.rest.getApiUrl("base/Authorization/Login"),
-                data: data
-            }).then(function (r) {
-                if (r.IsValid) {
-                    _this.isLoggedIn = true;
-                    localStorage.setItem(_this.X_TIP_AUTH, r.AuthenticationToken);
-                    return true;
-                }
-                DevExpress.ui.notify("Benutzer oder Passwort ungültig", "error", 3000);
-                return false;
-            });
-        };
-        AuthorizationService.prototype.logout = function () {
-            var _this = this;
-            return this.rest.get({
-                url: this.rest.getApiUrl("base/Authorization/Logout")
-            }).then(function () {
-                _this.isLoggedIn = false;
-                localStorage.removeItem(_this.X_TIP_AUTH);
-            });
-        };
-        AuthorizationService.prototype.getAuthorizationHeaders = function () {
-            var headers = {};
-            var auth = localStorage.getItem(this.X_TIP_AUTH);
-            if (auth) {
-                headers[this.X_TIP_AUTH] = auth;
-            }
-            return headers;
-        };
-        return AuthorizationService;
-    }());
-    AuthorizationService = __decorate([
-        aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [rest_service_1.RestService,
-            aurelia_framework_1.Aurelia,
-            aurelia_framework_1.BindingEngine])
-    ], AuthorizationService);
-    exports.AuthorizationService = AuthorizationService;
-});
-
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -849,46 +891,6 @@ define('framework/base/index',["require", "exports"], function (require, exports
     function configure(config) {
         config
             .globalResources("./styles/styles.css");
-    }
-    exports.configure = configure;
-});
-
-define('framework/default-ui/services/layout-service',["require", "exports"], function (require, exports) {
-    "use strict";
-    var LayoutService = (function () {
-        function LayoutService() {
-            this.isSidebarCollapsed = false;
-        }
-        return LayoutService;
-    }());
-    exports.LayoutService = LayoutService;
-});
-
-define('framework/default-ui/services/export',["require", "exports", "./layout-service"], function (require, exports, layout_service_1) {
-    "use strict";
-    exports.LayoutService = layout_service_1.LayoutService;
-});
-
-define('framework/default-ui/export',["require", "exports", "./services/export"], function (require, exports, export_1) {
-    "use strict";
-    function __export(m) {
-        for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-    }
-    __export(export_1);
-});
-
-define('framework/default-ui/index',["require", "exports"], function (require, exports) {
-    "use strict";
-    function configure(config) {
-    }
-    exports.configure = configure;
-});
-
-define('framework/dx/index',["require", "exports"], function (require, exports) {
-    "use strict";
-    function configure(config) {
-        config
-            .globalResources("./elements/dx-widget");
     }
     exports.configure = configure;
 });
@@ -2017,7 +2019,7 @@ define('framework/forms/widget-services/widget-creator-service',["require", "exp
 define('framework/forms/classes/form-base',["require", "exports"], function (require, exports) {
     "use strict";
     var FormBase = (function () {
-        function FormBase(bindingEngine, widgetCreator, command, toolbar, models, variables, functions, commands, commandServerData) {
+        function FormBase(bindingEngine, widgetCreator, command, toolbar, models, variables, functions, commands, commandServerData, onFormAttached) {
             this.bindingEngine = bindingEngine;
             this.widgetCreator = widgetCreator;
             this.command = command;
@@ -2027,6 +2029,7 @@ define('framework/forms/classes/form-base',["require", "exports"], function (req
             this.functions = functions;
             this.commands = commands;
             this.commandServerData = commandServerData;
+            this.onFormAttached = onFormAttached;
             this.expression = new Map();
             this.models.registerForm(this);
             this.variables.registerForm(this);
@@ -2034,6 +2037,11 @@ define('framework/forms/classes/form-base',["require", "exports"], function (req
             this.commands.registerForm(this);
             this.toolbarOptions = this.toolbar.createToolbarOptions(this);
         }
+        FormBase.prototype.attached = function () {
+            return this.onFormAttached.fire({
+                form: this
+            });
+        };
         FormBase.prototype.activate = function (routeInfo) {
             if (routeInfo && routeInfo.parameters && routeInfo.parameters.id) {
                 this.variables.data.$id = routeInfo.parameters.id;
@@ -2183,13 +2191,6 @@ define('framework/forms/index',["require", "exports"], function (require, export
     exports.configure = configure;
 });
 
-define('framework/security/index',["require", "exports"], function (require, exports) {
-    "use strict";
-    function configure(config) {
-    }
-    exports.configure = configure;
-});
-
 define('framework/stack-router/classes/export',["require", "exports", "./view-item"], function (require, exports, view_item_1) {
     "use strict";
     exports.ViewItem = view_item_1.ViewItem;
@@ -2237,6 +2238,11 @@ define('framework/stack-router/services/history-service',["require", "exports", 
                     url: _this.getUrl(url),
                     clearStack: clearStack
                 });
+            });
+        };
+        HistoryService.prototype.setUrlWithoutNavigation = function (url) {
+            this.guardedNavigate(function () {
+                window.location.assign(url);
             });
         };
         HistoryService.prototype.guardedNavigate = function (action) {
@@ -2293,12 +2299,46 @@ define('framework/stack-router/export',["require", "exports", "./classes/export"
     __export(export_2);
 });
 
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+define('framework/login/login',["require", "exports", "aurelia-framework", "../stack-router/export"], function (require, exports, aurelia_framework_1, export_1) {
+    "use strict";
+    var Login = (function () {
+        function Login(router) {
+            this.router = router;
+        }
+        Login.prototype.attached = function () {
+            this.router.reset();
+        };
+        return Login;
+    }());
+    Login = __decorate([
+        aurelia_framework_1.autoinject,
+        __metadata("design:paramtypes", [export_1.RouterService])
+    ], Login);
+    exports.Login = Login;
+});
+
 define('framework/stack-router/index',["require", "exports"], function (require, exports) {
     "use strict";
     function configure(config) {
         config
             .globalResources("./views/stack-router/stack-router")
             .globalResources("./attributes/stack-router-link/stack-router-link");
+    }
+    exports.configure = configure;
+});
+
+define('framework/security/index',["require", "exports"], function (require, exports) {
+    "use strict";
+    function configure(config) {
     }
     exports.configure = configure;
 });
@@ -2504,33 +2544,139 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-define('framework/default-ui/views/container/container',["require", "exports", "aurelia-framework", "../../services/layout-service"], function (require, exports, aurelia_framework_1, layout_service_1) {
+define('framework/login/elements/login-data-form-funcs',["require", "exports", "aurelia-framework", "../../base/export", "../../stack-router/export"], function (require, exports, aurelia_framework_1, export_1, export_2) {
     "use strict";
-    var Container = (function () {
-        function Container(layout) {
-            this.layout = layout;
+    var LoginFuncs = (function () {
+        function LoginFuncs(authorization, history) {
+            var _this = this;
+            this.authorization = authorization;
+            this.history = history;
+            this.loginCommand = {
+                id: "$login",
+                title: "Anmelden",
+                execute: function () {
+                    _this.authorization
+                        .login(_this.form.models.data.$m_login)
+                        .then(function (r) {
+                        if (r && _this.goToUrlAfterLogin) {
+                            _this.history.navigateByCode("#" + _this.goToUrlAfterLogin, true);
+                        }
+                    });
+                }
+            };
         }
-        Object.defineProperty(Container.prototype, "className", {
-            get: function () {
-                return this.layout.isSidebarCollapsed
-                    ? "t--sidebar-collapsed"
-                    : "t--sidebar-expanded";
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return Container;
+        LoginFuncs.prototype.bind = function (form) {
+            var _this = this;
+            this.form = form;
+            this.authorization.openApp();
+            this.form.onFormAttached.register(function (r) {
+                _this.goToUrlAfterLogin = _this.history.getUrl();
+                _this.history.setUrlWithoutNavigation("#login");
+                return Promise.resolve();
+            });
+            form.models.data.$m_login = {
+                StayLoggedOn: false
+            };
+        };
+        return LoginFuncs;
     }());
-    __decorate([
-        aurelia_framework_1.computedFrom("layout.isSidebarCollapsed"),
-        __metadata("design:type", String),
-        __metadata("design:paramtypes", [])
-    ], Container.prototype, "className", null);
-    Container = __decorate([
+    LoginFuncs = __decorate([
         aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [layout_service_1.LayoutService])
-    ], Container);
-    exports.Container = Container;
+        __metadata("design:paramtypes", [export_1.AuthorizationService,
+            export_2.HistoryService])
+    ], LoginFuncs);
+    exports.LoginFuncs = LoginFuncs;
+});
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+define('framework/login/elements/login-data-form',["require", "exports", "aurelia-framework", "../../forms/classes/form-base", "aurelia-framework", "../../forms/widget-services/widget-creator-service", "../../forms/services/command-service", "../../forms/services/toolbar-service", "../../forms/classes/models", "../../forms/classes/variables", "../../forms/classes/functions", "../../forms/classes/commands", "../../forms/classes/command-server-data", "../../base/classes/custom-event", "./login-data-form-funcs"], function (require, exports, aurelia_framework_1, form_base_1, aurelia_framework_2, widget_creator_service_1, command_service_1, toolbar_service_1, models_1, variables_1, functions_1, commands_1, command_server_data_1, custom_event_1, login_data_form_funcs_1) {
+    "use strict";
+    var LoginDataForm = (function (_super) {
+        __extends(LoginDataForm, _super);
+        function LoginDataForm(bindingEngine, widgetCreator, command, toolbar, models, variables, functions, commands, commandServerData, onFormAttached, $f) {
+            var _this = _super.call(this, bindingEngine, widgetCreator, command, toolbar, models, variables, functions, commands, commandServerData, onFormAttached) || this;
+            _this.$f = $f;
+            _this.addModel({
+                "id": "$m_login",
+                "filters": []
+            });
+            _this.addFunction("$f", $f, "functions.$f");
+            _this.widgetCreator.addTextBox(_this, {
+                "caption": "Benutzername",
+                "binding": {
+                    "dataContext": "$m_login",
+                    "bindTo": "Username",
+                    "bindToFQ": "models.data.$m_login.Username"
+                },
+                "validationRules": [],
+                "id": "idca16b7abb289497a948cadaa59744b2a",
+                "options": {
+                    "optionsName": "idca16b7abb289497a948cadaa59744b2aOptions",
+                    "optionsNameFQ": "idca16b7abb289497a948cadaa59744b2aOptions"
+                }
+            });
+            _this.widgetCreator.addTextBox(_this, {
+                "caption": "Passwort",
+                "binding": {
+                    "dataContext": "$m_login",
+                    "bindTo": "Password",
+                    "bindToFQ": "models.data.$m_login.Password"
+                },
+                "validationRules": [],
+                "id": "id1fbe5b172d104e3cbc9c1b61a38e76a2",
+                "options": {
+                    "optionsName": "id1fbe5b172d104e3cbc9c1b61a38e76a2Options",
+                    "optionsNameFQ": "id1fbe5b172d104e3cbc9c1b61a38e76a2Options"
+                }
+            });
+            _this.widgetCreator.addCheckBox(_this, {
+                "caption": "Angemeldet bleiben",
+                "binding": {
+                    "dataContext": "$m_login",
+                    "bindTo": "StayLoggedOn",
+                    "bindToFQ": "models.data.$m_login.StayLoggedOn"
+                },
+                "validationRules": [],
+                "id": "idf02276bfd9234915915c65c09390c499",
+                "options": {
+                    "optionsName": "idf02276bfd9234915915c65c09390c499Options",
+                    "optionsNameFQ": "idf02276bfd9234915915c65c09390c499Options"
+                }
+            });
+            _this.widgetCreator.addCommand(_this, {
+                "id": "ida671bfa0bc6d40299ab7046611179638",
+                "options": {
+                    "optionsName": "ida671bfa0bc6d40299ab7046611179638Options",
+                    "optionsNameFQ": "ida671bfa0bc6d40299ab7046611179638Options"
+                },
+                "binding": {
+                    "bindTo": "$f.loginCommand",
+                    "bindToFQ": "functions.$f.loginCommand",
+                    "propertyPrefix": "$f"
+                }
+            });
+            return _this;
+        }
+        return LoginDataForm;
+    }(form_base_1.FormBase));
+    LoginDataForm = __decorate([
+        aurelia_framework_1.autoinject,
+        __metadata("design:paramtypes", [aurelia_framework_2.BindingEngine, widget_creator_service_1.WidgetCreatorService, command_service_1.CommandService, toolbar_service_1.ToolbarService, models_1.Models, variables_1.Variables, functions_1.Functions, commands_1.Commands, command_server_data_1.CommandServerData, custom_event_1.CustomEvent, login_data_form_funcs_1.LoginFuncs])
+    ], LoginDataForm);
+    exports.LoginDataForm = LoginDataForm;
 });
 
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -2566,24 +2712,33 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-define('framework/default-ui/views/header/header',["require", "exports", "aurelia-framework", "../../../stack-router/export", "../../../base/services/export"], function (require, exports, aurelia_framework_1, export_1, export_2) {
+define('framework/default-ui/views/container/container',["require", "exports", "aurelia-framework", "../../services/layout-service"], function (require, exports, aurelia_framework_1, layout_service_1) {
     "use strict";
-    var Header = (function () {
-        function Header(router, authorization) {
-            this.router = router;
-            this.authorization = authorization;
+    var Container = (function () {
+        function Container(layout) {
+            this.layout = layout;
         }
-        Header.prototype.logout = function () {
-            this.authorization.logout();
-        };
-        return Header;
+        Object.defineProperty(Container.prototype, "className", {
+            get: function () {
+                return this.layout.isSidebarCollapsed
+                    ? "t--sidebar-collapsed"
+                    : "t--sidebar-expanded";
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return Container;
     }());
-    Header = __decorate([
+    __decorate([
+        aurelia_framework_1.computedFrom("layout.isSidebarCollapsed"),
+        __metadata("design:type", String),
+        __metadata("design:paramtypes", [])
+    ], Container.prototype, "className", null);
+    Container = __decorate([
         aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [export_1.RouterService,
-            export_2.AuthorizationService])
-    ], Header);
-    exports.Header = Header;
+        __metadata("design:paramtypes", [layout_service_1.LayoutService])
+    ], Container);
+    exports.Container = Container;
 });
 
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -2641,294 +2796,24 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-define('framework/security/views/login/login-data-form-funcs',["require", "exports", "aurelia-framework", "../../../base/export"], function (require, exports, aurelia_framework_1, export_1) {
+define('framework/default-ui/views/header/header',["require", "exports", "aurelia-framework", "../../../stack-router/export", "../../../base/services/export"], function (require, exports, aurelia_framework_1, export_1, export_2) {
     "use strict";
-    var LoginFuncs = (function () {
-        function LoginFuncs(authorization) {
-            var _this = this;
-            this.authorization = authorization;
-            this.loginCommand = {
-                id: "$login",
-                title: "Anmelden",
-                execute: function () {
-                    _this.authorization.login(_this.form.models.data.$m_login);
-                }
-            };
-        }
-        LoginFuncs.prototype.bind = function (form) {
-            this.form = form;
-            this.authorization.openApp();
-            form.models.data.$m_login = {
-                StayLoggedOn: false
-            };
-        };
-        return LoginFuncs;
-    }());
-    LoginFuncs = __decorate([
-        aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [export_1.AuthorizationService])
-    ], LoginFuncs);
-    exports.LoginFuncs = LoginFuncs;
-});
-
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/security/views/login/login-data-form',["require", "exports", "aurelia-framework", "../../../forms/classes/form-base", "aurelia-framework", "../../../forms/widget-services/widget-creator-service", "../../../forms/services/command-service", "../../../forms/services/toolbar-service", "../../../forms/classes/models", "../../../forms/classes/variables", "../../../forms/classes/functions", "../../../forms/classes/commands", "../../../forms/classes/command-server-data", "./login-data-form-funcs"], function (require, exports, aurelia_framework_1, form_base_1, aurelia_framework_2, widget_creator_service_1, command_service_1, toolbar_service_1, models_1, variables_1, functions_1, commands_1, command_server_data_1, login_data_form_funcs_1) {
-    "use strict";
-    var LoginDataForm = (function (_super) {
-        __extends(LoginDataForm, _super);
-        function LoginDataForm(bindingEngine, widgetCreator, command, toolbar, models, variables, functions, commands, commandServerData, $f) {
-            var _this = _super.call(this, bindingEngine, widgetCreator, command, toolbar, models, variables, functions, commands, commandServerData) || this;
-            _this.$f = $f;
-            _this.addModel({
-                "id": "$m_login",
-                "filters": []
-            });
-            _this.addFunction("$f", $f, "functions.$f");
-            _this.widgetCreator.addTextBox(_this, {
-                "caption": "Benutzername",
-                "binding": {
-                    "dataContext": "$m_login",
-                    "bindTo": "Username",
-                    "bindToFQ": "models.data.$m_login.Username"
-                },
-                "validationRules": [],
-                "id": "id52f0348518dd4c26bdae71825bd7472b",
-                "options": {
-                    "optionsName": "id52f0348518dd4c26bdae71825bd7472bOptions",
-                    "optionsNameFQ": "id52f0348518dd4c26bdae71825bd7472bOptions"
-                }
-            });
-            _this.widgetCreator.addTextBox(_this, {
-                "caption": "Passwort",
-                "binding": {
-                    "dataContext": "$m_login",
-                    "bindTo": "Password",
-                    "bindToFQ": "models.data.$m_login.Password"
-                },
-                "validationRules": [],
-                "id": "idd8654a2a5de54b8e8ba5fc8ae6aa2ce2",
-                "options": {
-                    "optionsName": "idd8654a2a5de54b8e8ba5fc8ae6aa2ce2Options",
-                    "optionsNameFQ": "idd8654a2a5de54b8e8ba5fc8ae6aa2ce2Options"
-                }
-            });
-            _this.widgetCreator.addCheckBox(_this, {
-                "caption": "Angemeldet bleiben",
-                "binding": {
-                    "dataContext": "$m_login",
-                    "bindTo": "StayLoggedOn",
-                    "bindToFQ": "models.data.$m_login.StayLoggedOn"
-                },
-                "validationRules": [],
-                "id": "id68feada8a7ca45ed94a23c736c70a032",
-                "options": {
-                    "optionsName": "id68feada8a7ca45ed94a23c736c70a032Options",
-                    "optionsNameFQ": "id68feada8a7ca45ed94a23c736c70a032Options"
-                }
-            });
-            _this.widgetCreator.addCommand(_this, {
-                "id": "id20589f843038464f9942ef2a8c1034cd",
-                "options": {
-                    "optionsName": "id20589f843038464f9942ef2a8c1034cdOptions",
-                    "optionsNameFQ": "id20589f843038464f9942ef2a8c1034cdOptions"
-                },
-                "binding": {
-                    "bindTo": "$f.loginCommand",
-                    "bindToFQ": "functions.$f.loginCommand",
-                    "propertyPrefix": "$f"
-                }
-            });
-            return _this;
-        }
-        return LoginDataForm;
-    }(form_base_1.FormBase));
-    LoginDataForm = __decorate([
-        aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [aurelia_framework_2.BindingEngine, widget_creator_service_1.WidgetCreatorService, command_service_1.CommandService, toolbar_service_1.ToolbarService, models_1.Models, variables_1.Variables, functions_1.Functions, commands_1.Commands, command_server_data_1.CommandServerData, login_data_form_funcs_1.LoginFuncs])
-    ], LoginDataForm);
-    exports.LoginDataForm = LoginDataForm;
-});
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/security/views/login/login',["require", "exports", "aurelia-framework", "../../../stack-router/export"], function (require, exports, aurelia_framework_1, export_1) {
-    "use strict";
-    var Login = (function () {
-        function Login(router) {
+    var Header = (function () {
+        function Header(router, authorization) {
             this.router = router;
+            this.authorization = authorization;
         }
-        Login.prototype.attached = function () {
-            this.router.reset();
+        Header.prototype.logout = function () {
+            this.authorization.logout();
         };
-        return Login;
+        return Header;
     }());
-    Login = __decorate([
+    Header = __decorate([
         aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [export_1.RouterService])
-    ], Login);
-    exports.Login = Login;
-});
-
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/security/views/authgroup/authgroup-edit-form',["require", "exports", "aurelia-framework", "../../../forms/classes/form-base", "aurelia-framework", "../../../forms/widget-services/widget-creator-service", "../../../forms/services/command-service", "../../../forms/services/toolbar-service", "../../../forms/classes/models", "../../../forms/classes/variables", "../../../forms/classes/functions", "../../../forms/classes/commands", "../../../forms/classes/command-server-data"], function (require, exports, aurelia_framework_1, form_base_1, aurelia_framework_2, widget_creator_service_1, command_service_1, toolbar_service_1, models_1, variables_1, functions_1, commands_1, command_server_data_1) {
-    "use strict";
-    var AuthgroupEditForm = (function (_super) {
-        __extends(AuthgroupEditForm, _super);
-        function AuthgroupEditForm(bindingEngine, widgetCreator, command, toolbar, models, variables, functions, commands, commandServerData) {
-            var _this = _super.call(this, bindingEngine, widgetCreator, command, toolbar, models, variables, functions, commands, commandServerData) || this;
-            _this.addModel({
-                "id": "$m_A",
-                "webApiAction": "base/Security/Authgroup",
-                "key": "variables.data.$id",
-                "keyProperty": "Id",
-                "postOnSave": true,
-                "isMain": true,
-                "filters": []
-            });
-            _this.widgetCreator.addTextBox(_this, {
-                "caption": "Bezeichnung",
-                "binding": {
-                    "dataContext": "$m_A",
-                    "bindTo": "Name",
-                    "bindToFQ": "models.data.$m_A.Name"
-                },
-                "validationRules": [],
-                "id": "iddcc7a5f1c567446b95ec7ae6cf773e2e",
-                "options": {
-                    "optionsName": "iddcc7a5f1c567446b95ec7ae6cf773e2eOptions",
-                    "optionsNameFQ": "iddcc7a5f1c567446b95ec7ae6cf773e2eOptions"
-                }
-            });
-            _this.widgetCreator.addSelectBox(_this, {
-                "idSelect": "mandator",
-                "caption": "Mandant",
-                "binding": {
-                    "dataContext": "$m_A",
-                    "bindTo": "IdMandator",
-                    "bindToFQ": "models.data.$m_A.IdMandator"
-                },
-                "validationRules": [],
-                "id": "id4a5bba95221e4f0293b4468c52c70c92",
-                "options": {
-                    "optionsName": "id4a5bba95221e4f0293b4468c52c70c92Options",
-                    "optionsNameFQ": "id4a5bba95221e4f0293b4468c52c70c92Options"
-                }
-            }, {
-                "id": "mandator",
-                "elementName": "select-box",
-                "valueMember": "Id",
-                "displayMember": "Name",
-                "action": "base/Security/Mandator",
-                "columns": ["Name", "Id"]
-            });
-            return _this;
-        }
-        return AuthgroupEditForm;
-    }(form_base_1.FormBase));
-    AuthgroupEditForm = __decorate([
-        aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [aurelia_framework_2.BindingEngine, widget_creator_service_1.WidgetCreatorService, command_service_1.CommandService, toolbar_service_1.ToolbarService, models_1.Models, variables_1.Variables, functions_1.Functions, commands_1.Commands, command_server_data_1.CommandServerData])
-    ], AuthgroupEditForm);
-    exports.AuthgroupEditForm = AuthgroupEditForm;
-});
-
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/security/views/authgroup/authgroup-list-form',["require", "exports", "aurelia-framework", "../../../forms/classes/form-base", "aurelia-framework", "../../../forms/widget-services/widget-creator-service", "../../../forms/services/command-service", "../../../forms/services/toolbar-service", "../../../forms/classes/models", "../../../forms/classes/variables", "../../../forms/classes/functions", "../../../forms/classes/commands", "../../../forms/classes/command-server-data"], function (require, exports, aurelia_framework_1, form_base_1, aurelia_framework_2, widget_creator_service_1, command_service_1, toolbar_service_1, models_1, variables_1, functions_1, commands_1, command_server_data_1) {
-    "use strict";
-    var AuthgroupListForm = (function (_super) {
-        __extends(AuthgroupListForm, _super);
-        function AuthgroupListForm(bindingEngine, widgetCreator, command, toolbar, models, variables, functions, commands, commandServerData) {
-            var _this = _super.call(this, bindingEngine, widgetCreator, command, toolbar, models, variables, functions, commands, commandServerData) || this;
-            _this.addModel({
-                "id": "$m_A",
-                "webApiAction": "base/Security/Authgroup",
-                "webApiExpand": {
-                    "Mandator": null
-                },
-                "keyProperty": "Id",
-                "filters": []
-            });
-            _this.widgetCreator.addDataGrid(_this, {
-                "columns": [{
-                        "bindTo": "Name",
-                        "sortIndex": 0,
-                        "sortOrder": "asc"
-                    }, {
-                        "caption": "Mandant",
-                        "bindTo": "Mandator.Name"
-                    }],
-                "binding": {
-                    "dataContext": "$m_A",
-                    "bindToFQ": "models.data.$m_A."
-                },
-                "dataModel": "$m_A",
-                "editUrl": "security/authgroup",
-                "addShortscuts": true,
-                "isMainList": true,
-                "edits": [],
-                "filters": [],
-                "commands": [],
-                "id": "id959ad9f6fcd94b7d89aad8b54413eff6",
-                "options": {
-                    "optionsName": "id959ad9f6fcd94b7d89aad8b54413eff6Options",
-                    "optionsNameFQ": "id959ad9f6fcd94b7d89aad8b54413eff6Options"
-                }
-            });
-            return _this;
-        }
-        return AuthgroupListForm;
-    }(form_base_1.FormBase));
-    AuthgroupListForm = __decorate([
-        aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [aurelia_framework_2.BindingEngine, widget_creator_service_1.WidgetCreatorService, command_service_1.CommandService, toolbar_service_1.ToolbarService, models_1.Models, variables_1.Variables, functions_1.Functions, commands_1.Commands, command_server_data_1.CommandServerData])
-    ], AuthgroupListForm);
-    exports.AuthgroupListForm = AuthgroupListForm;
+        __metadata("design:paramtypes", [export_1.RouterService,
+            export_2.AuthorizationService])
+    ], Header);
+    exports.Header = Header;
 });
 
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -2983,6 +2868,44 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+define('framework/stack-router/views/stack-router/stack-router',["require", "exports", "aurelia-framework", "aurelia-event-aggregator", "../../services/router-service", "../../services/history-service"], function (require, exports, aurelia_framework_1, aurelia_event_aggregator_1, router_service_1, history_service_1) {
+    "use strict";
+    var StackRouter = (function () {
+        function StackRouter(history, router, eventAggregator) {
+            this.history = history;
+            this.router = router;
+            this.eventAggregator = eventAggregator;
+        }
+        StackRouter.prototype.created = function (owningView) {
+            this.owningView = owningView;
+        };
+        StackRouter.prototype.bind = function (bindingContext, overrideContext) {
+            this.bindingContext = bindingContext;
+            this.overrideContext = overrideContext;
+        };
+        StackRouter.prototype.attached = function () {
+            this.history.navigateCurrent();
+        };
+        return StackRouter;
+    }());
+    StackRouter = __decorate([
+        aurelia_framework_1.autoinject,
+        __metadata("design:paramtypes", [history_service_1.HistoryService,
+            router_service_1.RouterService,
+            aurelia_event_aggregator_1.EventAggregator])
+    ], StackRouter);
+    exports.StackRouter = StackRouter;
+});
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
 define('framework/stack-router/views/view/view',["require", "exports", "aurelia-framework"], function (require, exports, aurelia_framework_1) {
     "use strict";
     var View = (function () {
@@ -3017,6 +2940,11 @@ define('framework/stack-router/views/view/view',["require", "exports", "aurelia-
     exports.View = View;
 });
 
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -3026,55 +2954,158 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-define('framework/stack-router/views/stack-router/stack-router',["require", "exports", "aurelia-framework", "aurelia-event-aggregator", "../../services/router-service", "../../services/history-service"], function (require, exports, aurelia_framework_1, aurelia_event_aggregator_1, router_service_1, history_service_1) {
+define('framework/security/views/authgroup/authgroup-edit-form',["require", "exports", "aurelia-framework", "../../../forms/classes/form-base", "aurelia-framework", "../../../forms/widget-services/widget-creator-service", "../../../forms/services/command-service", "../../../forms/services/toolbar-service", "../../../forms/classes/models", "../../../forms/classes/variables", "../../../forms/classes/functions", "../../../forms/classes/commands", "../../../forms/classes/command-server-data", "../../../base/classes/custom-event"], function (require, exports, aurelia_framework_1, form_base_1, aurelia_framework_2, widget_creator_service_1, command_service_1, toolbar_service_1, models_1, variables_1, functions_1, commands_1, command_server_data_1, custom_event_1) {
     "use strict";
-    var StackRouter = (function () {
-        function StackRouter(history, router, eventAggregator) {
-            this.history = history;
-            this.router = router;
-            this.eventAggregator = eventAggregator;
+    var AuthgroupEditForm = (function (_super) {
+        __extends(AuthgroupEditForm, _super);
+        function AuthgroupEditForm(bindingEngine, widgetCreator, command, toolbar, models, variables, functions, commands, commandServerData, onFormAttached) {
+            var _this = _super.call(this, bindingEngine, widgetCreator, command, toolbar, models, variables, functions, commands, commandServerData, onFormAttached) || this;
+            _this.addModel({
+                "id": "$m_A",
+                "webApiAction": "base/Security/Authgroup",
+                "key": "variables.data.$id",
+                "keyProperty": "Id",
+                "postOnSave": true,
+                "isMain": true,
+                "filters": []
+            });
+            _this.widgetCreator.addTextBox(_this, {
+                "caption": "Bezeichnung",
+                "binding": {
+                    "dataContext": "$m_A",
+                    "bindTo": "Name",
+                    "bindToFQ": "models.data.$m_A.Name"
+                },
+                "validationRules": [],
+                "id": "idc2102f10fd6d473c85ef52abb6c16aed",
+                "options": {
+                    "optionsName": "idc2102f10fd6d473c85ef52abb6c16aedOptions",
+                    "optionsNameFQ": "idc2102f10fd6d473c85ef52abb6c16aedOptions"
+                }
+            });
+            _this.widgetCreator.addSelectBox(_this, {
+                "idSelect": "mandator",
+                "caption": "Mandant",
+                "binding": {
+                    "dataContext": "$m_A",
+                    "bindTo": "IdMandator",
+                    "bindToFQ": "models.data.$m_A.IdMandator"
+                },
+                "validationRules": [],
+                "id": "ida4592fc6512745da923694bfae480b25",
+                "options": {
+                    "optionsName": "ida4592fc6512745da923694bfae480b25Options",
+                    "optionsNameFQ": "ida4592fc6512745da923694bfae480b25Options"
+                }
+            }, {
+                "id": "mandator",
+                "elementName": "select-box",
+                "valueMember": "Id",
+                "displayMember": "Name",
+                "action": "base/Security/Mandator",
+                "columns": ["Name", "Id"]
+            });
+            return _this;
         }
-        StackRouter.prototype.created = function (owningView) {
-            this.owningView = owningView;
-        };
-        StackRouter.prototype.bind = function (bindingContext, overrideContext) {
-            this.bindingContext = bindingContext;
-            this.overrideContext = overrideContext;
-        };
-        StackRouter.prototype.attached = function () {
-            this.history.navigateCurrent();
-        };
-        return StackRouter;
-    }());
-    StackRouter = __decorate([
+        return AuthgroupEditForm;
+    }(form_base_1.FormBase));
+    AuthgroupEditForm = __decorate([
         aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [history_service_1.HistoryService,
-            router_service_1.RouterService,
-            aurelia_event_aggregator_1.EventAggregator])
-    ], StackRouter);
-    exports.StackRouter = StackRouter;
+        __metadata("design:paramtypes", [aurelia_framework_2.BindingEngine, widget_creator_service_1.WidgetCreatorService, command_service_1.CommandService, toolbar_service_1.ToolbarService, models_1.Models, variables_1.Variables, functions_1.Functions, commands_1.Commands, command_server_data_1.CommandServerData, custom_event_1.CustomEvent])
+    ], AuthgroupEditForm);
+    exports.AuthgroupEditForm = AuthgroupEditForm;
+});
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+define('framework/security/views/authgroup/authgroup-list-form',["require", "exports", "aurelia-framework", "../../../forms/classes/form-base", "aurelia-framework", "../../../forms/widget-services/widget-creator-service", "../../../forms/services/command-service", "../../../forms/services/toolbar-service", "../../../forms/classes/models", "../../../forms/classes/variables", "../../../forms/classes/functions", "../../../forms/classes/commands", "../../../forms/classes/command-server-data", "../../../base/classes/custom-event"], function (require, exports, aurelia_framework_1, form_base_1, aurelia_framework_2, widget_creator_service_1, command_service_1, toolbar_service_1, models_1, variables_1, functions_1, commands_1, command_server_data_1, custom_event_1) {
+    "use strict";
+    var AuthgroupListForm = (function (_super) {
+        __extends(AuthgroupListForm, _super);
+        function AuthgroupListForm(bindingEngine, widgetCreator, command, toolbar, models, variables, functions, commands, commandServerData, onFormAttached) {
+            var _this = _super.call(this, bindingEngine, widgetCreator, command, toolbar, models, variables, functions, commands, commandServerData, onFormAttached) || this;
+            _this.addModel({
+                "id": "$m_A",
+                "webApiAction": "base/Security/Authgroup",
+                "webApiExpand": {
+                    "Mandator": null
+                },
+                "keyProperty": "Id",
+                "filters": []
+            });
+            _this.widgetCreator.addDataGrid(_this, {
+                "columns": [{
+                        "bindTo": "Name",
+                        "sortIndex": 0,
+                        "sortOrder": "asc"
+                    }, {
+                        "caption": "Mandant",
+                        "bindTo": "Mandator.Name"
+                    }],
+                "binding": {
+                    "dataContext": "$m_A",
+                    "bindToFQ": "models.data.$m_A."
+                },
+                "dataModel": "$m_A",
+                "editUrl": "security/authgroup",
+                "addShortscuts": true,
+                "isMainList": true,
+                "edits": [],
+                "filters": [],
+                "commands": [],
+                "id": "idc3891eded234452db40c6fa6e07e8e91",
+                "options": {
+                    "optionsName": "idc3891eded234452db40c6fa6e07e8e91Options",
+                    "optionsNameFQ": "idc3891eded234452db40c6fa6e07e8e91Options"
+                }
+            });
+            return _this;
+        }
+        return AuthgroupListForm;
+    }(form_base_1.FormBase));
+    AuthgroupListForm = __decorate([
+        aurelia_framework_1.autoinject,
+        __metadata("design:paramtypes", [aurelia_framework_2.BindingEngine, widget_creator_service_1.WidgetCreatorService, command_service_1.CommandService, toolbar_service_1.ToolbarService, models_1.Models, variables_1.Variables, functions_1.Functions, commands_1.Commands, command_server_data_1.CommandServerData, custom_event_1.CustomEvent])
+    ], AuthgroupListForm);
+    exports.AuthgroupListForm = AuthgroupListForm;
+});
+
+define('framework/forms/event-args/form-attached',["require", "exports"], function (require, exports) {
+    "use strict";
 });
 
 define('text!app.html', ['module'], function(module) { module.exports = "<template>\r\n  <require from=\"./framework/default-ui/views/container/container\"></require>\r\n  <container></container>\r\n</template>\r\n"; });
+define('text!framework/login/login.html', ['module'], function(module) { module.exports = "<template>\r\n  <require from=\"./elements/login-data-form\"></require>\r\n  <require from=\"./login.css\"></require>\r\n\r\n  <div class=\"t--login-container\">\r\n    <div class=\"t--login-image\">\r\n      <div class=\"t--login-banner\">\r\n        Anmeldedaten\r\n      </div>\r\n    </div>  \r\n    <div class=\"t--login-data\">\r\n      <login-data-form></login-data-form>\r\n    </div>\r\n  </div>\r\n</template>"; });
 define('text!framework/dx/elements/dx-widget.html', ['module'], function(module) { module.exports = "<template class=\"dx-widget\">\r\n</template>"; });
+define('text!framework/login/elements/login-data-form.html', ['module'], function(module) { module.exports = "<template>\n    <div class=\"t--margin-top col-xs-12 t--login-logo\">\n        <img class=\"t--form-element-image\" src=\"http://2014.erp-future.com/sites/2014.erp-future.com/files/1_business/Logo_U_TIP.png\"></img>\n    </div>\n    <form submit.delegate=\"submitForm('functions.$f.loginCommand')\">\n        <button class=\"t--invisible-submit\" type=\"submit\"></button>\n        <div class=\"col-xs-12\">\n            <div>Geben Sie hier Ihren Benutzernamen und Passwort ein und klicken Sie auf \"Anmelden\".</div>\n        </div>\n        <div class=\"t--margin-top col-xs-12\">\n            <div class=\"t--editor-caption\">Benutzername</div>\n            <dx-widget name=\"dxTextBox\" options.bind=\"idca16b7abb289497a948cadaa59744b2aOptions\"></dx-widget>\n        </div>\n        <div class=\"t--margin-top col-xs-12\">\n            <div class=\"t--editor-caption\">Passwort</div>\n            <dx-widget name=\"dxTextBox\" options.bind=\"id1fbe5b172d104e3cbc9c1b61a38e76a2Options\"></dx-widget>\n        </div>\n        <div class=\"t--margin-top col-xs-12\">\n            <div class=\"t--editor-caption\">&nbsp;</div>\n            <dx-widget name=\"dxCheckBox\" options.bind=\"idf02276bfd9234915915c65c09390c499Options\"></dx-widget>\n        </div>\n        <div class=\"t--margin-top col-xs-12\">\n            <div class=\"t--editor-caption\">&nbsp;</div>\n            <dx-widget name=\"dxButton\" options.bind=\"ida671bfa0bc6d40299ab7046611179638Options\"></dx-widget>\n        </div>\n    </form>\n</template>"; });
+define('text!framework/login/login.css', ['module'], function(module) { module.exports = ".t--login-container {\n  display: flex;\n  height: 100vh;\n  width: 100vw;\n}\n.t--login-image {\n  position: relative;\n  flex-grow: 1;\n  background-image: url('http://www.aesthetic-lounge.de/wp-content/uploads/2015/02/Mann-_nr_2.jpg');\n  background-position: center center;\n  background-size: cover;\n  border-right: 1px solid lightgray;\n}\n.t--login-banner {\n  position: absolute;\n  padding: 12px 36px;\n  bottom: 30vh;\n  font-size: 60px;\n  font-weight: 100;\n  color: white;\n  background-color: rgba(0, 0, 0, 0.3);\n}\n.t--login-data {\n  display: flex;\n  max-width: 350px;\n  margin-top: -25vh;\n  align-items: center;\n  background-color: #f7f7f7;\n}\n.t--login-logo {\n  margin-bottom: 40px;\n  text-align: center;\n}\n.t--login-logo img {\n  max-width: 200px;\n}\n"; });
+define('text!framework/default-ui/views/content/content.html', ['module'], function(module) { module.exports = "<template class=\"t--content\">\r\n  <require from=\"./content.css\"></require>\r\n\r\n  <stack-router></stack-router>\r\n</template>\r\n"; });
 define('text!framework/default-ui/views/container/container.html', ['module'], function(module) { module.exports = "<template class=\"t--container\" class.bind=\"className\">\r\n  <require from=\"./container.css\"></require>\r\n  \r\n  <require from=\"../sidebar/sidebar\"></require>\r\n  <require from=\"../header/header\"></require>\r\n  <require from=\"../content/content\"></require>\r\n\r\n  <sidebar></sidebar>\r\n  <header></header>\r\n  <content></content>\r\n</template>\r\n"; });
 define('text!framework/base/styles/styles.css', ['module'], function(module) { module.exports = "body {\n  margin: 0;\n  padding: 0;\n  font-family: \"Helvetica Neue\", \"Segoe UI\", Helvetica, Verdana, sans-serif;\n  font-size: 12px;\n}\n.t--margin-top {\n  margin-top: 12px;\n}\n.t--editor-caption {\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n.t--cursor-pointer {\n  cursor: pointer;\n}\n.t--invisible-submit {\n  height: 0;\n  width: 0;\n  margin: 0;\n  padding: 0;\n  border: 0;\n}\n"; });
 define('text!framework/base/styles/variables.css', ['module'], function(module) { module.exports = ""; });
-define('text!framework/default-ui/views/content/content.html', ['module'], function(module) { module.exports = "<template class=\"t--content\">\r\n  <require from=\"./content.css\"></require>\r\n\r\n  <stack-router></stack-router>\r\n</template>\r\n"; });
+define('text!framework/default-ui/views/header/header.html', ['module'], function(module) { module.exports = "<template class=\"t--header\">\r\n  <require from=\"./header.css\"></require>\r\n\r\n  <div class=\"t--header-flex\">\r\n    <div class=\"t--header-title\">\r\n      ${router.currentViewItem.title}\r\n    </div>\r\n    <div class=\"t--header-options\">\r\n      <a href=\"#\" click.delegate=\"logout()\">Abmelden</a>\r\n    </div>\r\n  </div>\r\n</template>"; });
 define('text!framework/default-ui/views/sidebar/sidebar.html', ['module'], function(module) { module.exports = "<template class=\"t--sidebar\">\r\n  <require from=\"./sidebar.css\"></require>\r\n\r\n  <div class=\"t--sidebar-header\" click.delegate=\"onHeaderClicked()\">\r\n    <div class=\"t--sidebar-header-title\">\r\n      Navigation\r\n    </div>\r\n    <div class=\"t--sidebar-header-icon\">\r\n      <i class=\"fa fa-${headerIcon}\"></i>\r\n    </div>\r\n  </div>\r\n\r\n  <ul>\r\n    <li\r\n      class=\"t--sidebar-item\" \r\n      repeat.for=\"route of router.navigationRoutes\">\r\n      <a href=\"#${route.route}\" stack-router-link=\"clear-stack.bind: true\">\r\n        <span class=\"t--sidebar-item-title\">\r\n          ${route.title}\r\n        </span>\r\n        <span class=\"t--sidebar-item-icon\" if.bind=\"route.icon\">\r\n          <i class=\"fa fa-${route.icon}\"></i>\r\n        </span>\r\n      </a>\r\n    </li>\r\n  </ul>\r\n</template>\r\n"; });
 define('text!framework/forms/styles/styles.css', ['module'], function(module) { module.exports = ".t--form-element-flex-box {\n  display: flex;\n}\n.t--form-element-flex-box-with-padding > *:not(:first-child) {\n  margin-left: 12px;\n}\n.t--form-element-image-inline {\n  background-size: contain;\n  background-position: center center;\n  background-repeat: no-repeat;\n}\n.t--form-element-image {\n  max-width: 100%;\n}\n"; });
-define('text!framework/default-ui/views/header/header.html', ['module'], function(module) { module.exports = "<template class=\"t--header\">\r\n  <require from=\"./header.css\"></require>\r\n\r\n  <div class=\"t--header-flex\">\r\n    <div class=\"t--header-title\">\r\n      ${router.currentViewItem.title}\r\n    </div>\r\n    <div class=\"t--header-options\">\r\n      <a href=\"#\" click.delegate=\"logout()\">Abmelden</a>\r\n    </div>\r\n  </div>\r\n</template>"; });
-define('text!framework/security/views/authgroup/authgroup-edit-form.html', ['module'], function(module) { module.exports = "<template>\n    <div class=\"t--margin-top col-xs-12 col-md-6\">\n        <div class=\"t--editor-caption\">Bezeichnung</div>\n        <dx-widget name=\"dxTextBox\" options.bind=\"iddcc7a5f1c567446b95ec7ae6cf773e2eOptions\"></dx-widget>\n    </div>\n    <div class=\"t--margin-top col-xs-12 col-md-6\">\n        <div class=\"t--editor-caption\">Mandant</div>\n        <dx-widget name=\"dxSelectBox\" options.bind=\"id4a5bba95221e4f0293b4468c52c70c92Options\"></dx-widget>\n    </div>\n</template>"; });
-define('text!framework/default-ui/views/container/container.css', ['module'], function(module) { module.exports = ".t--container {\n  display: block;\n  width: 100vw;\n  height: 100vh;\n}\n"; });
-define('text!framework/security/views/authgroup/authgroup-list-form.html', ['module'], function(module) { module.exports = "<template>\n    <div class=\"col-xs-12\">\n        <dx-widget name=\"dxDataGrid\" options.bind=\"id959ad9f6fcd94b7d89aad8b54413eff6Options\"></dx-widget>\n    </div>\n</template>"; });
-define('text!framework/security/views/login/login-data-form.html', ['module'], function(module) { module.exports = "<template>\n    <div class=\"t--margin-top col-xs-12 t--login-logo\">\n        <img class=\"t--form-element-image\" src=\"http://2014.erp-future.com/sites/2014.erp-future.com/files/1_business/Logo_U_TIP.png\"></img>\n    </div>\n    <form submit.delegate=\"submitForm('functions.$f.loginCommand')\">\n        <button class=\"t--invisible-submit\" type=\"submit\"></button>\n        <div class=\"col-xs-12\">\n            <div>Geben Sie hier Ihren Benutzernamen und Passwort ein und klicken Sie auf \"Anmelden\".</div>\n        </div>\n        <div class=\"t--margin-top col-xs-12\">\n            <div class=\"t--editor-caption\">Benutzername</div>\n            <dx-widget name=\"dxTextBox\" options.bind=\"id52f0348518dd4c26bdae71825bd7472bOptions\"></dx-widget>\n        </div>\n        <div class=\"t--margin-top col-xs-12\">\n            <div class=\"t--editor-caption\">Passwort</div>\n            <dx-widget name=\"dxTextBox\" options.bind=\"idd8654a2a5de54b8e8ba5fc8ae6aa2ce2Options\"></dx-widget>\n        </div>\n        <div class=\"t--margin-top col-xs-12\">\n            <div class=\"t--editor-caption\">&nbsp;</div>\n            <dx-widget name=\"dxCheckBox\" options.bind=\"id68feada8a7ca45ed94a23c736c70a032Options\"></dx-widget>\n        </div>\n        <div class=\"t--margin-top col-xs-12\">\n            <div class=\"t--editor-caption\">&nbsp;</div>\n            <dx-widget name=\"dxButton\" options.bind=\"id20589f843038464f9942ef2a8c1034cdOptions\"></dx-widget>\n        </div>\n    </form>\n</template>"; });
-define('text!framework/security/views/login/login.html', ['module'], function(module) { module.exports = "<template>\r\n  <require from=\"./login-data-form\"></require>\r\n  <require from=\"./login.css\"></require>\r\n\r\n  <div class=\"t--login-container\">\r\n    <div class=\"t--login-image\">\r\n      <div class=\"t--login-banner\">\r\n        Anmeldedaten\r\n      </div>\r\n    </div>  \r\n    <div class=\"t--login-data\">\r\n      <login-data-form></login-data-form>\r\n    </div>\r\n  </div>\r\n</template>"; });
+define('text!framework/security/views/authgroup/authgroup-edit-form.html', ['module'], function(module) { module.exports = "<template>\n    <div class=\"t--margin-top col-xs-12 col-md-6\">\n        <div class=\"t--editor-caption\">Bezeichnung</div>\n        <dx-widget name=\"dxTextBox\" options.bind=\"idc2102f10fd6d473c85ef52abb6c16aedOptions\"></dx-widget>\n    </div>\n    <div class=\"t--margin-top col-xs-12 col-md-6\">\n        <div class=\"t--editor-caption\">Mandant</div>\n        <dx-widget name=\"dxSelectBox\" options.bind=\"ida4592fc6512745da923694bfae480b25Options\"></dx-widget>\n    </div>\n</template>"; });
+define('text!framework/security/views/authgroup/authgroup-list-form.html', ['module'], function(module) { module.exports = "<template>\n    <div class=\"col-xs-12\">\n        <dx-widget name=\"dxDataGrid\" options.bind=\"idc3891eded234452db40c6fa6e07e8e91Options\"></dx-widget>\n    </div>\n</template>"; });
 define('text!framework/default-ui/views/content/content.css', ['module'], function(module) { module.exports = ".t--content {\n  display: block;\n  margin-left: 280px;\n  height: calc(100% - 60px);\n}\n.t--sidebar-collapsed .t--content {\n  margin-left: 60px;\n}\n.t--view-current {\n  display: block;\n}\n.t--view-history {\n  display: none;\n}\n.t--view-toolbar .dx-toolbar {\n  height: 60px;\n}\n.t--view-toolbar-item {\n  display: flex;\n  height: 60px;\n  padding: 0 12px;\n  justify-content: center;\n  align-items: center;\n  text-align: center;\n  color: white;\n  text-decoration: none;\n  cursor: pointer;\n  -webkit-user-select: none;\n}\n.t--view-toolbar-item i {\n  font-size: 16px;\n}\n.t--view-toolbar-item:hover {\n  background-color: #4F4F4F;\n}\n.dx-state-disabled .t--view-toolbar-item {\n  cursor: default;\n  color: lightgray;\n}\n.dx-state-disabled .t--view-toolbar-item:hover {\n  background-color: inherit;\n}\n"; });
 define('text!framework/stack-router/views/stack-router/stack-router.html', ['module'], function(module) { module.exports = "<template class=\"t--stack-router\">\r\n  <require from=\"./stack-router.css\"></require>\r\n  <require from=\"../view/view\"></require>\r\n\r\n  <div \r\n    class=\"t--stack-router-item\" \r\n    class.bind=\"item.className\"\r\n    repeat.for=\"item of router.viewStack\">\r\n    <view view.bind=\"item\"></view>\r\n  </div>\r\n</template>"; });
 define('text!framework/stack-router/views/view/view.html', ['module'], function(module) { module.exports = "<template class=\"t--view\">\r\n  <require from=\"./view.css\"></require>\r\n\r\n  <div class=\"t--view-toolbar\">\r\n    <dx-widget if.bind=\"toolbarOptions\" name=\"dxToolbar\" options.bind=\"toolbarOptions\">\r\n      <dx-template name=\"itemTemplate\">\r\n        <a class=\"t--view-toolbar-item\" click.delegate=\"data.guardedExecute()\">\r\n          <div if.bind=\"data.command.badgeText\" class=\"t--view-toolbar-item-badge\">\r\n            ${data.command.badgeText}\r\n          </div>\r\n          <div>\r\n            <div if.bind=\"data.command.icon\" class=\"t--view-toolbar-item-icon\">\r\n              <i class=\"fa fa-fw fa-${data.command.icon}\"></i>\r\n            </div>\r\n            <div if.bind=\"data.command.title\" class=\"t--view-toolbar-item-title\">\r\n              ${data.command.title}\r\n            </div>\r\n          </div>\r\n        </a>\r\n      </dx-template>\r\n    </dx-widget>\r\n  </div>\r\n  <div class=\"t--view-content\">\r\n    <div class=\"container-fluid\">\r\n      <div class=\"row\">\r\n        <compose\r\n          view-model.ref=\"controller\" \r\n          view-model.bind=\"view.viewModel\" \r\n          model.bind=\"view.model\" \r\n          class=\"t--view-content\"></compose>\r\n      </div>\r\n    </div>\r\n  </div>\r\n</template>"; });
-define('text!framework/default-ui/views/sidebar/sidebar.css', ['module'], function(module) { module.exports = ".t--sidebar {\n  display: block;\n  position: fixed;\n  top: 0;\n  bottom: 0;\n  left: 0;\n  z-index: 10;\n  width: 280px;\n  background-color: #2a2e35;\n}\n.t--sidebar ul {\n  padding: 0;\n  margin: 0;\n  list-style: none;\n}\n.t--sidebar-collapsed .t--sidebar {\n  left: -220px;\n}\n.t--sidebar-header {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  background-color: #262930;\n  color: white;\n  cursor: pointer;\n}\n.t--sidebar-header-title {\n  flex-grow: 1;\n  font-size: 26px;\n  font-weight: 100;\n  padding: 12px;\n}\n.t--sidebar-header-icon {\n  display: flex;\n  width: 60px;\n  align-items: center;\n  justify-content: center;\n}\n.t--sidebar-item a {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  color: lightgray;\n  text-decoration: none;\n}\n.t--sidebar-item a:hover {\n  background-color: #17C4BB;\n  color: white;\n}\n.t--sidebar-item-title {\n  flex-grow: 1;\n  padding: 12px;\n}\n.t--sidebar-item-icon {\n  display: flex;\n  width: 60px;\n  align-items: center;\n  justify-content: center;\n}\n"; });
+define('text!framework/default-ui/views/container/container.css', ['module'], function(module) { module.exports = ".t--container {\n  display: block;\n  width: 100vw;\n  height: 100vh;\n}\n"; });
 define('text!framework/default-ui/views/header/header.css', ['module'], function(module) { module.exports = ".t--header {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  margin-left: 280px;\n  padding: 0 12px;\n}\n.t--header-flex {\n  display: flex;\n  width: 100%;\n}\n.t--header-title {\n  flex-grow: 1;\n}\n.t--sidebar-collapsed .t--header {\n  margin-left: 60px;\n}\n"; });
-define('text!framework/security/views/login/login.css', ['module'], function(module) { module.exports = ".t--login-container {\n  display: flex;\n  height: 100vh;\n  width: 100vw;\n}\n.t--login-image {\n  position: relative;\n  flex-grow: 1;\n  background-image: url('http://www.aesthetic-lounge.de/wp-content/uploads/2015/02/Mann-_nr_2.jpg');\n  background-position: center center;\n  background-size: cover;\n  border-right: 1px solid lightgray;\n}\n.t--login-banner {\n  position: absolute;\n  padding: 12px 36px;\n  bottom: 30vh;\n  font-size: 60px;\n  font-weight: 100;\n  color: white;\n  background-color: rgba(0, 0, 0, 0.3);\n}\n.t--login-data {\n  display: flex;\n  max-width: 350px;\n  margin-top: -25vh;\n  align-items: center;\n  background-color: #f7f7f7;\n}\n.t--login-logo {\n  margin-bottom: 40px;\n  text-align: center;\n}\n.t--login-logo img {\n  max-width: 200px;\n}\n"; });
+define('text!framework/default-ui/views/sidebar/sidebar.css', ['module'], function(module) { module.exports = ".t--sidebar {\n  display: block;\n  position: fixed;\n  top: 0;\n  bottom: 0;\n  left: 0;\n  z-index: 10;\n  width: 280px;\n  background-color: #2a2e35;\n}\n.t--sidebar ul {\n  padding: 0;\n  margin: 0;\n  list-style: none;\n}\n.t--sidebar-collapsed .t--sidebar {\n  left: -220px;\n}\n.t--sidebar-header {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  background-color: #262930;\n  color: white;\n  cursor: pointer;\n}\n.t--sidebar-header-title {\n  flex-grow: 1;\n  font-size: 26px;\n  font-weight: 100;\n  padding: 12px;\n}\n.t--sidebar-header-icon {\n  display: flex;\n  width: 60px;\n  align-items: center;\n  justify-content: center;\n}\n.t--sidebar-item a {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  color: lightgray;\n  text-decoration: none;\n}\n.t--sidebar-item a:hover {\n  background-color: #17C4BB;\n  color: white;\n}\n.t--sidebar-item-title {\n  flex-grow: 1;\n  padding: 12px;\n}\n.t--sidebar-item-icon {\n  display: flex;\n  width: 60px;\n  align-items: center;\n  justify-content: center;\n}\n"; });
 define('text!framework/stack-router/views/stack-router/stack-router.css', ['module'], function(module) { module.exports = ".t--stack-router,\n.t--stack-router-item {\n  display: block;\n  height: 100%;\n}\n"; });
 define('text!framework/stack-router/views/view/view.css', ['module'], function(module) { module.exports = ".t--view {\n  display: block;\n  position: relative;\n  height: 100%;\n}\n.t--view-toolbar {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  background-color: #808080;\n  color: white;\n}\n.t--view-toolbar .dx-toolbar {\n  background-color: transparent;\n}\n.t--view-toolbar-title {\n  font-size: 26px;\n  font-weight: 100;\n  color: white;\n  padding: 0 12px;\n}\n.t--view-content {\n  height: calc(100% - 60px);\n  overflow-x: hidden;\n  overflow-y: scroll;\n  -webkit-overflow-scrolling: touch;\n}\n"; });
 //# sourceMappingURL=app-bundle.js.map
