@@ -22,6 +22,8 @@ export class HistoryService {
 		this.register();
 	}
 
+	pipelineUrl: string;
+
 	getUrl(url?: string): string {
 		let hash = url || location.hash;
 
@@ -31,16 +33,21 @@ export class HistoryService {
 
 		return hash.substr(1);
 	}
-	navigateCurrent() {
-		this.guardedNavigate(() => {
-			this.navigate({
-				url: this.getUrl()
+	navigateCurrentOrInPipeline() {
+		if (this.pipelineUrl) {
+			this.navigateByCode(this.pipelineUrl, true);
+			this.pipelineUrl = null;
+		} else {
+			this.guardedNavigate(() => {
+				this.navigate({
+					url: this.getUrl()
+				});
 			});
-		});
+		}
 	}
 	navigateByCode(url: string, clearStack: boolean) {
 		this.guardedNavigate(() => {
-			window.location.assign(url);
+			this.assignUrl(url);
 
 			this.navigate({
 				url: this.getUrl(url),
@@ -50,7 +57,7 @@ export class HistoryService {
 	}
 	setUrlWithoutNavigation(url: string) {
 		this.guardedNavigate(() => {
-			window.location.assign(url);
+			this.assignUrl(url);
 		});
 	}
 
@@ -76,6 +83,10 @@ export class HistoryService {
 	private navigate(navigationArgs: Interfaces.INavigationArgs) {
 		this.router.navigate(navigationArgs);
 
+		if (navigationArgs.routeInfo && navigationArgs.routeInfo.isFallback) {
+			this.assignUrl(navigationArgs.routeInfo.route.route[0]);
+		}
+
 		if (!navigationArgs.historyState && navigationArgs.routeInfo) {
 			history.replaceState(<Interfaces.IHistoryState>{
 				id: navigationArgs.routeInfo.id,
@@ -83,5 +94,16 @@ export class HistoryService {
 			},
 			navigationArgs.routeInfo.route.title)
 		}
+	}
+	private assignUrl(url: string) {
+		if (!url) {
+			throw new Error("No Url defined");
+		}
+
+		if (url.substr(0, 1) !== "#") {
+			url = `#${url}`;
+		}
+
+		location.assign(url);
 	}
 }

@@ -3,7 +3,7 @@
     <model id="$m_login" />
   </models>
   <functions>
-    <function id="$f" file="./login-data-form-funcs" class-name="LoginFuncs" />
+    <function id="$f" file="./login-form-funcs" class-name="LoginFuncs" />
   </functions>
   <content>
     <image class="t--login-logo" src="http://2014.erp-future.com/sites/2014.erp-future.com/files/1_business/Logo_U_TIP.png" />

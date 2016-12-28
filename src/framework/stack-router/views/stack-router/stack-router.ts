@@ -1,5 +1,6 @@
 import {
   autoinject,
+  bindable,
   customElement,
   computedFrom
 } from "aurelia-framework";
@@ -29,6 +30,8 @@ export class StackRouter {
     private eventAggregator: EventAggregator
   ) { }
 
+  @bindable createToolbar: boolean = true;
+
   created(owningView) {
     this.owningView = owningView;
   }
@@ -39,6 +42,6 @@ export class StackRouter {
   }
 
   attached() {
-    this.history.navigateCurrent();
+    this.history.navigateCurrentOrInPipeline();
   }
 }

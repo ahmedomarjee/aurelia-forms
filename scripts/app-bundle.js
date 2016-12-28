@@ -195,7 +195,8 @@ define('framework/stack-router/services/router-service',["require", "exports", "
             return {
                 id: this.routeInfoId++,
                 route: this.getFallbackRoute(),
-                parameters: {}
+                parameters: {},
+                isFallback: true
             };
         };
         RouterService.prototype.isRoute = function (route, url) {
@@ -232,7 +233,17 @@ define('framework/stack-router/services/router-service',["require", "exports", "
                     return null;
                 }
                 if (routeParts[i].startsWith(":")) {
-                    parameters[routeParts[i].substr(1)] = urlParts[i];
+                    var routePart = routeParts[i];
+                    var indexOfBracket = routePart.indexOf("{");
+                    var lastIndexOfBrack = routePart.lastIndexOf("}");
+                    if (indexOfBracket >= 0 && lastIndexOfBrack >= 0) {
+                        var r = routePart.substring(indexOfBracket + 1, lastIndexOfBrack);
+                        routePart = routePart.substr(0, indexOfBracket);
+                        if (!new RegExp("^" + r + "$").test(urlParts[i])) {
+                            return null;
+                        }
+                    }
+                    parameters[routePart.substr(1)] = urlParts[i];
                 }
                 else if (urlParts[i] !== routeParts[i]) {
                     return null;
@@ -312,7 +323,7 @@ define('app',["require", "exports", "./framework/stack-router/services/router-se
                     moduleId: "framework/security/views/authgroup/authgroup-edit-form",
                     title: "Berechtigungsgruppen",
                     icon: "shield",
-                    route: "security/authgroup/:id"
+                    route: "security/authgroup/:id{[0-9]*}"
                 }
             ], "security/authgroup");
         };
@@ -538,46 +549,6 @@ define('main',["require", "exports", "./environment", "./framework/base/services
             var authorization = aurelia.container.get(authorization_service_1.AuthorizationService);
             authorization.openApp();
         });
-    }
-    exports.configure = configure;
-});
-
-define('framework/default-ui/services/layout-service',["require", "exports"], function (require, exports) {
-    "use strict";
-    var LayoutService = (function () {
-        function LayoutService() {
-            this.isSidebarCollapsed = false;
-        }
-        return LayoutService;
-    }());
-    exports.LayoutService = LayoutService;
-});
-
-define('framework/default-ui/services/export',["require", "exports", "./layout-service"], function (require, exports, layout_service_1) {
-    "use strict";
-    exports.LayoutService = layout_service_1.LayoutService;
-});
-
-define('framework/default-ui/export',["require", "exports", "./services/export"], function (require, exports, export_1) {
-    "use strict";
-    function __export(m) {
-        for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-    }
-    __export(export_1);
-});
-
-define('framework/default-ui/index',["require", "exports"], function (require, exports) {
-    "use strict";
-    function configure(config) {
-    }
-    exports.configure = configure;
-});
-
-define('framework/dx/index',["require", "exports"], function (require, exports) {
-    "use strict";
-    function configure(config) {
-        config
-            .globalResources("./elements/dx-widget");
     }
     exports.configure = configure;
 });
@@ -891,6 +862,46 @@ define('framework/base/index',["require", "exports"], function (require, exports
     function configure(config) {
         config
             .globalResources("./styles/styles.css");
+    }
+    exports.configure = configure;
+});
+
+define('framework/default-ui/services/layout-service',["require", "exports"], function (require, exports) {
+    "use strict";
+    var LayoutService = (function () {
+        function LayoutService() {
+            this.isSidebarCollapsed = false;
+        }
+        return LayoutService;
+    }());
+    exports.LayoutService = LayoutService;
+});
+
+define('framework/default-ui/services/export',["require", "exports", "./layout-service"], function (require, exports, layout_service_1) {
+    "use strict";
+    exports.LayoutService = layout_service_1.LayoutService;
+});
+
+define('framework/default-ui/export',["require", "exports", "./services/export"], function (require, exports, export_1) {
+    "use strict";
+    function __export(m) {
+        for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+    }
+    __export(export_1);
+});
+
+define('framework/default-ui/index',["require", "exports"], function (require, exports) {
+    "use strict";
+    function configure(config) {
+    }
+    exports.configure = configure;
+});
+
+define('framework/dx/index',["require", "exports"], function (require, exports) {
+    "use strict";
+    function configure(config) {
+        config
+            .globalResources("./elements/dx-widget");
     }
     exports.configure = configure;
 });
@@ -2016,6 +2027,14 @@ define('framework/forms/widget-services/widget-creator-service',["require", "exp
     exports.WidgetCreatorService = WidgetCreatorService;
 });
 
+define('framework/forms/event-args/form-attached',["require", "exports"], function (require, exports) {
+    "use strict";
+});
+
+define('framework/forms/event-args/export',["require", "exports"], function (require, exports) {
+    "use strict";
+});
+
 define('framework/forms/classes/form-base',["require", "exports"], function (require, exports) {
     "use strict";
     var FormBase = (function () {
@@ -2152,10 +2171,6 @@ define('framework/forms/enums/export',["require", "exports", "./selection-mode-e
     exports.SelectionModeEnum = selection_mode_enum_1.SelectionModeEnum;
 });
 
-define('framework/forms/event-args/export',["require", "exports"], function (require, exports) {
-    "use strict";
-});
-
 define('framework/forms/services/export',["require", "exports", "./command-service", "./default-commands-service", "./toolbar-service"], function (require, exports, command_service_1, default_commands_service_1, toolbar_service_1) {
     "use strict";
     exports.CommandService = command_service_1.CommandService;
@@ -2222,18 +2237,24 @@ define('framework/stack-router/services/history-service',["require", "exports", 
             }
             return hash.substr(1);
         };
-        HistoryService.prototype.navigateCurrent = function () {
+        HistoryService.prototype.navigateCurrentOrInPipeline = function () {
             var _this = this;
-            this.guardedNavigate(function () {
-                _this.navigate({
-                    url: _this.getUrl()
+            if (this.pipelineUrl) {
+                this.navigateByCode(this.pipelineUrl, true);
+                this.pipelineUrl = null;
+            }
+            else {
+                this.guardedNavigate(function () {
+                    _this.navigate({
+                        url: _this.getUrl()
+                    });
                 });
-            });
+            }
         };
         HistoryService.prototype.navigateByCode = function (url, clearStack) {
             var _this = this;
             this.guardedNavigate(function () {
-                window.location.assign(url);
+                _this.assignUrl(url);
                 _this.navigate({
                     url: _this.getUrl(url),
                     clearStack: clearStack
@@ -2241,8 +2262,9 @@ define('framework/stack-router/services/history-service',["require", "exports", 
             });
         };
         HistoryService.prototype.setUrlWithoutNavigation = function (url) {
+            var _this = this;
             this.guardedNavigate(function () {
-                window.location.assign(url);
+                _this.assignUrl(url);
             });
         };
         HistoryService.prototype.guardedNavigate = function (action) {
@@ -2266,12 +2288,24 @@ define('framework/stack-router/services/history-service',["require", "exports", 
         };
         HistoryService.prototype.navigate = function (navigationArgs) {
             this.router.navigate(navigationArgs);
+            if (navigationArgs.routeInfo && navigationArgs.routeInfo.isFallback) {
+                this.assignUrl(navigationArgs.routeInfo.route.route[0]);
+            }
             if (!navigationArgs.historyState && navigationArgs.routeInfo) {
                 history.replaceState({
                     id: navigationArgs.routeInfo.id,
                     url: navigationArgs.url
                 }, navigationArgs.routeInfo.route.title);
             }
+        };
+        HistoryService.prototype.assignUrl = function (url) {
+            if (!url) {
+                throw new Error("No Url defined");
+            }
+            if (url.substr(0, 1) !== "#") {
+                url = "#" + url;
+            }
+            location.assign(url);
         };
         return HistoryService;
     }());
@@ -2315,15 +2349,34 @@ define('framework/login/login',["require", "exports", "aurelia-framework", "../s
             this.router = router;
         }
         Login.prototype.attached = function () {
-            this.router.reset();
+            this.router.registerRoutes([
+                {
+                    moduleId: "framework/login/views/login/login-form",
+                    title: "Login",
+                    icon: "shield",
+                    route: "login",
+                    isNavigation: true
+                }
+            ], "login");
         };
         return Login;
     }());
+    __decorate([
+        aurelia_framework_1.bindable,
+        __metadata("design:type", String)
+    ], Login.prototype, "title", void 0);
     Login = __decorate([
         aurelia_framework_1.autoinject,
         __metadata("design:paramtypes", [export_1.RouterService])
     ], Login);
     exports.Login = Login;
+});
+
+define('framework/security/index',["require", "exports"], function (require, exports) {
+    "use strict";
+    function configure(config) {
+    }
+    exports.configure = configure;
 });
 
 define('framework/stack-router/index',["require", "exports"], function (require, exports) {
@@ -2332,13 +2385,6 @@ define('framework/stack-router/index',["require", "exports"], function (require,
         config
             .globalResources("./views/stack-router/stack-router")
             .globalResources("./attributes/stack-router-link/stack-router-link");
-    }
-    exports.configure = configure;
-});
-
-define('framework/security/index',["require", "exports"], function (require, exports) {
-    "use strict";
-    function configure(config) {
     }
     exports.configure = configure;
 });
@@ -2544,7 +2590,144 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-define('framework/login/elements/login-data-form-funcs',["require", "exports", "aurelia-framework", "../../base/export", "../../stack-router/export"], function (require, exports, aurelia_framework_1, export_1, export_2) {
+define('framework/default-ui/views/container/container',["require", "exports", "aurelia-framework", "../../services/layout-service"], function (require, exports, aurelia_framework_1, layout_service_1) {
+    "use strict";
+    var Container = (function () {
+        function Container(layout) {
+            this.layout = layout;
+        }
+        Object.defineProperty(Container.prototype, "className", {
+            get: function () {
+                return this.layout.isSidebarCollapsed
+                    ? "t--sidebar-collapsed"
+                    : "t--sidebar-expanded";
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return Container;
+    }());
+    __decorate([
+        aurelia_framework_1.computedFrom("layout.isSidebarCollapsed"),
+        __metadata("design:type", String),
+        __metadata("design:paramtypes", [])
+    ], Container.prototype, "className", null);
+    Container = __decorate([
+        aurelia_framework_1.autoinject,
+        __metadata("design:paramtypes", [layout_service_1.LayoutService])
+    ], Container);
+    exports.Container = Container;
+});
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+define('framework/default-ui/views/content/content',["require", "exports", "aurelia-framework", "../../services/layout-service"], function (require, exports, aurelia_framework_1, layout_service_1) {
+    "use strict";
+    var Content = (function () {
+        function Content(layout) {
+            this.layout = layout;
+        }
+        return Content;
+    }());
+    Content = __decorate([
+        aurelia_framework_1.autoinject,
+        __metadata("design:paramtypes", [layout_service_1.LayoutService])
+    ], Content);
+    exports.Content = Content;
+});
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+define('framework/default-ui/views/header/header',["require", "exports", "aurelia-framework", "../../../stack-router/export", "../../../base/services/export"], function (require, exports, aurelia_framework_1, export_1, export_2) {
+    "use strict";
+    var Header = (function () {
+        function Header(router, authorization) {
+            this.router = router;
+            this.authorization = authorization;
+        }
+        Header.prototype.logout = function () {
+            this.authorization.logout();
+        };
+        return Header;
+    }());
+    Header = __decorate([
+        aurelia_framework_1.autoinject,
+        __metadata("design:paramtypes", [export_1.RouterService,
+            export_2.AuthorizationService])
+    ], Header);
+    exports.Header = Header;
+});
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+define('framework/default-ui/views/sidebar/sidebar',["require", "exports", "aurelia-framework", "../../services/layout-service", "../../../stack-router/export"], function (require, exports, aurelia_framework_1, layout_service_1, export_1) {
+    "use strict";
+    var Sidebar = (function () {
+        function Sidebar(layout, router) {
+            this.layout = layout;
+            this.router = router;
+        }
+        Object.defineProperty(Sidebar.prototype, "headerIcon", {
+            get: function () {
+                if (this.layout.isSidebarCollapsed) {
+                    return "bars";
+                }
+                else {
+                    return "arrow-circle-left";
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Sidebar.prototype.onHeaderClicked = function () {
+            this.layout.isSidebarCollapsed = !this.layout.isSidebarCollapsed;
+        };
+        return Sidebar;
+    }());
+    __decorate([
+        aurelia_framework_1.computedFrom("layout.isSidebarCollapsed"),
+        __metadata("design:type", String),
+        __metadata("design:paramtypes", [])
+    ], Sidebar.prototype, "headerIcon", null);
+    Sidebar = __decorate([
+        aurelia_framework_1.autoinject,
+        __metadata("design:paramtypes", [layout_service_1.LayoutService,
+            export_1.RouterService])
+    ], Sidebar);
+    exports.Sidebar = Sidebar;
+});
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+define('framework/login/views/login/login-form-funcs',["require", "exports", "aurelia-framework", "../../../base/export", "../../../stack-router/export"], function (require, exports, aurelia_framework_1, export_1, export_2) {
     "use strict";
     var LoginFuncs = (function () {
         function LoginFuncs(authorization, history) {
@@ -2559,7 +2742,7 @@ define('framework/login/elements/login-data-form-funcs',["require", "exports", "
                         .login(_this.form.models.data.$m_login)
                         .then(function (r) {
                         if (r && _this.goToUrlAfterLogin) {
-                            _this.history.navigateByCode("#" + _this.goToUrlAfterLogin, true);
+                            _this.history.pipelineUrl = _this.goToUrlAfterLogin;
                         }
                     });
                 }
@@ -2602,7 +2785,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-define('framework/login/elements/login-data-form',["require", "exports", "aurelia-framework", "../../forms/classes/form-base", "aurelia-framework", "../../forms/widget-services/widget-creator-service", "../../forms/services/command-service", "../../forms/services/toolbar-service", "../../forms/classes/models", "../../forms/classes/variables", "../../forms/classes/functions", "../../forms/classes/commands", "../../forms/classes/command-server-data", "../../base/classes/custom-event", "./login-data-form-funcs"], function (require, exports, aurelia_framework_1, form_base_1, aurelia_framework_2, widget_creator_service_1, command_service_1, toolbar_service_1, models_1, variables_1, functions_1, commands_1, command_server_data_1, custom_event_1, login_data_form_funcs_1) {
+define('framework/login/views/login/login-form',["require", "exports", "aurelia-framework", "../../../forms/classes/form-base", "aurelia-framework", "../../../forms/widget-services/widget-creator-service", "../../../forms/services/command-service", "../../../forms/services/toolbar-service", "../../../forms/classes/models", "../../../forms/classes/variables", "../../../forms/classes/functions", "../../../forms/classes/commands", "../../../forms/classes/command-server-data", "../../../base/classes/custom-event", "./login-form-funcs"], function (require, exports, aurelia_framework_1, form_base_1, aurelia_framework_2, widget_creator_service_1, command_service_1, toolbar_service_1, models_1, variables_1, functions_1, commands_1, command_server_data_1, custom_event_1, login_form_funcs_1) {
     "use strict";
     var LoginDataForm = (function (_super) {
         __extends(LoginDataForm, _super);
@@ -2674,270 +2857,9 @@ define('framework/login/elements/login-data-form',["require", "exports", "aureli
     }(form_base_1.FormBase));
     LoginDataForm = __decorate([
         aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [aurelia_framework_2.BindingEngine, widget_creator_service_1.WidgetCreatorService, command_service_1.CommandService, toolbar_service_1.ToolbarService, models_1.Models, variables_1.Variables, functions_1.Functions, commands_1.Commands, command_server_data_1.CommandServerData, custom_event_1.CustomEvent, login_data_form_funcs_1.LoginFuncs])
+        __metadata("design:paramtypes", [aurelia_framework_2.BindingEngine, widget_creator_service_1.WidgetCreatorService, command_service_1.CommandService, toolbar_service_1.ToolbarService, models_1.Models, variables_1.Variables, functions_1.Functions, commands_1.Commands, command_server_data_1.CommandServerData, custom_event_1.CustomEvent, login_form_funcs_1.LoginFuncs])
     ], LoginDataForm);
     exports.LoginDataForm = LoginDataForm;
-});
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/default-ui/views/content/content',["require", "exports", "aurelia-framework", "../../services/layout-service"], function (require, exports, aurelia_framework_1, layout_service_1) {
-    "use strict";
-    var Content = (function () {
-        function Content(layout) {
-            this.layout = layout;
-        }
-        return Content;
-    }());
-    Content = __decorate([
-        aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [layout_service_1.LayoutService])
-    ], Content);
-    exports.Content = Content;
-});
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/default-ui/views/container/container',["require", "exports", "aurelia-framework", "../../services/layout-service"], function (require, exports, aurelia_framework_1, layout_service_1) {
-    "use strict";
-    var Container = (function () {
-        function Container(layout) {
-            this.layout = layout;
-        }
-        Object.defineProperty(Container.prototype, "className", {
-            get: function () {
-                return this.layout.isSidebarCollapsed
-                    ? "t--sidebar-collapsed"
-                    : "t--sidebar-expanded";
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return Container;
-    }());
-    __decorate([
-        aurelia_framework_1.computedFrom("layout.isSidebarCollapsed"),
-        __metadata("design:type", String),
-        __metadata("design:paramtypes", [])
-    ], Container.prototype, "className", null);
-    Container = __decorate([
-        aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [layout_service_1.LayoutService])
-    ], Container);
-    exports.Container = Container;
-});
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/default-ui/views/sidebar/sidebar',["require", "exports", "aurelia-framework", "../../services/layout-service", "../../../stack-router/export"], function (require, exports, aurelia_framework_1, layout_service_1, export_1) {
-    "use strict";
-    var Sidebar = (function () {
-        function Sidebar(layout, router) {
-            this.layout = layout;
-            this.router = router;
-        }
-        Object.defineProperty(Sidebar.prototype, "headerIcon", {
-            get: function () {
-                if (this.layout.isSidebarCollapsed) {
-                    return "bars";
-                }
-                else {
-                    return "arrow-circle-left";
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Sidebar.prototype.onHeaderClicked = function () {
-            this.layout.isSidebarCollapsed = !this.layout.isSidebarCollapsed;
-        };
-        return Sidebar;
-    }());
-    __decorate([
-        aurelia_framework_1.computedFrom("layout.isSidebarCollapsed"),
-        __metadata("design:type", String),
-        __metadata("design:paramtypes", [])
-    ], Sidebar.prototype, "headerIcon", null);
-    Sidebar = __decorate([
-        aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [layout_service_1.LayoutService,
-            export_1.RouterService])
-    ], Sidebar);
-    exports.Sidebar = Sidebar;
-});
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/default-ui/views/header/header',["require", "exports", "aurelia-framework", "../../../stack-router/export", "../../../base/services/export"], function (require, exports, aurelia_framework_1, export_1, export_2) {
-    "use strict";
-    var Header = (function () {
-        function Header(router, authorization) {
-            this.router = router;
-            this.authorization = authorization;
-        }
-        Header.prototype.logout = function () {
-            this.authorization.logout();
-        };
-        return Header;
-    }());
-    Header = __decorate([
-        aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [export_1.RouterService,
-            export_2.AuthorizationService])
-    ], Header);
-    exports.Header = Header;
-});
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/stack-router/attributes/stack-router-link/stack-router-link',["require", "exports", "aurelia-framework", "../../services/history-service"], function (require, exports, aurelia_framework_1, history_service_1) {
-    "use strict";
-    var StackRouterLinkCustomAttribute = (function () {
-        function StackRouterLinkCustomAttribute(element, history) {
-            this.element = element;
-            this.history = history;
-        }
-        StackRouterLinkCustomAttribute.prototype.bind = function () {
-            var _this = this;
-            this.element.addEventListener("click", function (e) {
-                var event = window.event;
-                if (!event.ctrlKey
-                    && !event.altKey
-                    && !event.shiftKey
-                    && !event.metaKey) {
-                    _this.history.navigateByCode(_this.element.getAttribute("href"), _this.clearStack);
-                    e.preventDefault();
-                }
-            });
-        };
-        return StackRouterLinkCustomAttribute;
-    }());
-    __decorate([
-        aurelia_framework_1.bindable,
-        __metadata("design:type", Boolean)
-    ], StackRouterLinkCustomAttribute.prototype, "clearStack", void 0);
-    StackRouterLinkCustomAttribute = __decorate([
-        aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [Element,
-            history_service_1.HistoryService])
-    ], StackRouterLinkCustomAttribute);
-    exports.StackRouterLinkCustomAttribute = StackRouterLinkCustomAttribute;
-});
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/stack-router/views/stack-router/stack-router',["require", "exports", "aurelia-framework", "aurelia-event-aggregator", "../../services/router-service", "../../services/history-service"], function (require, exports, aurelia_framework_1, aurelia_event_aggregator_1, router_service_1, history_service_1) {
-    "use strict";
-    var StackRouter = (function () {
-        function StackRouter(history, router, eventAggregator) {
-            this.history = history;
-            this.router = router;
-            this.eventAggregator = eventAggregator;
-        }
-        StackRouter.prototype.created = function (owningView) {
-            this.owningView = owningView;
-        };
-        StackRouter.prototype.bind = function (bindingContext, overrideContext) {
-            this.bindingContext = bindingContext;
-            this.overrideContext = overrideContext;
-        };
-        StackRouter.prototype.attached = function () {
-            this.history.navigateCurrent();
-        };
-        return StackRouter;
-    }());
-    StackRouter = __decorate([
-        aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [history_service_1.HistoryService,
-            router_service_1.RouterService,
-            aurelia_event_aggregator_1.EventAggregator])
-    ], StackRouter);
-    exports.StackRouter = StackRouter;
-});
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/stack-router/views/view/view',["require", "exports", "aurelia-framework"], function (require, exports, aurelia_framework_1) {
-    "use strict";
-    var View = (function () {
-        function View(bindingEngine) {
-            this.bindingEngine = bindingEngine;
-        }
-        Object.defineProperty(View.prototype, "toolbarOptions", {
-            get: function () {
-                if (!this.controller || !this.controller.currentViewModel) {
-                    return null;
-                }
-                return this.controller.currentViewModel.toolbarOptions;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return View;
-    }());
-    __decorate([
-        aurelia_framework_1.bindable,
-        __metadata("design:type", Object)
-    ], View.prototype, "view", void 0);
-    __decorate([
-        aurelia_framework_1.computedFrom("controller.currentViewModel.toolbarOptions"),
-        __metadata("design:type", Object),
-        __metadata("design:paramtypes", [])
-    ], View.prototype, "toolbarOptions", null);
-    View = __decorate([
-        aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [aurelia_framework_1.BindingEngine])
-    ], View);
-    exports.View = View;
 });
 
 var __extends = (this && this.__extends) || function (d, b) {
@@ -3082,30 +3004,174 @@ define('framework/security/views/authgroup/authgroup-list-form',["require", "exp
     exports.AuthgroupListForm = AuthgroupListForm;
 });
 
-define('framework/forms/event-args/form-attached',["require", "exports"], function (require, exports) {
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+define('framework/stack-router/attributes/stack-router-link/stack-router-link',["require", "exports", "aurelia-framework", "../../services/history-service"], function (require, exports, aurelia_framework_1, history_service_1) {
     "use strict";
+    var StackRouterLinkCustomAttribute = (function () {
+        function StackRouterLinkCustomAttribute(element, history) {
+            this.element = element;
+            this.history = history;
+        }
+        StackRouterLinkCustomAttribute.prototype.bind = function () {
+            var _this = this;
+            this.element.addEventListener("click", function (e) {
+                var event = window.event;
+                if (!event.ctrlKey
+                    && !event.altKey
+                    && !event.shiftKey
+                    && !event.metaKey) {
+                    _this.history.navigateByCode(_this.element.getAttribute("href"), _this.clearStack);
+                    e.preventDefault();
+                }
+            });
+        };
+        return StackRouterLinkCustomAttribute;
+    }());
+    __decorate([
+        aurelia_framework_1.bindable,
+        __metadata("design:type", Boolean)
+    ], StackRouterLinkCustomAttribute.prototype, "clearStack", void 0);
+    StackRouterLinkCustomAttribute = __decorate([
+        aurelia_framework_1.autoinject,
+        __metadata("design:paramtypes", [Element,
+            history_service_1.HistoryService])
+    ], StackRouterLinkCustomAttribute);
+    exports.StackRouterLinkCustomAttribute = StackRouterLinkCustomAttribute;
 });
 
-define('text!app.html', ['module'], function(module) { module.exports = "<template>\r\n  <require from=\"./framework/default-ui/views/container/container\"></require>\r\n  <container></container>\r\n</template>\r\n"; });
-define('text!framework/login/login.html', ['module'], function(module) { module.exports = "<template>\r\n  <require from=\"./elements/login-data-form\"></require>\r\n  <require from=\"./login.css\"></require>\r\n\r\n  <div class=\"t--login-container\">\r\n    <div class=\"t--login-image\">\r\n      <div class=\"t--login-banner\">\r\n        Anmeldedaten\r\n      </div>\r\n    </div>  \r\n    <div class=\"t--login-data\">\r\n      <login-data-form></login-data-form>\r\n    </div>\r\n  </div>\r\n</template>"; });
-define('text!framework/dx/elements/dx-widget.html', ['module'], function(module) { module.exports = "<template class=\"dx-widget\">\r\n</template>"; });
-define('text!framework/login/elements/login-data-form.html', ['module'], function(module) { module.exports = "<template>\n    <div class=\"t--margin-top col-xs-12 t--login-logo\">\n        <img class=\"t--form-element-image\" src=\"http://2014.erp-future.com/sites/2014.erp-future.com/files/1_business/Logo_U_TIP.png\"></img>\n    </div>\n    <form submit.delegate=\"submitForm('functions.$f.loginCommand')\">\n        <button class=\"t--invisible-submit\" type=\"submit\"></button>\n        <div class=\"col-xs-12\">\n            <div>Geben Sie hier Ihren Benutzernamen und Passwort ein und klicken Sie auf \"Anmelden\".</div>\n        </div>\n        <div class=\"t--margin-top col-xs-12\">\n            <div class=\"t--editor-caption\">Benutzername</div>\n            <dx-widget name=\"dxTextBox\" options.bind=\"idca16b7abb289497a948cadaa59744b2aOptions\"></dx-widget>\n        </div>\n        <div class=\"t--margin-top col-xs-12\">\n            <div class=\"t--editor-caption\">Passwort</div>\n            <dx-widget name=\"dxTextBox\" options.bind=\"id1fbe5b172d104e3cbc9c1b61a38e76a2Options\"></dx-widget>\n        </div>\n        <div class=\"t--margin-top col-xs-12\">\n            <div class=\"t--editor-caption\">&nbsp;</div>\n            <dx-widget name=\"dxCheckBox\" options.bind=\"idf02276bfd9234915915c65c09390c499Options\"></dx-widget>\n        </div>\n        <div class=\"t--margin-top col-xs-12\">\n            <div class=\"t--editor-caption\">&nbsp;</div>\n            <dx-widget name=\"dxButton\" options.bind=\"ida671bfa0bc6d40299ab7046611179638Options\"></dx-widget>\n        </div>\n    </form>\n</template>"; });
-define('text!framework/login/login.css', ['module'], function(module) { module.exports = ".t--login-container {\n  display: flex;\n  height: 100vh;\n  width: 100vw;\n}\n.t--login-image {\n  position: relative;\n  flex-grow: 1;\n  background-image: url('http://www.aesthetic-lounge.de/wp-content/uploads/2015/02/Mann-_nr_2.jpg');\n  background-position: center center;\n  background-size: cover;\n  border-right: 1px solid lightgray;\n}\n.t--login-banner {\n  position: absolute;\n  padding: 12px 36px;\n  bottom: 30vh;\n  font-size: 60px;\n  font-weight: 100;\n  color: white;\n  background-color: rgba(0, 0, 0, 0.3);\n}\n.t--login-data {\n  display: flex;\n  max-width: 350px;\n  margin-top: -25vh;\n  align-items: center;\n  background-color: #f7f7f7;\n}\n.t--login-logo {\n  margin-bottom: 40px;\n  text-align: center;\n}\n.t--login-logo img {\n  max-width: 200px;\n}\n"; });
-define('text!framework/default-ui/views/content/content.html', ['module'], function(module) { module.exports = "<template class=\"t--content\">\r\n  <require from=\"./content.css\"></require>\r\n\r\n  <stack-router></stack-router>\r\n</template>\r\n"; });
-define('text!framework/default-ui/views/container/container.html', ['module'], function(module) { module.exports = "<template class=\"t--container\" class.bind=\"className\">\r\n  <require from=\"./container.css\"></require>\r\n  \r\n  <require from=\"../sidebar/sidebar\"></require>\r\n  <require from=\"../header/header\"></require>\r\n  <require from=\"../content/content\"></require>\r\n\r\n  <sidebar></sidebar>\r\n  <header></header>\r\n  <content></content>\r\n</template>\r\n"; });
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+define('framework/stack-router/views/stack-router/stack-router',["require", "exports", "aurelia-framework", "aurelia-event-aggregator", "../../services/router-service", "../../services/history-service"], function (require, exports, aurelia_framework_1, aurelia_event_aggregator_1, router_service_1, history_service_1) {
+    "use strict";
+    var StackRouter = (function () {
+        function StackRouter(history, router, eventAggregator) {
+            this.history = history;
+            this.router = router;
+            this.eventAggregator = eventAggregator;
+            this.createToolbar = true;
+        }
+        StackRouter.prototype.created = function (owningView) {
+            this.owningView = owningView;
+        };
+        StackRouter.prototype.bind = function (bindingContext, overrideContext) {
+            this.bindingContext = bindingContext;
+            this.overrideContext = overrideContext;
+        };
+        StackRouter.prototype.attached = function () {
+            this.history.navigateCurrentOrInPipeline();
+        };
+        return StackRouter;
+    }());
+    __decorate([
+        aurelia_framework_1.bindable,
+        __metadata("design:type", Boolean)
+    ], StackRouter.prototype, "createToolbar", void 0);
+    StackRouter = __decorate([
+        aurelia_framework_1.autoinject,
+        __metadata("design:paramtypes", [history_service_1.HistoryService,
+            router_service_1.RouterService,
+            aurelia_event_aggregator_1.EventAggregator])
+    ], StackRouter);
+    exports.StackRouter = StackRouter;
+});
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+define('framework/stack-router/views/view/view',["require", "exports", "aurelia-framework"], function (require, exports, aurelia_framework_1) {
+    "use strict";
+    var View = (function () {
+        function View(bindingEngine) {
+            this.bindingEngine = bindingEngine;
+            this.createToolbar = true;
+        }
+        Object.defineProperty(View.prototype, "className", {
+            get: function () {
+                if (this.createToolbar) {
+                    return "t--view-with-toolbar";
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(View.prototype, "toolbarOptions", {
+            get: function () {
+                if (!this.controller || !this.controller.currentViewModel) {
+                    return null;
+                }
+                return this.controller.currentViewModel.toolbarOptions;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return View;
+    }());
+    __decorate([
+        aurelia_framework_1.bindable,
+        __metadata("design:type", Boolean)
+    ], View.prototype, "createToolbar", void 0);
+    __decorate([
+        aurelia_framework_1.bindable,
+        __metadata("design:type", Object)
+    ], View.prototype, "view", void 0);
+    __decorate([
+        aurelia_framework_1.computedFrom("createToolbar"),
+        __metadata("design:type", String),
+        __metadata("design:paramtypes", [])
+    ], View.prototype, "className", null);
+    __decorate([
+        aurelia_framework_1.computedFrom("controller.currentViewModel.toolbarOptions"),
+        __metadata("design:type", Object),
+        __metadata("design:paramtypes", [])
+    ], View.prototype, "toolbarOptions", null);
+    View = __decorate([
+        aurelia_framework_1.autoinject,
+        __metadata("design:paramtypes", [aurelia_framework_1.BindingEngine])
+    ], View);
+    exports.View = View;
+});
+
+define('text!app.html', ['module'], function(module) { module.exports = "<template>\n  <require from=\"./framework/default-ui/views/container/container\"></require>\n  <container></container>\n</template>\n"; });
+define('text!framework/login/login.html', ['module'], function(module) { module.exports = "<template>\n  <require from=\"../stack-router/views/stack-router/stack-router\"></require>\n  <require from=\"./login.css\"></require>\n\n  <div class=\"t--login-container\">\n    <div class=\"t--login-image\">\n      <div class=\"t--login-banner\">\n        ${title}\n      </div>\n    </div>  \n    <div class=\"t--login-data\">\n      <stack-router create-toolbar.bind=\"false\"></stack-router>\n    </div>\n  </div>\n</template>"; });
+define('text!framework/dx/elements/dx-widget.html', ['module'], function(module) { module.exports = "<template class=\"dx-widget\">\n</template>"; });
+define('text!framework/default-ui/views/container/container.html', ['module'], function(module) { module.exports = "<template class=\"t--container\" class.bind=\"className\">\n  <require from=\"./container.css\"></require>\n  \n  <require from=\"../sidebar/sidebar\"></require>\n  <require from=\"../header/header\"></require>\n  <require from=\"../content/content\"></require>\n\n  <sidebar></sidebar>\n  <header></header>\n  <content></content>\n</template>\n"; });
+define('text!framework/login/login.css', ['module'], function(module) { module.exports = ".t--login-container {\n  display: flex;\n  height: 100vh;\n  width: 100vw;\n}\n.t--login-image {\n  position: relative;\n  flex-grow: 1;\n  background-image: url('http://www.aesthetic-lounge.de/wp-content/uploads/2015/02/Mann-_nr_2.jpg');\n  background-position: center center;\n  background-size: cover;\n  border-right: 1px solid lightgray;\n}\n.t--login-banner {\n  position: absolute;\n  padding: 12px 36px;\n  bottom: 30vh;\n  font-size: 60px;\n  font-weight: 100;\n  color: white;\n  background-color: rgba(0, 0, 0, 0.3);\n}\n.t--login-data {\n  display: flex;\n  max-width: 350px;\n  align-items: center;\n  background-color: #f7f7f7;\n}\n.t--login-data .t--view-content {\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n}\n.t--login-logo {\n  margin-bottom: 40px;\n  text-align: center;\n}\n.t--login-logo img {\n  max-width: 200px;\n}\n"; });
+define('text!framework/default-ui/views/header/header.html', ['module'], function(module) { module.exports = "<template class=\"t--header\">\n  <require from=\"./header.css\"></require>\n\n  <div class=\"t--header-flex\">\n    <div class=\"t--header-title\">\n      ${router.currentViewItem.title}\n    </div>\n    <div class=\"t--header-options\">\n      <a href=\"#\" click.delegate=\"logout()\">Abmelden</a>\n    </div>\n  </div>\n</template>"; });
+define('text!framework/default-ui/views/content/content.html', ['module'], function(module) { module.exports = "<template class=\"t--content\">\n  <require from=\"./content.css\"></require>\n\n  <stack-router></stack-router>\n</template>\n"; });
 define('text!framework/base/styles/styles.css', ['module'], function(module) { module.exports = "body {\n  margin: 0;\n  padding: 0;\n  font-family: \"Helvetica Neue\", \"Segoe UI\", Helvetica, Verdana, sans-serif;\n  font-size: 12px;\n}\n.t--margin-top {\n  margin-top: 12px;\n}\n.t--editor-caption {\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n.t--cursor-pointer {\n  cursor: pointer;\n}\n.t--invisible-submit {\n  height: 0;\n  width: 0;\n  margin: 0;\n  padding: 0;\n  border: 0;\n}\n"; });
 define('text!framework/base/styles/variables.css', ['module'], function(module) { module.exports = ""; });
-define('text!framework/default-ui/views/header/header.html', ['module'], function(module) { module.exports = "<template class=\"t--header\">\r\n  <require from=\"./header.css\"></require>\r\n\r\n  <div class=\"t--header-flex\">\r\n    <div class=\"t--header-title\">\r\n      ${router.currentViewItem.title}\r\n    </div>\r\n    <div class=\"t--header-options\">\r\n      <a href=\"#\" click.delegate=\"logout()\">Abmelden</a>\r\n    </div>\r\n  </div>\r\n</template>"; });
-define('text!framework/default-ui/views/sidebar/sidebar.html', ['module'], function(module) { module.exports = "<template class=\"t--sidebar\">\r\n  <require from=\"./sidebar.css\"></require>\r\n\r\n  <div class=\"t--sidebar-header\" click.delegate=\"onHeaderClicked()\">\r\n    <div class=\"t--sidebar-header-title\">\r\n      Navigation\r\n    </div>\r\n    <div class=\"t--sidebar-header-icon\">\r\n      <i class=\"fa fa-${headerIcon}\"></i>\r\n    </div>\r\n  </div>\r\n\r\n  <ul>\r\n    <li\r\n      class=\"t--sidebar-item\" \r\n      repeat.for=\"route of router.navigationRoutes\">\r\n      <a href=\"#${route.route}\" stack-router-link=\"clear-stack.bind: true\">\r\n        <span class=\"t--sidebar-item-title\">\r\n          ${route.title}\r\n        </span>\r\n        <span class=\"t--sidebar-item-icon\" if.bind=\"route.icon\">\r\n          <i class=\"fa fa-${route.icon}\"></i>\r\n        </span>\r\n      </a>\r\n    </li>\r\n  </ul>\r\n</template>\r\n"; });
+define('text!framework/default-ui/views/sidebar/sidebar.html', ['module'], function(module) { module.exports = "<template class=\"t--sidebar\">\n  <require from=\"./sidebar.css\"></require>\n\n  <div class=\"t--sidebar-header\" click.delegate=\"onHeaderClicked()\">\n    <div class=\"t--sidebar-header-title\">\n      Navigation\n    </div>\n    <div class=\"t--sidebar-header-icon\">\n      <i class=\"fa fa-${headerIcon}\"></i>\n    </div>\n  </div>\n\n  <ul>\n    <li\n      class=\"t--sidebar-item\" \n      repeat.for=\"route of router.navigationRoutes\">\n      <a href=\"#${route.route}\" stack-router-link=\"clear-stack.bind: true\">\n        <span class=\"t--sidebar-item-title\">\n          ${route.title}\n        </span>\n        <span class=\"t--sidebar-item-icon\" if.bind=\"route.icon\">\n          <i class=\"fa fa-${route.icon}\"></i>\n        </span>\n      </a>\n    </li>\n  </ul>\n</template>\n"; });
+define('text!framework/login/views/login/login-form.html', ['module'], function(module) { module.exports = "<template>\n    <div class=\"t--margin-top col-xs-12 t--login-logo\">\n        <img class=\"t--form-element-image\" src=\"http://2014.erp-future.com/sites/2014.erp-future.com/files/1_business/Logo_U_TIP.png\"></img>\n    </div>\n    <form submit.delegate=\"submitForm('functions.$f.loginCommand')\">\n        <button class=\"t--invisible-submit\" type=\"submit\"></button>\n        <div class=\"col-xs-12\">\n            <div>Geben Sie hier Ihren Benutzernamen und Passwort ein und klicken Sie auf \"Anmelden\".</div>\n        </div>\n        <div class=\"t--margin-top col-xs-12\">\n            <div class=\"t--editor-caption\">Benutzername</div>\n            <dx-widget name=\"dxTextBox\" options.bind=\"idca16b7abb289497a948cadaa59744b2aOptions\"></dx-widget>\n        </div>\n        <div class=\"t--margin-top col-xs-12\">\n            <div class=\"t--editor-caption\">Passwort</div>\n            <dx-widget name=\"dxTextBox\" options.bind=\"id1fbe5b172d104e3cbc9c1b61a38e76a2Options\"></dx-widget>\n        </div>\n        <div class=\"t--margin-top col-xs-12\">\n            <div class=\"t--editor-caption\">&nbsp;</div>\n            <dx-widget name=\"dxCheckBox\" options.bind=\"idf02276bfd9234915915c65c09390c499Options\"></dx-widget>\n        </div>\n        <div class=\"t--margin-top col-xs-12\">\n            <div class=\"t--editor-caption\">&nbsp;</div>\n            <dx-widget name=\"dxButton\" options.bind=\"ida671bfa0bc6d40299ab7046611179638Options\"></dx-widget>\n        </div>\n    </form>\n</template>"; });
 define('text!framework/forms/styles/styles.css', ['module'], function(module) { module.exports = ".t--form-element-flex-box {\n  display: flex;\n}\n.t--form-element-flex-box-with-padding > *:not(:first-child) {\n  margin-left: 12px;\n}\n.t--form-element-image-inline {\n  background-size: contain;\n  background-position: center center;\n  background-repeat: no-repeat;\n}\n.t--form-element-image {\n  max-width: 100%;\n}\n"; });
 define('text!framework/security/views/authgroup/authgroup-edit-form.html', ['module'], function(module) { module.exports = "<template>\n    <div class=\"t--margin-top col-xs-12 col-md-6\">\n        <div class=\"t--editor-caption\">Bezeichnung</div>\n        <dx-widget name=\"dxTextBox\" options.bind=\"idc2102f10fd6d473c85ef52abb6c16aedOptions\"></dx-widget>\n    </div>\n    <div class=\"t--margin-top col-xs-12 col-md-6\">\n        <div class=\"t--editor-caption\">Mandant</div>\n        <dx-widget name=\"dxSelectBox\" options.bind=\"ida4592fc6512745da923694bfae480b25Options\"></dx-widget>\n    </div>\n</template>"; });
 define('text!framework/security/views/authgroup/authgroup-list-form.html', ['module'], function(module) { module.exports = "<template>\n    <div class=\"col-xs-12\">\n        <dx-widget name=\"dxDataGrid\" options.bind=\"idc3891eded234452db40c6fa6e07e8e91Options\"></dx-widget>\n    </div>\n</template>"; });
-define('text!framework/default-ui/views/content/content.css', ['module'], function(module) { module.exports = ".t--content {\n  display: block;\n  margin-left: 280px;\n  height: calc(100% - 60px);\n}\n.t--sidebar-collapsed .t--content {\n  margin-left: 60px;\n}\n.t--view-current {\n  display: block;\n}\n.t--view-history {\n  display: none;\n}\n.t--view-toolbar .dx-toolbar {\n  height: 60px;\n}\n.t--view-toolbar-item {\n  display: flex;\n  height: 60px;\n  padding: 0 12px;\n  justify-content: center;\n  align-items: center;\n  text-align: center;\n  color: white;\n  text-decoration: none;\n  cursor: pointer;\n  -webkit-user-select: none;\n}\n.t--view-toolbar-item i {\n  font-size: 16px;\n}\n.t--view-toolbar-item:hover {\n  background-color: #4F4F4F;\n}\n.dx-state-disabled .t--view-toolbar-item {\n  cursor: default;\n  color: lightgray;\n}\n.dx-state-disabled .t--view-toolbar-item:hover {\n  background-color: inherit;\n}\n"; });
-define('text!framework/stack-router/views/stack-router/stack-router.html', ['module'], function(module) { module.exports = "<template class=\"t--stack-router\">\r\n  <require from=\"./stack-router.css\"></require>\r\n  <require from=\"../view/view\"></require>\r\n\r\n  <div \r\n    class=\"t--stack-router-item\" \r\n    class.bind=\"item.className\"\r\n    repeat.for=\"item of router.viewStack\">\r\n    <view view.bind=\"item\"></view>\r\n  </div>\r\n</template>"; });
-define('text!framework/stack-router/views/view/view.html', ['module'], function(module) { module.exports = "<template class=\"t--view\">\r\n  <require from=\"./view.css\"></require>\r\n\r\n  <div class=\"t--view-toolbar\">\r\n    <dx-widget if.bind=\"toolbarOptions\" name=\"dxToolbar\" options.bind=\"toolbarOptions\">\r\n      <dx-template name=\"itemTemplate\">\r\n        <a class=\"t--view-toolbar-item\" click.delegate=\"data.guardedExecute()\">\r\n          <div if.bind=\"data.command.badgeText\" class=\"t--view-toolbar-item-badge\">\r\n            ${data.command.badgeText}\r\n          </div>\r\n          <div>\r\n            <div if.bind=\"data.command.icon\" class=\"t--view-toolbar-item-icon\">\r\n              <i class=\"fa fa-fw fa-${data.command.icon}\"></i>\r\n            </div>\r\n            <div if.bind=\"data.command.title\" class=\"t--view-toolbar-item-title\">\r\n              ${data.command.title}\r\n            </div>\r\n          </div>\r\n        </a>\r\n      </dx-template>\r\n    </dx-widget>\r\n  </div>\r\n  <div class=\"t--view-content\">\r\n    <div class=\"container-fluid\">\r\n      <div class=\"row\">\r\n        <compose\r\n          view-model.ref=\"controller\" \r\n          view-model.bind=\"view.viewModel\" \r\n          model.bind=\"view.model\" \r\n          class=\"t--view-content\"></compose>\r\n      </div>\r\n    </div>\r\n  </div>\r\n</template>"; });
+define('text!framework/stack-router/views/view/view.html', ['module'], function(module) { module.exports = "<template class=\"t--view\" class.bind=\"className\">\n  <require from=\"./view.css\"></require>\n\n  <div class=\"t--view-toolbar\" if.bind=\"createToolbar\">\n    <dx-widget if.bind=\"toolbarOptions\" name=\"dxToolbar\" options.bind=\"toolbarOptions\">\n      <dx-template name=\"itemTemplate\">\n        <a class=\"t--view-toolbar-item\" click.delegate=\"data.guardedExecute()\">\n          <div if.bind=\"data.command.badgeText\" class=\"t--view-toolbar-item-badge\">\n            ${data.command.badgeText}\n          </div>\n          <div>\n            <div if.bind=\"data.command.icon\" class=\"t--view-toolbar-item-icon\">\n              <i class=\"fa fa-fw fa-${data.command.icon}\"></i>\n            </div>\n            <div if.bind=\"data.command.title\" class=\"t--view-toolbar-item-title\">\n              ${data.command.title}\n            </div>\n          </div>\n        </a>\n      </dx-template>\n    </dx-widget>\n  </div>\n  <div class=\"t--view-content\">\n    <div class=\"container-fluid\">\n      <div class=\"row\">\n        <compose\n          view-model.ref=\"controller\" \n          view-model.bind=\"view.viewModel\" \n          model.bind=\"view.model\" \n          class=\"t--view-content\"></compose>\n      </div>\n    </div>\n  </div>\n</template>"; });
 define('text!framework/default-ui/views/container/container.css', ['module'], function(module) { module.exports = ".t--container {\n  display: block;\n  width: 100vw;\n  height: 100vh;\n}\n"; });
+define('text!framework/stack-router/views/stack-router/stack-router.html', ['module'], function(module) { module.exports = "<template class=\"t--stack-router\">\n  <require from=\"./stack-router.css\"></require>\n  <require from=\"../view/view\"></require>\n\n  <div \n    class=\"t--stack-router-item\" \n    class.bind=\"item.className\"\n    repeat.for=\"item of router.viewStack\">\n    <view view.bind=\"item\" create-toolbar.bind=\"$parent.createToolbar\"></view>\n  </div>\n</template>"; });
 define('text!framework/default-ui/views/header/header.css', ['module'], function(module) { module.exports = ".t--header {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  margin-left: 280px;\n  padding: 0 12px;\n}\n.t--header-flex {\n  display: flex;\n  width: 100%;\n}\n.t--header-title {\n  flex-grow: 1;\n}\n.t--sidebar-collapsed .t--header {\n  margin-left: 60px;\n}\n"; });
+define('text!framework/default-ui/views/content/content.css', ['module'], function(module) { module.exports = ".t--content {\n  display: block;\n  margin-left: 280px;\n  height: calc(100% - 60px);\n}\n.t--sidebar-collapsed .t--content {\n  margin-left: 60px;\n}\n.t--view-current {\n  display: block;\n}\n.t--view-history {\n  display: none;\n}\n.t--view-toolbar .dx-toolbar {\n  height: 60px;\n}\n.t--view-toolbar-item {\n  display: flex;\n  height: 60px;\n  padding: 0 12px;\n  justify-content: center;\n  align-items: center;\n  text-align: center;\n  color: white;\n  text-decoration: none;\n  cursor: pointer;\n  -webkit-user-select: none;\n}\n.t--view-toolbar-item i {\n  font-size: 16px;\n}\n.t--view-toolbar-item:hover {\n  background-color: #4F4F4F;\n}\n.dx-state-disabled .t--view-toolbar-item {\n  cursor: default;\n  color: lightgray;\n}\n.dx-state-disabled .t--view-toolbar-item:hover {\n  background-color: inherit;\n}\n"; });
 define('text!framework/default-ui/views/sidebar/sidebar.css', ['module'], function(module) { module.exports = ".t--sidebar {\n  display: block;\n  position: fixed;\n  top: 0;\n  bottom: 0;\n  left: 0;\n  z-index: 10;\n  width: 280px;\n  background-color: #2a2e35;\n}\n.t--sidebar ul {\n  padding: 0;\n  margin: 0;\n  list-style: none;\n}\n.t--sidebar-collapsed .t--sidebar {\n  left: -220px;\n}\n.t--sidebar-header {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  background-color: #262930;\n  color: white;\n  cursor: pointer;\n}\n.t--sidebar-header-title {\n  flex-grow: 1;\n  font-size: 26px;\n  font-weight: 100;\n  padding: 12px;\n}\n.t--sidebar-header-icon {\n  display: flex;\n  width: 60px;\n  align-items: center;\n  justify-content: center;\n}\n.t--sidebar-item a {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  color: lightgray;\n  text-decoration: none;\n}\n.t--sidebar-item a:hover {\n  background-color: #17C4BB;\n  color: white;\n}\n.t--sidebar-item-title {\n  flex-grow: 1;\n  padding: 12px;\n}\n.t--sidebar-item-icon {\n  display: flex;\n  width: 60px;\n  align-items: center;\n  justify-content: center;\n}\n"; });
+define('text!framework/stack-router/views/view/view.css', ['module'], function(module) { module.exports = ".t--view {\n  display: block;\n  position: relative;\n  height: 100%;\n}\n.t--view-toolbar {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  background-color: #808080;\n  color: white;\n}\n.t--view-toolbar .dx-toolbar {\n  background-color: transparent;\n}\n.t--view-toolbar-title {\n  font-size: 26px;\n  font-weight: 100;\n  color: white;\n  padding: 0 12px;\n}\n.t--view-content {\n  height: 100%;\n  overflow-x: hidden;\n  overflow-y: scroll;\n  -webkit-overflow-scrolling: touch;\n}\n.t--view-with-toolbar .t--view-content {\n  height: calc(100% - 60px);\n}\n"; });
 define('text!framework/stack-router/views/stack-router/stack-router.css', ['module'], function(module) { module.exports = ".t--stack-router,\n.t--stack-router-item {\n  display: block;\n  height: 100%;\n}\n"; });
-define('text!framework/stack-router/views/view/view.css', ['module'], function(module) { module.exports = ".t--view {\n  display: block;\n  position: relative;\n  height: 100%;\n}\n.t--view-toolbar {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  background-color: #808080;\n  color: white;\n}\n.t--view-toolbar .dx-toolbar {\n  background-color: transparent;\n}\n.t--view-toolbar-title {\n  font-size: 26px;\n  font-weight: 100;\n  color: white;\n  padding: 0 12px;\n}\n.t--view-content {\n  height: calc(100% - 60px);\n  overflow-x: hidden;\n  overflow-y: scroll;\n  -webkit-overflow-scrolling: touch;\n}\n"; });
 //# sourceMappingURL=app-bundle.js.map

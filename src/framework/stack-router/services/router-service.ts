@@ -154,7 +154,8 @@ export class RouterService {
     return {
       id: this.routeInfoId++,
       route: this.getFallbackRoute(),
-      parameters: {}
+      parameters: {},
+      isFallback: true
     };
   }
   private isRoute(route: Interfaces.IRoute, url: string): Interfaces.IRouteInfo {
@@ -191,7 +192,20 @@ export class RouterService {
       }
 
       if (routeParts[i].startsWith(":")) {
-        parameters[routeParts[i].substr(1)] = urlParts[i];
+        let routePart = routeParts[i];
+        const indexOfBracket = routePart.indexOf("{");
+        const lastIndexOfBrack = routePart.lastIndexOf("}");
+
+        if (indexOfBracket >= 0 && lastIndexOfBrack >= 0) {
+          let r = routePart.substring(indexOfBracket + 1, lastIndexOfBrack);
+          routePart = routePart.substr(0, indexOfBracket);
+
+          if (!new RegExp(`^${r}$`).test(urlParts[i])) {
+            return null;
+          }
+        }
+
+        parameters[routePart.substr(1)] = urlParts[i];
       }
       else if (urlParts[i] !== routeParts[i]) {
         return null;

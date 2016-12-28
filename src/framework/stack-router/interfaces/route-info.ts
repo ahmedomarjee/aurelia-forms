@@ -6,4 +6,5 @@ export interface IRouteInfo {
   id: number;
   route: IRoute;
   parameters: any;
+  isFallback?: boolean;
 }

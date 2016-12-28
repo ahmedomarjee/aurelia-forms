@@ -4,43 +4,43 @@ import {
 } from "aurelia-framework";
 import {
     FormBase
-} from "../../forms/classes/form-base";
+} from "../../../forms/classes/form-base";
 import {
     IFormAttachedEventArgs
-} from "../../forms/event-args/form-attached";
+} from "../../../forms/event-args/form-attached";
 import {
     BindingEngine
 } from "aurelia-framework";
 import {
     WidgetCreatorService
-} from "../../forms/widget-services/widget-creator-service";
+} from "../../../forms/widget-services/widget-creator-service";
 import {
     CommandService
-} from "../../forms/services/command-service";
+} from "../../../forms/services/command-service";
 import {
     ToolbarService
-} from "../../forms/services/toolbar-service";
+} from "../../../forms/services/toolbar-service";
 import {
     Models
-} from "../../forms/classes/models";
+} from "../../../forms/classes/models";
 import {
     Variables
-} from "../../forms/classes/variables";
+} from "../../../forms/classes/variables";
 import {
     Functions
-} from "../../forms/classes/functions";
+} from "../../../forms/classes/functions";
 import {
     Commands
-} from "../../forms/classes/commands";
+} from "../../../forms/classes/commands";
 import {
     CommandServerData
-} from "../../forms/classes/command-server-data";
+} from "../../../forms/classes/command-server-data";
 import {
     CustomEvent
-} from "../../base/classes/custom-event";
+} from "../../../base/classes/custom-event";
 import {
     LoginFuncs
-} from "./login-data-form-funcs";
+} from "./login-form-funcs";
 
 @autoinject
 export class LoginDataForm extends FormBase {

@@ -1,5 +1,6 @@
 import {
-  autoinject
+  autoinject,
+  bindable
 } from "aurelia-framework";
 import {
   RouterService
@@ -8,10 +9,20 @@ import {
 @autoinject
 export class Login {
   constructor(
-      private router: RouterService
+    private router: RouterService
   ) { }
 
+  @bindable title: string;
+
   attached() {
-    this.router.reset();
+    this.router.registerRoutes([
+      {
+        moduleId: "framework/login/views/login/login-form",
+        title: "Login",
+        icon: "shield",
+        route: "login",
+        isNavigation: true
+      }
+    ], "login");
   }
 }

@@ -3,16 +3,16 @@ import {
 } from "aurelia-framework";
 import {
   FormBase
-} from "../../forms/classes/form-base";
+} from "../../../forms/classes/form-base";
 import {
   ICommandData
-} from "../../forms/interfaces/export";
+} from "../../../forms/interfaces/export";
 import {
   AuthorizationService
-} from "../../base/export";
+} from "../../../base/export";
 import {
   HistoryService
-} from "../../stack-router/export";
+} from "../../../stack-router/export";
 
 @autoinject
 export class LoginFuncs {
@@ -49,7 +49,7 @@ export class LoginFuncs {
         .login(this.form.models.data.$m_login)
         .then(r => {
           if (r && this.goToUrlAfterLogin) {
-            this.history.navigateByCode(`#${this.goToUrlAfterLogin}`, true);
+            this.history.pipelineUrl = this.goToUrlAfterLogin;
           }
         });
     }

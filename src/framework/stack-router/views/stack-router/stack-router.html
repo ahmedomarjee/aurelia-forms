@@ -6,6 +6,6 @@
     class="t--stack-router-item" 
     class.bind="item.className"
     repeat.for="item of router.viewStack">
-    <view view.bind="item"></view>
+    <view view.bind="item" create-toolbar.bind="$parent.createToolbar"></view>
   </div>
 </template>

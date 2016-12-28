@@ -24,9 +24,8 @@ export class App {
         moduleId: "framework/security/views/authgroup/authgroup-edit-form",
         title: "Berechtigungsgruppen",
         icon: "shield",
-        route: "security/authgroup/:id"
+        route: "security/authgroup/:id{[0-9]*}"
       }
-    ],
-    "security/authgroup");
+    ], "security/authgroup");
   }
 }

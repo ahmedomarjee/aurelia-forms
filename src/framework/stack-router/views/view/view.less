@@ -23,8 +23,13 @@
   padding: 0 12px;
 }
 .t--view-content {
-  height: ~"calc(100% - @{toolbarHeight})";
+  height: 100%;
   overflow-x: hidden;
   overflow-y: scroll;
   -webkit-overflow-scrolling: touch;
+}
+.t--view-with-toolbar {
+  .t--view-content {
+    height: ~"calc(100% - @{toolbarHeight})";
+  }
 }

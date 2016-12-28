@@ -1,7 +1,7 @@
-<template class="t--view">
+<template class="t--view" class.bind="className">
   <require from="./view.css"></require>
 
-  <div class="t--view-toolbar">
+  <div class="t--view-toolbar" if.bind="createToolbar">
     <dx-widget if.bind="toolbarOptions" name="dxToolbar" options.bind="toolbarOptions">
       <dx-template name="itemTemplate">
         <a class="t--view-toolbar-item" click.delegate="data.guardedExecute()">
