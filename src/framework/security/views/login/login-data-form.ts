@@ -12,6 +12,9 @@ import {
     WidgetCreatorService
 } from "../../../forms/widget-services/widget-creator-service";
 import {
+    CommandService
+} from "../../../forms/services/command-service";
+import {
     ToolbarService
 } from "../../../forms/services/toolbar-service";
 import {
@@ -31,12 +34,12 @@ import {
 } from "../../../forms/classes/command-server-data";
 import {
     LoginFuncs
-} from "./login.funcs";
+} from "./login-data-form-funcs";
 
 @autoinject
 export class LoginDataForm extends FormBase {
-    constructor(bindingEngine: BindingEngine, widgetCreator: WidgetCreatorService, toolbar: ToolbarService, models: Models, variables: Variables, functions: Functions, commands: Commands, commandServerData: CommandServerData, private $f: LoginFuncs) {
-        super(bindingEngine, widgetCreator, toolbar, models, variables, functions, commands, commandServerData);
+    constructor(bindingEngine: BindingEngine, widgetCreator: WidgetCreatorService, command: CommandService, toolbar: ToolbarService, models: Models, variables: Variables, functions: Functions, commands: Commands, commandServerData: CommandServerData, private $f: LoginFuncs) {
+        super(bindingEngine, widgetCreator, command, toolbar, models, variables, functions, commands, commandServerData);
         this.addModel({
             "id": "$m_login",
             "filters": []
@@ -50,10 +53,10 @@ export class LoginDataForm extends FormBase {
                 "bindToFQ": "models.data.$m_login.Username"
             },
             "validationRules": [],
-            "id": "id056f04d55ac74792bacac4cc66ba586c",
+            "id": "id52f0348518dd4c26bdae71825bd7472b",
             "options": {
-                "optionsName": "id056f04d55ac74792bacac4cc66ba586cOptions",
-                "optionsNameFQ": "id056f04d55ac74792bacac4cc66ba586cOptions"
+                "optionsName": "id52f0348518dd4c26bdae71825bd7472bOptions",
+                "optionsNameFQ": "id52f0348518dd4c26bdae71825bd7472bOptions"
             }
         });
         this.widgetCreator.addTextBox(this, {
@@ -64,10 +67,10 @@ export class LoginDataForm extends FormBase {
                 "bindToFQ": "models.data.$m_login.Password"
             },
             "validationRules": [],
-            "id": "idede0486d78c54618b71e2c7d13cc8d3b",
+            "id": "idd8654a2a5de54b8e8ba5fc8ae6aa2ce2",
             "options": {
-                "optionsName": "idede0486d78c54618b71e2c7d13cc8d3bOptions",
-                "optionsNameFQ": "idede0486d78c54618b71e2c7d13cc8d3bOptions"
+                "optionsName": "idd8654a2a5de54b8e8ba5fc8ae6aa2ce2Options",
+                "optionsNameFQ": "idd8654a2a5de54b8e8ba5fc8ae6aa2ce2Options"
             }
         });
         this.widgetCreator.addCheckBox(this, {
@@ -78,17 +81,17 @@ export class LoginDataForm extends FormBase {
                 "bindToFQ": "models.data.$m_login.StayLoggedOn"
             },
             "validationRules": [],
-            "id": "id3304813fb84f43ac889af0d91c6d5407",
+            "id": "id68feada8a7ca45ed94a23c736c70a032",
             "options": {
-                "optionsName": "id3304813fb84f43ac889af0d91c6d5407Options",
-                "optionsNameFQ": "id3304813fb84f43ac889af0d91c6d5407Options"
+                "optionsName": "id68feada8a7ca45ed94a23c736c70a032Options",
+                "optionsNameFQ": "id68feada8a7ca45ed94a23c736c70a032Options"
             }
         });
         this.widgetCreator.addCommand(this, {
-            "id": "id1db2b3d6d30b4c71b3c811be4348f200",
+            "id": "id20589f843038464f9942ef2a8c1034cd",
             "options": {
-                "optionsName": "id1db2b3d6d30b4c71b3c811be4348f200Options",
-                "optionsNameFQ": "id1db2b3d6d30b4c71b3c811be4348f200Options"
+                "optionsName": "id20589f843038464f9942ef2a8c1034cdOptions",
+                "optionsNameFQ": "id20589f843038464f9942ef2a8c1034cdOptions"
             },
             "binding": {
                 "bindTo": "$f.loginCommand",

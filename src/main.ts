@@ -1,5 +1,6 @@
 import {Aurelia} from "aurelia-framework"
 import environment from "./environment";
+import {AuthorizationService} from "./framework/base/services/authorization-service";
 
 //Configure Bluebird Promises.
 (<any>Promise).config({
@@ -28,5 +29,8 @@ export function configure(aurelia: Aurelia) {
     aurelia.use.plugin("aurelia-testing");
   }
 
-  aurelia.start().then(() => aurelia.setRoot("framework/security/login-app"));
+  aurelia.start().then(() => {
+    const authorization: AuthorizationService = aurelia.container.get(AuthorizationService);
+    authorization.openApp();
+  });
 }

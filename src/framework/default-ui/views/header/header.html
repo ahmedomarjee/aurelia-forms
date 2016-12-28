@@ -1,7 +1,12 @@
 <template class="t--header">
   <require from="./header.css"></require>
 
-  <div>
-    ${router.currentViewItem.title}
+  <div class="t--header-flex">
+    <div class="t--header-title">
+      ${router.currentViewItem.title}
+    </div>
+    <div class="t--header-options">
+      <a href="#" click.delegate="logout()">Abmelden</a>
+    </div>
   </div>
 </template>

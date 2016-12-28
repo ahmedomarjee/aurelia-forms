@@ -7,12 +7,16 @@ import {
 import {
   DefaultCommandsService
 } from "../services/default-commands-service";
+import {
+  CommandService
+} from "../services/command-service";
 import * as Interfaces from "../interfaces/export";
 
 @autoinject
 export class ToolbarService {
   constructor(
-    private defaultCommands: DefaultCommandsService
+    private defaultCommands: DefaultCommandsService,
+    private command: CommandService
   ) {}
 
   createToolbarOptions(form: FormBase): DevExpress.ui.dxToolbarOptions {
@@ -64,11 +68,7 @@ export class ToolbarService {
     (<any>item).locateInMenu = command.locateInMenu;
     (<any>item).command = command;
     (<any>item).guardedExecute = () => {
-      if (item.disabled) {
-        return;
-      }
-
-      command.execute();
+      this.command.execute(form, command);
     };
 
     return item;
@@ -80,15 +80,12 @@ export class ToolbarService {
       this.setItemOption(toolbar, item, "disabled", !val);
     }
     
+    item.disabled = !this.command.isEnabled(form, command);
     if (command.isEnabled != undefined) {
-      item.disabled = !command.isEnabled;
-
       form.createObserver("isEnabled", (newValue) => {
         setEnabled(newValue);
       }, command);
     } else if (command.isEnabledExpression) {
-      item.disabled = !form.evaluateExpression(command.isEnabledExpression);
-
       form.createObserver(command.isEnabledExpression, (newValue) => {
         setEnabled(newValue);
       });
@@ -100,15 +97,12 @@ export class ToolbarService {
       this.setItemOption(toolbar, item, "visible", val);
     }
     
+    item.visible = this.command.isVisible(form, command);
     if (command.isVisible != undefined) {
-      item.visible = command.isVisible;
-
       form.createObserver("isVisible", (newValue) => {
         setVisible(newValue);
       }, command);
     } else if (command.isVisibleExpression) {
-      item.visible = form.evaluateExpression(command.isVisibleExpression);
-
       form.createObserver(command.isVisibleExpression, (newValue) => {
         setVisible(newValue);
       });

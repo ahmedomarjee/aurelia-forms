@@ -1,31 +1,79 @@
 import {
   autoinject,
-  Aurelia
+  Aurelia,
+  BindingEngine,
 } from "aurelia-framework";
 import {
   RestService
 } from "./rest-service";
-import * as config from "../../../config";
+import config from "../../../config";
 
 @autoinject
 export class AuthorizationService {
+  private readonly X_TIP_AUTH = "X-TIP-AUTH";
+
   constructor(
     private rest: RestService,
-    private aurelia: Aurelia
-  ) {}
+    private aurelia: Aurelia,
+    private bindingEngine: BindingEngine
+  ) {
+    this.bindingEngine
+      .expressionObserver(this, "isLoggedIn")    
+      .subscribe((newValue, oldValue) => {
+        aurelia.setRoot(newValue ? config.mainApp : config.loginApp);
+      });
 
+    this.rest.getAuthHeader = this.getAuthorizationHeaders.bind(this);
+  }
+  isLoggedIn: boolean = null;
+
+  openApp() {
+    if (this.isLoggedIn) {
+      return;
+    }
+    if (!localStorage.getItem(this.X_TIP_AUTH)) {
+      this.isLoggedIn = false;
+      return;
+    }
+
+    this.rest.get({
+      url: this.rest.getApiUrl("base/Authorization/IsLoggedIn")
+    }).then(r => {
+      this.isLoggedIn = r.IsValid;
+    });
+  }
   login(data: any): Promise<boolean> {
     return this.rest.post({
       url: this.rest.getApiUrl("base/Authorization/Login"),
       data: data
     }).then(r => {
       if (r.IsValid) {
-        this.aurelia.setRoot("app");
+        this.isLoggedIn = true;
+        localStorage.setItem(this.X_TIP_AUTH, r.AuthenticationToken);
         return true;
       }
 
       DevExpress.ui.notify("Benutzer oder Passwort ungültig", "error", 3000);
       return false;
     });
+  }
+  logout() {
+    return this.rest.get({
+      url: this.rest.getApiUrl("base/Authorization/Logout")
+    }).then(() => {
+      this.isLoggedIn = false;
+      localStorage.removeItem(this.X_TIP_AUTH);
+    })
+  }
+
+  private getAuthorizationHeaders(): any {
+    const headers = {};
+
+    const auth = localStorage.getItem(this.X_TIP_AUTH);
+    if (auth) {
+      headers[this.X_TIP_AUTH] = auth;
+    }
+
+    return headers;
   }
 }

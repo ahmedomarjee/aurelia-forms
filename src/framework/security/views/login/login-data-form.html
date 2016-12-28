@@ -2,26 +2,26 @@
     <div class="t--margin-top col-xs-12 t--login-logo">
         <img class="t--form-element-image" src="http://2014.erp-future.com/sites/2014.erp-future.com/files/1_business/Logo_U_TIP.png"></img>
     </div>
-    <div class="t--margin-top col-xs-12">
-        <h2>Anmeldedaten</h2>
-    </div>
-    <div class="col-xs-12">
-        <div>Geben Sie hier Ihren Benutzernamen und Passwort ein und klicken Sie auf "Anmelden".</div>
-    </div>
-    <div class="t--margin-top col-xs-12">
-        <div class="t--editor-caption">Benutzername</div>
-        <dx-widget name="dxTextBox" options.bind="id056f04d55ac74792bacac4cc66ba586cOptions"></dx-widget>
-    </div>
-    <div class="t--margin-top col-xs-12">
-        <div class="t--editor-caption">Passwort</div>
-        <dx-widget name="dxTextBox" options.bind="idede0486d78c54618b71e2c7d13cc8d3bOptions"></dx-widget>
-    </div>
-    <div class="t--margin-top col-xs-12">
-        <div class="t--editor-caption">&nbsp;</div>
-        <dx-widget name="dxCheckBox" options.bind="id3304813fb84f43ac889af0d91c6d5407Options"></dx-widget>
-    </div>
-    <div class="t--margin-top col-xs-12">
-        <div class="t--editor-caption">&nbsp;</div>
-        <dx-widget name="dxButton" options.bind="id1db2b3d6d30b4c71b3c811be4348f200Options"></dx-widget>
-    </div>
+    <form submit.delegate="submitForm('functions.$f.loginCommand')">
+        <button class="t--invisible-submit" type="submit"></button>
+        <div class="col-xs-12">
+            <div>Geben Sie hier Ihren Benutzernamen und Passwort ein und klicken Sie auf "Anmelden".</div>
+        </div>
+        <div class="t--margin-top col-xs-12">
+            <div class="t--editor-caption">Benutzername</div>
+            <dx-widget name="dxTextBox" options.bind="id52f0348518dd4c26bdae71825bd7472bOptions"></dx-widget>
+        </div>
+        <div class="t--margin-top col-xs-12">
+            <div class="t--editor-caption">Passwort</div>
+            <dx-widget name="dxTextBox" options.bind="idd8654a2a5de54b8e8ba5fc8ae6aa2ce2Options"></dx-widget>
+        </div>
+        <div class="t--margin-top col-xs-12">
+            <div class="t--editor-caption">&nbsp;</div>
+            <dx-widget name="dxCheckBox" options.bind="id68feada8a7ca45ed94a23c736c70a032Options"></dx-widget>
+        </div>
+        <div class="t--margin-top col-xs-12">
+            <div class="t--editor-caption">&nbsp;</div>
+            <dx-widget name="dxButton" options.bind="id20589f843038464f9942ef2a8c1034cdOptions"></dx-widget>
+        </div>
+    </form>
 </template>

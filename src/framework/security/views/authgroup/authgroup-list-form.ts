@@ -12,6 +12,9 @@ import {
     WidgetCreatorService
 } from "../../../forms/widget-services/widget-creator-service";
 import {
+    CommandService
+} from "../../../forms/services/command-service";
+import {
     ToolbarService
 } from "../../../forms/services/toolbar-service";
 import {
@@ -32,8 +35,8 @@ import {
 
 @autoinject
 export class AuthgroupListForm extends FormBase {
-    constructor(bindingEngine: BindingEngine, widgetCreator: WidgetCreatorService, toolbar: ToolbarService, models: Models, variables: Variables, functions: Functions, commands: Commands, commandServerData: CommandServerData) {
-        super(bindingEngine, widgetCreator, toolbar, models, variables, functions, commands, commandServerData);
+    constructor(bindingEngine: BindingEngine, widgetCreator: WidgetCreatorService, command: CommandService, toolbar: ToolbarService, models: Models, variables: Variables, functions: Functions, commands: Commands, commandServerData: CommandServerData) {
+        super(bindingEngine, widgetCreator, command, toolbar, models, variables, functions, commands, commandServerData);
         this.addModel({
             "id": "$m_A",
             "webApiAction": "base/Security/Authgroup",
@@ -63,10 +66,10 @@ export class AuthgroupListForm extends FormBase {
             "edits": [],
             "filters": [],
             "commands": [],
-            "id": "id0c9171e5efec47e0ad36d3165eabda68",
+            "id": "id959ad9f6fcd94b7d89aad8b54413eff6",
             "options": {
-                "optionsName": "id0c9171e5efec47e0ad36d3165eabda68Options",
-                "optionsNameFQ": "id0c9171e5efec47e0ad36d3165eabda68Options"
+                "optionsName": "id959ad9f6fcd94b7d89aad8b54413eff6Options",
+                "optionsNameFQ": "id959ad9f6fcd94b7d89aad8b54413eff6Options"
             }
         });
     }

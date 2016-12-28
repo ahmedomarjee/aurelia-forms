@@ -12,6 +12,9 @@ import {
     WidgetCreatorService
 } from "../../../forms/widget-services/widget-creator-service";
 import {
+    CommandService
+} from "../../../forms/services/command-service";
+import {
     ToolbarService
 } from "../../../forms/services/toolbar-service";
 import {
@@ -32,8 +35,8 @@ import {
 
 @autoinject
 export class AuthgroupEditForm extends FormBase {
-    constructor(bindingEngine: BindingEngine, widgetCreator: WidgetCreatorService, toolbar: ToolbarService, models: Models, variables: Variables, functions: Functions, commands: Commands, commandServerData: CommandServerData) {
-        super(bindingEngine, widgetCreator, toolbar, models, variables, functions, commands, commandServerData);
+    constructor(bindingEngine: BindingEngine, widgetCreator: WidgetCreatorService, command: CommandService, toolbar: ToolbarService, models: Models, variables: Variables, functions: Functions, commands: Commands, commandServerData: CommandServerData) {
+        super(bindingEngine, widgetCreator, command, toolbar, models, variables, functions, commands, commandServerData);
         this.addModel({
             "id": "$m_A",
             "webApiAction": "base/Security/Authgroup",
@@ -51,10 +54,10 @@ export class AuthgroupEditForm extends FormBase {
                 "bindToFQ": "models.data.$m_A.Name"
             },
             "validationRules": [],
-            "id": "id465bd0e23a5c45139b7c26db6e464a03",
+            "id": "iddcc7a5f1c567446b95ec7ae6cf773e2e",
             "options": {
-                "optionsName": "id465bd0e23a5c45139b7c26db6e464a03Options",
-                "optionsNameFQ": "id465bd0e23a5c45139b7c26db6e464a03Options"
+                "optionsName": "iddcc7a5f1c567446b95ec7ae6cf773e2eOptions",
+                "optionsNameFQ": "iddcc7a5f1c567446b95ec7ae6cf773e2eOptions"
             }
         });
         this.widgetCreator.addSelectBox(this, {
@@ -66,10 +69,10 @@ export class AuthgroupEditForm extends FormBase {
                 "bindToFQ": "models.data.$m_A.IdMandator"
             },
             "validationRules": [],
-            "id": "id5670e89d8cbd43d68d04941187f44687",
+            "id": "id4a5bba95221e4f0293b4468c52c70c92",
             "options": {
-                "optionsName": "id5670e89d8cbd43d68d04941187f44687Options",
-                "optionsNameFQ": "id5670e89d8cbd43d68d04941187f44687Options"
+                "optionsName": "id4a5bba95221e4f0293b4468c52c70c92Options",
+                "optionsNameFQ": "id4a5bba95221e4f0293b4468c52c70c92Options"
             }
         }, {
             "id": "mandator",

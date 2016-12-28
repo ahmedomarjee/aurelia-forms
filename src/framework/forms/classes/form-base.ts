@@ -23,6 +23,9 @@ import {
   ToolbarService
 } from "../services/toolbar-service";
 import {
+  CommandService
+} from "../services/command-service";
+import {
   WidgetCreatorService
 } from "../widget-services/widget-creator-service";
 
@@ -30,6 +33,7 @@ export class FormBase {
   constructor(
     private bindingEngine: BindingEngine,
     public widgetCreator: WidgetCreatorService,
+    public command: CommandService,
     public toolbar: ToolbarService,
     public models: Models,
     public variables: Variables,
@@ -102,5 +106,13 @@ export class FormBase {
   }
   protected addMapping(mapping: Interfaces.IMapping): void {
 
+  }
+  protected submitForm(commandExpression: string): void {
+    const command: Interfaces.ICommandData = this.evaluateExpression(commandExpression);
+    if (!command || !command.execute) {
+      return;
+    }
+
+    this.command.execute(this, command);
   }
 }

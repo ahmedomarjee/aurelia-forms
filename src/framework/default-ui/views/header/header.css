@@ -5,6 +5,13 @@
   margin-left: 280px;
   padding: 0 12px;
 }
+.t--header-flex {
+  display: flex;
+  width: 100%;
+}
+.t--header-title {
+  flex-grow: 1;
+}
 .t--sidebar-collapsed .t--header {
   margin-left: 60px;
 }

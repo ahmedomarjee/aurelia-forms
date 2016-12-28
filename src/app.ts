@@ -9,8 +9,10 @@ import {
 export class App {
   constructor(
     private router: RouterService
-  ) {
-    router.registerRoutes([
+  ) { }
+
+  attached() {
+    this.router.registerRoutes([
       {
         moduleId: "framework/security/views/authgroup/authgroup-list-form",
         title: "Berechtigungsgruppen",
@@ -25,6 +27,6 @@ export class App {
         route: "security/authgroup/:id"
       }
     ],
-    "security/authgroup")
+    "security/authgroup");
   }
 }
