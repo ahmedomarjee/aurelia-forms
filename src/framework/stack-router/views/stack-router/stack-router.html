@@ -1,0 +1,11 @@
+<template class="t--stack-router">
+  <require from="./stack-router.css"></require>
+  <require from="../view/view"></require>
+
+  <div 
+    class="t--stack-router-item" 
+    class.bind="item.className"
+    repeat.for="item of router.viewStack">
+    <view view.bind="item"></view>
+  </div>
+</template>

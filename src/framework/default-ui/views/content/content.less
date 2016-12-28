@@ -1,0 +1,57 @@
+@import "../../styles/variables.less";
+
+.t--content {
+  display: block;
+  margin-left: @sidebarExpandedWidth;
+  height: ~"calc(100% - @{headerHeight})";
+}
+
+.t--sidebar-collapsed {
+  .t--content {
+    margin-left: @sidebarCollapsedWidth;
+  }
+}
+
+.t--view-current {
+  display: block;
+}
+.t--view-history {
+  display: none;
+}
+
+.t--view-toolbar {
+  .dx-toolbar {
+    height: @toolbarHeight;
+  }
+}
+.t--view-toolbar-item {
+  display: flex;
+  height: @toolbarHeight;
+  padding: 0 @padding;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  color: white;  
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-user-select: none;
+  
+  i {
+    font-size: 16px;
+  }
+
+  &:hover {
+    background-color: #4F4F4F;
+  }
+}
+
+.dx-state-disabled {
+  .t--view-toolbar-item {
+    cursor: default;
+    color: lightgray;
+
+    &:hover {
+      background-color: inherit;
+    }
+  }
+}

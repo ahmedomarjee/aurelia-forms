@@ -12,9 +12,9 @@ import environment from "./environment";
 export function configure(aurelia: Aurelia) {
   aurelia.use
     .basicConfiguration()
-    .feature("dx")
-    .feature("stack-router")
-    .feature("security");
+    .feature("framework/dx")
+    .feature("framework/stack-router")
+    .feature("framework/security");
 
   if (environment.debug) {
     aurelia.use.developmentLogging();
@@ -24,5 +24,5 @@ export function configure(aurelia: Aurelia) {
     aurelia.use.plugin("aurelia-testing");
   }
 
-  aurelia.start().then(() => aurelia.setRoot("security/login-app"));
+  aurelia.start().then(() => aurelia.setRoot("framework/security/login-app"));
 }

@@ -1,0 +1,11 @@
+<form>
+  <models>
+    <model id="$m_A" web-api-action="base/Security/Authgroup" key="$id" post-on-save="true" is-main="true" />
+  </models>
+  <content>
+    <data-context data-context="$m_A">
+      <editor bind-to="Name" c-md="6" />
+      <editor bind-to="IdMandator" c-md="6" />
+    </data-context>
+  </content>
+</form>

@@ -1,0 +1,30 @@
+@toolbarHeight: 60px;
+
+.t--view {
+  display: block;
+  position: relative;
+  height: 100%;
+}
+.t--view-toolbar {
+  display: flex;
+  align-items: center;
+  height: @toolbarHeight;
+  background-color: #808080;
+  color: white;
+
+  .dx-toolbar {
+    background-color: transparent;
+  }
+}
+.t--view-toolbar-title {
+  font-size: 26px;
+  font-weight: 100;
+  color: white;
+  padding: 0 12px;
+}
+.t--view-content {
+  height: ~"calc(100% - @{toolbarHeight})";
+  overflow-x: hidden;
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
+}
