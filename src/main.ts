@@ -12,7 +12,9 @@ import environment from "./environment";
 export function configure(aurelia: Aurelia) {
   aurelia.use
     .basicConfiguration()
+    .globalResources("devextreme")
     .feature("framework/dx")
+    .feature("framework/base")
     .feature("framework/stack-router")
     .feature("framework/security");
 

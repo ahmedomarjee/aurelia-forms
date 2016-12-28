@@ -1,0 +1,10 @@
+.t--header {
+  display: flex;
+  align-items: center;
+  height: 60px;
+  margin-left: 280px;
+  padding: 0 12px;
+}
+.t--sidebar-collapsed .t--header {
+  margin-left: 60px;
+}
