@@ -31,8 +31,6 @@ export class LoginFuncs {
 
     this.form.onFormAttached.register((r) => {
       this.goToUrlAfterLogin = this.history.getUrl();
-
-      this.history.setUrlWithoutNavigation("#login");
       return Promise.resolve();
     });
 

@@ -2754,7 +2754,6 @@ define('framework/login/views/login/login-form-funcs',["require", "exports", "au
             this.authorization.openApp();
             this.form.onFormAttached.register(function (r) {
                 _this.goToUrlAfterLogin = _this.history.getUrl();
-                _this.history.setUrlWithoutNavigation("#login");
                 return Promise.resolve();
             });
             form.models.data.$m_login = {
