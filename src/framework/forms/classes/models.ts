@@ -39,7 +39,8 @@ export class Models {
 
         return this.rest.get({
           url: this.rest.getWebApiUrl(`${args.model.webApiAction}/${this.form.evaluateExpression(args.model.key)}`),
-          getOptions
+          getOptions,
+          increaseLoadingCount: true
         }).then(r => {
           this.data[args.model.id] = r;
         });

@@ -24,6 +24,10 @@ export class AuthorizationService {
       });
 
     this.rest.getAuthHeader = this.getAuthorizationHeaders.bind(this);
+    this.rest.onUnauthorizated.register(() => {
+      this.isLoggedIn = false;
+      return Promise.resolve();
+    });
   }
   isLoggedIn: boolean = null;
 
@@ -37,7 +41,8 @@ export class AuthorizationService {
     }
 
     this.rest.get({
-      url: this.rest.getApiUrl("base/Authorization/IsLoggedIn")
+      url: this.rest.getApiUrl("base/Authorization/IsLoggedIn"),
+      increaseLoadingCount: true
     }).then(r => {
       this.isLoggedIn = r.IsValid;
     });
@@ -45,7 +50,8 @@ export class AuthorizationService {
   login(data: any): Promise<boolean> {
     return this.rest.post({
       url: this.rest.getApiUrl("base/Authorization/Login"),
-      data: data
+      data: data,
+      increaseLoadingCount: true
     }).then(r => {
       if (r.IsValid) {
         this.isLoggedIn = true;
@@ -59,7 +65,8 @@ export class AuthorizationService {
   }
   logout() {
     return this.rest.get({
-      url: this.rest.getApiUrl("base/Authorization/Logout")
+      url: this.rest.getApiUrl("base/Authorization/Logout"),
+      increaseLoadingCount: true
     }).then(() => {
       this.isLoggedIn = false;
       localStorage.removeItem(this.X_TIP_AUTH);

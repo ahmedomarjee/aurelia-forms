@@ -129,6 +129,11 @@
             "env": "dev"
           },
           {
+            "name": "aurelia-animator-css",
+            "path": "../node_modules/aurelia-animator-css/dist/amd",
+            "main": "index"
+          },
+          {
             "name": "devextreme",
             "path": "../node_modules/devextreme/dist",
             "main": "js/dx.web.debug.js",

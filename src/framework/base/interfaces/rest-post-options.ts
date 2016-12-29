@@ -4,4 +4,5 @@ import {
 
 export interface IRestPostOptions extends IRestGetOptions {
   data: any;
+  increaseLoadingCount?: boolean;
 }
