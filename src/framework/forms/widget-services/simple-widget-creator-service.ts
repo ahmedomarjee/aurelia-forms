@@ -10,12 +10,16 @@ import {
 import {
   ICommandData
 } from "../interfaces/command-data";
+import {
+  DataSourceService
+} from "../../base/services/data-source-service";
 import * as WidgetOptions from "../widget-options/export";
 
 @autoinject
 export class SimpleWidgetCreatorService {
   constructor(
-    private baseWidgetCreator: BaseWidgetCreatorService
+    private baseWidgetCreator: BaseWidgetCreatorService,
+    private dataSource: DataSourceService
   ) { }
 
   createEditorOptions(form: FormBase, options: WidgetOptions.IEditorOptions): any {
@@ -114,7 +118,7 @@ export class SimpleWidgetCreatorService {
   addListView(form: FormBase, options: WidgetOptions.IListViewOptions): WidgetOptions.IListViewOptions {
     return options;
   }
-  addLookup(form: FormBase, options: WidgetOptions.ISelectOptions, selectItem: WidgetOptions.ISelectItem): DevExpress.ui.dxLookupOptions {
+  addLookup(form: FormBase, options: WidgetOptions.ISelectOptions, selectContainerOptions: WidgetOptions.ISelectItemContainerOptions): DevExpress.ui.dxLookupOptions {
     const editorOptions: DevExpress.ui.dxLookupOptions = this.createEditorOptions(form, options);
 
     //TODO - SelectItem
@@ -165,17 +169,41 @@ export class SimpleWidgetCreatorService {
 
     return widgetOptions;
   }
-  addRadioGroup(form: FormBase, options: WidgetOptions.ISelectOptions, selectItem: WidgetOptions.ISelectItem): DevExpress.ui.dxRadioGroupOptions {
+  addRadioGroup(form: FormBase, options: WidgetOptions.ISelectOptions, selectContainerOptions: WidgetOptions.ISelectItemContainerOptions): DevExpress.ui.dxRadioGroupOptions {
     const editorOptions: DevExpress.ui.dxRadioGroupOptions = this.createEditorOptions(form, options);
 
     //TODO - SelectItem
 
     return editorOptions;
   }
-  addSelectBox(form: FormBase, options: WidgetOptions.ISelectOptions, selectItem: WidgetOptions.ISelectItem): DevExpress.ui.dxSelectBoxOptions {
+  addSelectBox(form: FormBase, options: WidgetOptions.ISelectOptions, selectContainerOptions: WidgetOptions.ISelectItemContainerOptions): DevExpress.ui.dxSelectBoxOptions {
     const editorOptions: DevExpress.ui.dxSelectBoxOptions = this.createEditorOptions(form, options);
 
-    //TODO - SelectItem
+    if (selectContainerOptions.selectItem.items 
+      && selectContainerOptions.selectItem.items.length > 0) {
+      editorOptions.dataSource = selectContainerOptions.selectItem.items;
+    } else if (selectContainerOptions.selectItem.action) {
+      const where = [];
+      if (selectContainerOptions.filter) {
+        where.push(selectContainerOptions.filter);
+      }
+      if (selectContainerOptions.selectItem.where) {
+        where.push(selectContainerOptions.selectItem.where);
+      }
+
+      editorOptions.dataSource = this.dataSource.createDataSource(form, {
+        keyProperty: selectContainerOptions.selectItem.valueMember,
+        webApiAction: selectContainerOptions.selectItem.action,
+        webApiColumns: selectContainerOptions.selectItem.columns,
+        webApiExpand: selectContainerOptions.selectItem.expand,
+        webApiOrderBy: selectContainerOptions.selectItem.orderBy,
+        webApiWhere: where,
+        filters: selectContainerOptions.customs
+      });
+    }
+
+    editorOptions.valueExpr = selectContainerOptions.selectItem.valueMember;
+    editorOptions.displayExpr = selectContainerOptions.selectItem.displayMember;
 
     return editorOptions;
   }

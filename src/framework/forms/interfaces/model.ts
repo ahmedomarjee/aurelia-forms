@@ -1,4 +1,4 @@
-import {IFilter} from "./filter";
+import {IDataSourceOptionFilter} from "../../base/interfaces/data-source-option-filter";
 
 export interface IModel {
     id: string;
@@ -20,5 +20,5 @@ export interface IModel {
     allowNew?: string;
     allowDelete?: string;
 
-    filters: IFilter[];
+    filters: IDataSourceOptionFilter[];
 }

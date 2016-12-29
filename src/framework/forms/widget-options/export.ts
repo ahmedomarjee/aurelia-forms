@@ -13,6 +13,7 @@ export * from "./file-uploader-with-viewer-options";
 export * from "./include-options";
 export * from "./list-view-options";
 export * from "./number-box-options";
+export * from "./select-item-container-options";
 export * from "./select-item";
 export * from "./select-options";
 export * from "./popover-options";

@@ -43,12 +43,14 @@ export class AuthgroupEditForm extends fwx.FormBase {
                 "optionsNameFQ": "wd2Options"
             }
         }, {
-            "id": "mandator",
-            "elementName": "select-box",
-            "valueMember": "Id",
-            "displayMember": "Name",
-            "action": "base/Security/Mandator",
-            "columns": ["Name", "Id"]
+            "selectItem": {
+                "id": "mandator",
+                "elementName": "select-box",
+                "valueMember": "Id",
+                "displayMember": "Name",
+                "action": "base/Security/Mandator",
+                "columns": ["Name", "Id"]
+            }
         });
     }
     title = "";

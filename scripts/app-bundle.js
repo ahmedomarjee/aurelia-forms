@@ -357,6 +357,18 @@ define('environment',["require", "exports"], function (require, exports) {
     };
 });
 
+define('framework/base/interfaces/data-source-option-filter',["require", "exports"], function (require, exports) {
+    "use strict";
+});
+
+define('framework/base/interfaces/data-source-options',["require", "exports"], function (require, exports) {
+    "use strict";
+});
+
+define('framework/base/interfaces/expression-provider',["require", "exports"], function (require, exports) {
+    "use strict";
+});
+
 define('framework/base/interfaces/rest-get-options',["require", "exports"], function (require, exports) {
     "use strict";
 });
@@ -549,6 +561,15 @@ define('main',["require", "exports", "./environment", "./framework/base/services
             var authorization = aurelia.container.get(authorization_service_1.AuthorizationService);
             authorization.openApp();
         });
+    }
+    exports.configure = configure;
+});
+
+define('framework/dx/index',["require", "exports"], function (require, exports) {
+    "use strict";
+    function configure(config) {
+        config
+            .globalResources("./elements/dx-widget");
     }
     exports.configure = configure;
 });
@@ -866,46 +887,6 @@ define('framework/base/index',["require", "exports"], function (require, exports
     exports.configure = configure;
 });
 
-define('framework/default-ui/services/layout-service',["require", "exports"], function (require, exports) {
-    "use strict";
-    var LayoutService = (function () {
-        function LayoutService() {
-            this.isSidebarCollapsed = false;
-        }
-        return LayoutService;
-    }());
-    exports.LayoutService = LayoutService;
-});
-
-define('framework/default-ui/services/export',["require", "exports", "./layout-service"], function (require, exports, layout_service_1) {
-    "use strict";
-    exports.LayoutService = layout_service_1.LayoutService;
-});
-
-define('framework/default-ui/export',["require", "exports", "./services/export"], function (require, exports, export_1) {
-    "use strict";
-    function __export(m) {
-        for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-    }
-    __export(export_1);
-});
-
-define('framework/default-ui/index',["require", "exports"], function (require, exports) {
-    "use strict";
-    function configure(config) {
-    }
-    exports.configure = configure;
-});
-
-define('framework/dx/index',["require", "exports"], function (require, exports) {
-    "use strict";
-    function configure(config) {
-        config
-            .globalResources("./elements/dx-widget");
-    }
-    exports.configure = configure;
-});
-
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -949,10 +930,6 @@ define('framework/forms/interfaces/edit-popup',["require", "exports"], function 
     "use strict";
 });
 
-define('framework/forms/interfaces/filter',["require", "exports"], function (require, exports) {
-    "use strict";
-});
-
 define('framework/forms/interfaces/function',["require", "exports"], function (require, exports) {
     "use strict";
 });
@@ -986,19 +963,259 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-define('framework/forms/classes/models',["require", "exports", "aurelia-framework", "../../base/export"], function (require, exports, aurelia_framework_1, export_1) {
+define('framework/base/services/data-source-service',["require", "exports", "aurelia-framework", "./rest-service"], function (require, exports, aurelia_framework_1, rest_service_1) {
+    "use strict";
+    var DataSourceService = (function () {
+        function DataSourceService(rest) {
+            this.rest = rest;
+        }
+        DataSourceService.prototype.createDataSource = function (expressionProvider, options, loadRequiredAction) {
+            var _this = this;
+            var dataSource = new DevExpress.data.DataSource(new DevExpress.data.CustomStore({
+                key: options.keyProperty,
+                byKey: function (key) {
+                    var getOptions = _this.createGetOptions(expressionProvider, options);
+                    return _this.rest.get({
+                        url: _this.rest.getWebApiUrl(options.webApiAction + "/" + key),
+                        getOptions: getOptions
+                    });
+                },
+                load: function (loadOptions) {
+                    var getOptions = _this.createGetOptions(expressionProvider, options);
+                    if (getOptions == null) {
+                        if (loadOptions.requireTotalCount) {
+                            return Promise.resolve({
+                                data: [],
+                                totalCount: 0
+                            });
+                        }
+                        else {
+                            return Promise.resolve([]);
+                        }
+                    }
+                    if (loadOptions.filter) {
+                        if (getOptions.where) {
+                            getOptions.where = [getOptions.where, loadOptions.filter];
+                        }
+                        else {
+                            getOptions.where = loadOptions.filter;
+                        }
+                    }
+                    getOptions.skip = loadOptions.skip;
+                    getOptions.take = loadOptions.take;
+                    getOptions.requireTotalCount = loadOptions.requireTotalCount;
+                    if (loadOptions.sort) {
+                        getOptions.orderBy = loadOptions.sort.map(function (data) {
+                            return {
+                                columnName: data.selector,
+                                sortOrder: (data.desc === true ? 1 : 0)
+                            };
+                        });
+                    }
+                    return _this.rest.get({
+                        url: _this.rest.getWebApiUrl(options.webApiAction),
+                        getOptions: getOptions
+                    }).then(function (r) {
+                        if (loadOptions.requireTotalCount) {
+                            return {
+                                data: r.rows,
+                                totalCount: r.count
+                            };
+                        }
+                        else {
+                            return r;
+                        }
+                    });
+                }
+            }));
+            var timeout = null;
+            this.addObservers(expressionProvider, options, function () {
+                if (timeout) {
+                    clearTimeout(timeout);
+                    timeout = null;
+                }
+                timeout = setTimeout(function () {
+                    if (dataSource.pageIndex() === 0) {
+                        dataSource.reload();
+                    }
+                    else {
+                        dataSource.pageIndex(0);
+                    }
+                    if (loadRequiredAction) {
+                        loadRequiredAction();
+                    }
+                }, 10);
+            });
+            return dataSource;
+        };
+        DataSourceService.prototype.createGetOptions = function (expressionProvider, options) {
+            var getOptions = {};
+            getOptions.columns = options.webApiColumns;
+            getOptions.expand = options.webApiExpand;
+            getOptions.orderBy = options.webApiOrderBy;
+            if (options.webApiWhere) {
+                var where = [];
+                if (!this.constructWhere(expressionProvider, options.webApiWhere, where)) {
+                    return null;
+                }
+                if (where.length > 0) {
+                    getOptions.where = where;
+                }
+            }
+            if (options.filters) {
+                var customs = [];
+                var where = [];
+                if (!this.constructFilters(expressionProvider, options, customs, where)) {
+                    return null;
+                }
+                if (customs.length > 0) {
+                    getOptions.customs = customs;
+                }
+                if (where.length > 0) {
+                    if (getOptions.where) {
+                        getOptions.where = [getOptions.where, where];
+                    }
+                    else {
+                        getOptions.where = where;
+                    }
+                }
+            }
+            if (options.webApiMaxRecords > 0) {
+                getOptions.maxRecords = options.webApiMaxRecords;
+            }
+            return getOptions;
+        };
+        DataSourceService.prototype.addObservers = function (expressionProvider, options, action) {
+            this.addObserversWhere(expressionProvider, options.webApiWhere, action);
+            if (options.filters) {
+                for (var _i = 0, _a = options.filters; _i < _a.length; _i++) {
+                    var item = _a[_i];
+                    this.addObserversDetail(expressionProvider, item.if, action);
+                    this.addObserversDetail(expressionProvider, item.webApiCustomValue, action);
+                    this.addObserversWhere(expressionProvider, item.webApiWhere, action);
+                }
+            }
+        };
+        DataSourceService.prototype.addObserversDetail = function (expressionProvider, expression, action) {
+            if (expression == void (0)) {
+                return;
+            }
+            expressionProvider.createObserver(expression, action);
+        };
+        DataSourceService.prototype.addObserversWhere = function (expressionProvider, data, action) {
+            var _this = this;
+            if (data == void (0)) {
+                return;
+            }
+            if (Array.isArray(data)) {
+                data.forEach(function (item) { return _this.addObserversWhere(expressionProvider, item, action); });
+            }
+            else if (typeof data === "object") {
+                if (data.isBound === true && data.expression != void (0)) {
+                    this.addObserversDetail(expressionProvider, data.expression, action);
+                }
+                else {
+                    for (var property in data) {
+                        this.addObserversWhere(expressionProvider, data[property], action);
+                    }
+                }
+            }
+        };
+        DataSourceService.prototype.constructWhere = function (expressionProvider, data, where) {
+            var _this = this;
+            if (data == void (0)) {
+                return true;
+            }
+            if (Array.isArray(data)) {
+                var newArr_1 = [];
+                where.push(newArr_1);
+                var cancel_1 = false;
+                data.forEach(function (item) {
+                    if (!_this.constructWhere(expressionProvider, item, newArr_1)) {
+                        cancel_1 = true;
+                    }
+                });
+                if (cancel_1) {
+                    return false;
+                }
+            }
+            else if (typeof data === "object") {
+                if (data.isBound === true && data.expression != void (0)) {
+                    var val = expressionProvider.evaluateExpression(data.expression);
+                    if (val == void (0)) {
+                        return false;
+                    }
+                    where.push(val);
+                }
+                else {
+                    for (var property in data) {
+                        if (!this.constructWhere(expressionProvider, data[property], where)) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            else {
+                where.push(data);
+            }
+            return true;
+        };
+        DataSourceService.prototype.constructFilters = function (expressionProvider, options, customs, where) {
+            for (var _i = 0, _a = options.filters; _i < _a.length; _i++) {
+                var item = _a[_i];
+                if (item.if) {
+                    if (!expressionProvider.evaluateExpression(item.if)) {
+                        continue;
+                    }
+                }
+                if (item.webApiCustomKey && item.webApiCustomValue) {
+                    customs.push({
+                        key: item.webApiCustomKey,
+                        value: expressionProvider.evaluateExpression(item.webApiCustomValue)
+                    });
+                }
+                else if (item.webApiWhere) {
+                    var w = [];
+                    if (!this.constructWhere(expressionProvider, item.webApiWhere, w)) {
+                        return false;
+                    }
+                    where.push(w);
+                }
+            }
+            return true;
+        };
+        return DataSourceService;
+    }());
+    DataSourceService = __decorate([
+        aurelia_framework_1.autoinject,
+        __metadata("design:paramtypes", [rest_service_1.RestService])
+    ], DataSourceService);
+    exports.DataSourceService = DataSourceService;
+});
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+define('framework/forms/classes/models',["require", "exports", "aurelia-framework", "../../base/export", "../../base/services/data-source-service"], function (require, exports, aurelia_framework_1, export_1, data_source_service_1) {
     "use strict";
     var Models = (function () {
-        function Models(rest, onLoadRequired) {
+        function Models(rest, dataSource, onLoadRequired) {
             var _this = this;
             this.rest = rest;
+            this.dataSource = dataSource;
             this.onLoadRequired = onLoadRequired;
             this.onLoadRequired.waitTimeout = 10;
             this.data = {};
             this.info = {};
             this.onLoadRequired.register(function (args) {
                 if (args.model.key || args.model.autoLoad) {
-                    var getOptions = _this.createGetOptions(args.model);
+                    var getOptions = _this.dataSource.createGetOptions(_this.form, args.model);
                     return _this.rest.get({
                         url: _this.rest.getWebApiUrl(args.model.webApiAction + "/" + _this.form.evaluateExpression(args.model.key)),
                         getOptions: getOptions
@@ -1020,62 +1237,6 @@ define('framework/forms/classes/models',["require", "exports", "aurelia-framewor
             }
             return model;
         };
-        Models.prototype.createDataSource = function (model) {
-            var _this = this;
-            return new DevExpress.data.DataSource(new DevExpress.data.CustomStore({
-                key: model.keyProperty,
-                byKey: function (key) {
-                    var getOptions = _this.createGetOptions(model);
-                    return _this.rest.get({
-                        url: _this.rest.getWebApiUrl(model.webApiAction + "/" + key),
-                        getOptions: getOptions
-                    });
-                },
-                load: function (options) {
-                    var getOptions = _this.createGetOptions(model);
-                    getOptions.where = options.filter;
-                    getOptions.skip = options.skip;
-                    getOptions.take = options.take;
-                    getOptions.requireTotalCount = options.requireTotalCount;
-                    if (model.webApiWhere) {
-                        getOptions.where = [];
-                        if (!_this.constructWhere(model.webApiWhere, getOptions.where)) {
-                            if (options.requireTotalCount) {
-                                return Promise.resolve({
-                                    data: [],
-                                    totalCount: 0
-                                });
-                            }
-                            else {
-                                return Promise.resolve([]);
-                            }
-                        }
-                    }
-                    if (options.sort) {
-                        getOptions.orderBy = options.sort.map(function (data) {
-                            return {
-                                columnName: data.selector,
-                                sortOrder: (data.desc === true ? 1 : 0)
-                            };
-                        });
-                    }
-                    return _this.rest.get({
-                        url: _this.rest.getWebApiUrl(model.webApiAction),
-                        getOptions: getOptions
-                    }).then(function (r) {
-                        if (options.requireTotalCount) {
-                            return {
-                                data: r.rows,
-                                totalCount: r.count
-                            };
-                        }
-                        else {
-                            return r;
-                        }
-                    });
-                }
-            }));
-        };
         Models.prototype.registerForm = function (form) {
             if (this.form) {
                 throw new Error("Form was already registered");
@@ -1083,35 +1244,13 @@ define('framework/forms/classes/models',["require", "exports", "aurelia-framewor
             this.form = form;
         };
         Models.prototype.addObservers = function (model) {
-            this.addObserversDetail(model, model.key);
-            this.addObserversWhere(model, model.webApiWhere);
-            if (model.filters) {
-                for (var _i = 0, _a = model.filters; _i < _a.length; _i++) {
-                    var item = _a[_i];
-                    this.addObserversDetail(model, item.if);
-                    this.addObserversDetail(model, item.webApiCustomValue);
-                    this.addObserversWhere(model, item.webApiWhere);
-                }
-            }
-        };
-        Models.prototype.addObserversWhere = function (model, data) {
             var _this = this;
-            if (data == void (0)) {
-                return;
-            }
-            if (Array.isArray(data)) {
-                data.forEach(function (item) { return _this.addObserversWhere(model, item); });
-            }
-            else if (typeof data === "object") {
-                if (data.isBound === true && data.expression != void (0)) {
-                    this.addObserversDetail(model, data.expression);
-                }
-                else {
-                    for (var property in data) {
-                        this.addObserversWhere(model, data[property]);
-                    }
-                }
-            }
+            this.addObserversDetail(model, model.key);
+            this.dataSource.addObservers(this.form, model, function () {
+                _this.onLoadRequired.fire({
+                    model: model
+                });
+            });
         };
         Models.prototype.addObserversDetail = function (model, expression) {
             var _this = this;
@@ -1124,61 +1263,13 @@ define('framework/forms/classes/models',["require", "exports", "aurelia-framewor
                 });
             });
         };
-        Models.prototype.createGetOptions = function (model) {
-            var getOptions = {};
-            getOptions.expand = model.webApiExpand;
-            getOptions.columns = model.webApiColumns;
-            if (model.webApiMaxRecords > 0) {
-                getOptions.maxRecords = model.webApiMaxRecords;
-            }
-            getOptions.orderBy = model.webApiOrderBy;
-            return getOptions;
-        };
-        Models.prototype.constructWhere = function (data, where) {
-            var _this = this;
-            if (data == void (0)) {
-                return true;
-            }
-            if (Array.isArray(data)) {
-                var newArr_1 = [];
-                where.push(newArr_1);
-                var cancel_1 = false;
-                data.forEach(function (item) {
-                    if (!_this.constructWhere(item, newArr_1)) {
-                        cancel_1 = true;
-                    }
-                });
-                if (cancel_1) {
-                    return false;
-                }
-            }
-            else if (typeof data === "object") {
-                if (data.isBound === true && data.expression != void (0)) {
-                    var val = this.form.evaluateExpression(data.expression);
-                    if (val == void (0)) {
-                        return false;
-                    }
-                    where.push(val);
-                }
-                else {
-                    for (var property in data) {
-                        if (!this.constructWhere(data[property], where)) {
-                            return false;
-                        }
-                    }
-                }
-            }
-            else {
-                where.push(data);
-            }
-            return true;
-        };
         return Models;
     }());
     Models = __decorate([
         aurelia_framework_1.autoinject,
         aurelia_framework_1.singleton(true),
         __metadata("design:paramtypes", [export_1.RestService,
+            data_source_service_1.DataSourceService,
             export_1.CustomEvent])
     ], Models);
     exports.Models = Models;
@@ -1536,6 +1627,10 @@ define('framework/forms/widget-options/select-item',["require", "exports"], func
     "use strict";
 });
 
+define('framework/forms/widget-options/select-item-container-options',["require", "exports"], function (require, exports) {
+    "use strict";
+});
+
 define('framework/forms/widget-options/select-options',["require", "exports"], function (require, exports) {
     "use strict";
 });
@@ -1620,11 +1715,12 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-define('framework/forms/widget-services/simple-widget-creator-service',["require", "exports", "aurelia-framework", "./base-widget-creator-service"], function (require, exports, aurelia_framework_1, base_widget_creator_service_1) {
+define('framework/forms/widget-services/simple-widget-creator-service',["require", "exports", "aurelia-framework", "./base-widget-creator-service", "../../base/services/data-source-service"], function (require, exports, aurelia_framework_1, base_widget_creator_service_1, data_source_service_1) {
     "use strict";
     var SimpleWidgetCreatorService = (function () {
-        function SimpleWidgetCreatorService(baseWidgetCreator) {
+        function SimpleWidgetCreatorService(baseWidgetCreator, dataSource) {
             this.baseWidgetCreator = baseWidgetCreator;
+            this.dataSource = dataSource;
         }
         SimpleWidgetCreatorService.prototype.createEditorOptions = function (form, options) {
             var editorOptions = this.baseWidgetCreator.createWidgetOptions(form, options);
@@ -1710,7 +1806,7 @@ define('framework/forms/widget-services/simple-widget-creator-service',["require
         SimpleWidgetCreatorService.prototype.addListView = function (form, options) {
             return options;
         };
-        SimpleWidgetCreatorService.prototype.addLookup = function (form, options, selectItem) {
+        SimpleWidgetCreatorService.prototype.addLookup = function (form, options, selectContainerOptions) {
             var editorOptions = this.createEditorOptions(form, options);
             return editorOptions;
         };
@@ -1747,12 +1843,36 @@ define('framework/forms/widget-services/simple-widget-creator-service',["require
             }
             return widgetOptions;
         };
-        SimpleWidgetCreatorService.prototype.addRadioGroup = function (form, options, selectItem) {
+        SimpleWidgetCreatorService.prototype.addRadioGroup = function (form, options, selectContainerOptions) {
             var editorOptions = this.createEditorOptions(form, options);
             return editorOptions;
         };
-        SimpleWidgetCreatorService.prototype.addSelectBox = function (form, options, selectItem) {
+        SimpleWidgetCreatorService.prototype.addSelectBox = function (form, options, selectContainerOptions) {
             var editorOptions = this.createEditorOptions(form, options);
+            if (selectContainerOptions.selectItem.items
+                && selectContainerOptions.selectItem.items.length > 0) {
+                editorOptions.dataSource = selectContainerOptions.selectItem.items;
+            }
+            else if (selectContainerOptions.selectItem.action) {
+                var where = [];
+                if (selectContainerOptions.filter) {
+                    where.push(selectContainerOptions.filter);
+                }
+                if (selectContainerOptions.selectItem.where) {
+                    where.push(selectContainerOptions.selectItem.where);
+                }
+                editorOptions.dataSource = this.dataSource.createDataSource(form, {
+                    keyProperty: selectContainerOptions.selectItem.valueMember,
+                    webApiAction: selectContainerOptions.selectItem.action,
+                    webApiColumns: selectContainerOptions.selectItem.columns,
+                    webApiExpand: selectContainerOptions.selectItem.expand,
+                    webApiOrderBy: selectContainerOptions.selectItem.orderBy,
+                    webApiWhere: where,
+                    filters: selectContainerOptions.customs
+                });
+            }
+            editorOptions.valueExpr = selectContainerOptions.selectItem.valueMember;
+            editorOptions.displayExpr = selectContainerOptions.selectItem.displayMember;
             return editorOptions;
         };
         SimpleWidgetCreatorService.prototype.addTab = function (form, options) {
@@ -1809,7 +1929,8 @@ define('framework/forms/widget-services/simple-widget-creator-service',["require
     }());
     SimpleWidgetCreatorService = __decorate([
         aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [base_widget_creator_service_1.BaseWidgetCreatorService])
+        __metadata("design:paramtypes", [base_widget_creator_service_1.BaseWidgetCreatorService,
+            data_source_service_1.DataSourceService])
     ], SimpleWidgetCreatorService);
     exports.SimpleWidgetCreatorService = SimpleWidgetCreatorService;
 });
@@ -1823,17 +1944,18 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-define('framework/forms/widget-services/data-grid-widget-creator-service',["require", "exports", "aurelia-framework", "./base-widget-creator-service", "../enums/selection-mode-enum"], function (require, exports, aurelia_framework_1, base_widget_creator_service_1, selection_mode_enum_1) {
+define('framework/forms/widget-services/data-grid-widget-creator-service',["require", "exports", "aurelia-framework", "./base-widget-creator-service", "../enums/selection-mode-enum", "../../base/services/data-source-service"], function (require, exports, aurelia_framework_1, base_widget_creator_service_1, selection_mode_enum_1, data_source_service_1) {
     "use strict";
     var DataGridWidgetCreatorService = (function () {
-        function DataGridWidgetCreatorService(baseWidgetCreator) {
+        function DataGridWidgetCreatorService(baseWidgetCreator, dataSource) {
             this.baseWidgetCreator = baseWidgetCreator;
+            this.dataSource = dataSource;
         }
         DataGridWidgetCreatorService.prototype.addDataGrid = function (form, options) {
             var dataGridOptions = this.baseWidgetCreator.createWidgetOptions(form, options);
             if (options.dataModel) {
                 var model_1 = form.models.getInfo(options.dataModel);
-                var dataSource_1 = form.models.createDataSource(model_1);
+                var dataSource_1 = this.dataSource.createDataSource(form, model_1);
                 dataGridOptions.dataSource = dataSource_1;
                 dataGridOptions.remoteOperations = {
                     filtering: true,
@@ -1936,7 +2058,8 @@ define('framework/forms/widget-services/data-grid-widget-creator-service',["requ
     }());
     DataGridWidgetCreatorService = __decorate([
         aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [base_widget_creator_service_1.BaseWidgetCreatorService])
+        __metadata("design:paramtypes", [base_widget_creator_service_1.BaseWidgetCreatorService,
+            data_source_service_1.DataSourceService])
     ], DataGridWidgetCreatorService);
     exports.DataGridWidgetCreatorService = DataGridWidgetCreatorService;
 });
@@ -1990,8 +2113,8 @@ define('framework/forms/widget-services/widget-creator-service',["require", "exp
         WidgetCreatorService.prototype.addListView = function (form, options) {
             return this.simpleWidgetCreator.addListView(form, options);
         };
-        WidgetCreatorService.prototype.addLookup = function (form, options, selectItem) {
-            return this.simpleWidgetCreator.addLookup(form, options, selectItem);
+        WidgetCreatorService.prototype.addLookup = function (form, options, selectContainerOptions) {
+            return this.simpleWidgetCreator.addLookup(form, options, selectContainerOptions);
         };
         WidgetCreatorService.prototype.addNumberBox = function (form, options) {
             return this.simpleWidgetCreator.addNumberBox(form, options);
@@ -2002,14 +2125,14 @@ define('framework/forms/widget-services/widget-creator-service',["require", "exp
         WidgetCreatorService.prototype.addPopup = function (form, options) {
             return this.simpleWidgetCreator.addPopup(form, options);
         };
-        WidgetCreatorService.prototype.addRadioGroup = function (form, options, selectItem) {
-            return this.simpleWidgetCreator.addRadioGroup(form, options, selectItem);
+        WidgetCreatorService.prototype.addRadioGroup = function (form, options, selectContainerOptions) {
+            return this.simpleWidgetCreator.addRadioGroup(form, options, selectContainerOptions);
         };
         WidgetCreatorService.prototype.addTab = function (form, options) {
             return this.simpleWidgetCreator.addTab(form, options);
         };
-        WidgetCreatorService.prototype.addSelectBox = function (form, options, selectItem) {
-            return this.simpleWidgetCreator.addSelectBox(form, options, selectItem);
+        WidgetCreatorService.prototype.addSelectBox = function (form, options, selectContainerOptions) {
+            return this.simpleWidgetCreator.addSelectBox(form, options, selectContainerOptions);
         };
         WidgetCreatorService.prototype.addTagBox = function (form, options) {
             return this.simpleWidgetCreator.addTagBox(form, options);
@@ -2034,8 +2157,58 @@ define('framework/forms/event-args/form-attached',["require", "exports"], functi
     "use strict";
 });
 
+define('framework/forms/event-args/form-ready',["require", "exports"], function (require, exports) {
+    "use strict";
+});
+
 define('framework/forms/event-args/export',["require", "exports"], function (require, exports) {
     "use strict";
+});
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+define('framework/forms/classes/form-base-import',["require", "exports", "aurelia-framework", "./models", "./functions", "./commands", "./variables", "./command-server-data", "../services/toolbar-service", "../services/command-service", "../widget-services/widget-creator-service", "../../base/export"], function (require, exports, aurelia_framework_1, models_1, functions_1, commands_1, variables_1, command_server_data_1, toolbar_service_1, command_service_1, widget_creator_service_1, export_1) {
+    "use strict";
+    var FormBaseImport = (function () {
+        function FormBaseImport(bindingEngine, taskQueue, widgetCreator, command, toolbar, models, variables, functions, commands, commandServerData, onFormAttached, onFormReady) {
+            this.bindingEngine = bindingEngine;
+            this.taskQueue = taskQueue;
+            this.widgetCreator = widgetCreator;
+            this.command = command;
+            this.toolbar = toolbar;
+            this.models = models;
+            this.variables = variables;
+            this.functions = functions;
+            this.commands = commands;
+            this.commandServerData = commandServerData;
+            this.onFormAttached = onFormAttached;
+            this.onFormReady = onFormReady;
+        }
+        return FormBaseImport;
+    }());
+    FormBaseImport = __decorate([
+        aurelia_framework_1.transient(),
+        __metadata("design:paramtypes", [aurelia_framework_1.BindingEngine,
+            aurelia_framework_1.TaskQueue,
+            widget_creator_service_1.WidgetCreatorService,
+            command_service_1.CommandService,
+            toolbar_service_1.ToolbarService,
+            models_1.Models,
+            variables_1.Variables,
+            functions_1.Functions,
+            commands_1.Commands,
+            command_server_data_1.CommandServerData,
+            export_1.CustomEvent,
+            export_1.CustomEvent])
+    ], FormBaseImport);
+    exports.FormBaseImport = FormBaseImport;
 });
 
 define('framework/forms/classes/form-base',["require", "exports"], function (require, exports) {
@@ -2221,6 +2394,37 @@ define('framework/forms/index',["require", "exports"], function (require, export
     function configure(config) {
         config
             .globalResources("./styles/styles.css");
+    }
+    exports.configure = configure;
+});
+
+define('framework/default-ui/services/layout-service',["require", "exports"], function (require, exports) {
+    "use strict";
+    var LayoutService = (function () {
+        function LayoutService() {
+            this.isSidebarCollapsed = false;
+        }
+        return LayoutService;
+    }());
+    exports.LayoutService = LayoutService;
+});
+
+define('framework/default-ui/services/export',["require", "exports", "./layout-service"], function (require, exports, layout_service_1) {
+    "use strict";
+    exports.LayoutService = layout_service_1.LayoutService;
+});
+
+define('framework/default-ui/export',["require", "exports", "./services/export"], function (require, exports, export_1) {
+    "use strict";
+    function __export(m) {
+        for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+    }
+    __export(export_1);
+});
+
+define('framework/default-ui/index',["require", "exports"], function (require, exports) {
+    "use strict";
+    function configure(config) {
     }
     exports.configure = configure;
 });
@@ -2624,6 +2828,30 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+define('framework/default-ui/views/content/content',["require", "exports", "aurelia-framework", "../../services/layout-service"], function (require, exports, aurelia_framework_1, layout_service_1) {
+    "use strict";
+    var Content = (function () {
+        function Content(layout) {
+            this.layout = layout;
+        }
+        return Content;
+    }());
+    Content = __decorate([
+        aurelia_framework_1.autoinject,
+        __metadata("design:paramtypes", [layout_service_1.LayoutService])
+    ], Content);
+    exports.Content = Content;
+});
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
 define('framework/default-ui/views/container/container',["require", "exports", "aurelia-framework", "../../services/layout-service"], function (require, exports, aurelia_framework_1, layout_service_1) {
     "use strict";
     var Container = (function () {
@@ -2651,30 +2879,6 @@ define('framework/default-ui/views/container/container',["require", "exports", "
         __metadata("design:paramtypes", [layout_service_1.LayoutService])
     ], Container);
     exports.Container = Container;
-});
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/default-ui/views/content/content',["require", "exports", "aurelia-framework", "../../services/layout-service"], function (require, exports, aurelia_framework_1, layout_service_1) {
-    "use strict";
-    var Content = (function () {
-        function Content(layout) {
-            this.layout = layout;
-        }
-        return Content;
-    }());
-    Content = __decorate([
-        aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [layout_service_1.LayoutService])
-    ], Content);
-    exports.Content = Content;
 });
 
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -2901,49 +3105,6 @@ define('framework/login/views/login/login-form',["require", "exports", "../../..
     exports.LoginForm = LoginForm;
 });
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/stack-router/attributes/stack-router-link/stack-router-link',["require", "exports", "aurelia-framework", "../../services/history-service"], function (require, exports, aurelia_framework_1, history_service_1) {
-    "use strict";
-    var StackRouterLinkCustomAttribute = (function () {
-        function StackRouterLinkCustomAttribute(element, history) {
-            this.element = element;
-            this.history = history;
-        }
-        StackRouterLinkCustomAttribute.prototype.bind = function () {
-            var _this = this;
-            this.element.addEventListener("click", function (e) {
-                var event = window.event;
-                if (!event.ctrlKey
-                    && !event.altKey
-                    && !event.shiftKey
-                    && !event.metaKey) {
-                    _this.history.navigateByCode(_this.element.getAttribute("href"), _this.clearStack);
-                    e.preventDefault();
-                }
-            });
-        };
-        return StackRouterLinkCustomAttribute;
-    }());
-    __decorate([
-        aurelia_framework_1.bindable,
-        __metadata("design:type", Boolean)
-    ], StackRouterLinkCustomAttribute.prototype, "clearStack", void 0);
-    StackRouterLinkCustomAttribute = __decorate([
-        aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [Element,
-            history_service_1.HistoryService])
-    ], StackRouterLinkCustomAttribute);
-    exports.StackRouterLinkCustomAttribute = StackRouterLinkCustomAttribute;
-});
-
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -3003,12 +3164,14 @@ define('framework/security/views/authgroup/authgroup-edit-form',["require", "exp
                     "optionsNameFQ": "wd2Options"
                 }
             }, {
-                "id": "mandator",
-                "elementName": "select-box",
-                "valueMember": "Id",
-                "displayMember": "Name",
-                "action": "base/Security/Mandator",
-                "columns": ["Name", "Id"]
+                "selectItem": {
+                    "id": "mandator",
+                    "elementName": "select-box",
+                    "valueMember": "Id",
+                    "displayMember": "Name",
+                    "action": "base/Security/Mandator",
+                    "columns": ["Name", "Id"]
+                }
             });
             return _this;
         }
@@ -3097,57 +3260,38 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-define('framework/stack-router/views/view/view',["require", "exports", "aurelia-framework"], function (require, exports, aurelia_framework_1) {
+define('framework/stack-router/attributes/stack-router-link/stack-router-link',["require", "exports", "aurelia-framework", "../../services/history-service"], function (require, exports, aurelia_framework_1, history_service_1) {
     "use strict";
-    var View = (function () {
-        function View(bindingEngine) {
-            this.bindingEngine = bindingEngine;
-            this.createToolbar = true;
+    var StackRouterLinkCustomAttribute = (function () {
+        function StackRouterLinkCustomAttribute(element, history) {
+            this.element = element;
+            this.history = history;
         }
-        Object.defineProperty(View.prototype, "className", {
-            get: function () {
-                if (this.createToolbar) {
-                    return "t--view-with-toolbar";
+        StackRouterLinkCustomAttribute.prototype.bind = function () {
+            var _this = this;
+            this.element.addEventListener("click", function (e) {
+                var event = window.event;
+                if (!event.ctrlKey
+                    && !event.altKey
+                    && !event.shiftKey
+                    && !event.metaKey) {
+                    _this.history.navigateByCode(_this.element.getAttribute("href"), _this.clearStack);
+                    e.preventDefault();
                 }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(View.prototype, "toolbarOptions", {
-            get: function () {
-                if (!this.view || !this.view.controller || !this.view.controller.currentViewModel) {
-                    return null;
-                }
-                return this.view.controller.currentViewModel.toolbarOptions;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return View;
+            });
+        };
+        return StackRouterLinkCustomAttribute;
     }());
     __decorate([
         aurelia_framework_1.bindable,
         __metadata("design:type", Boolean)
-    ], View.prototype, "createToolbar", void 0);
-    __decorate([
-        aurelia_framework_1.bindable,
-        __metadata("design:type", Object)
-    ], View.prototype, "view", void 0);
-    __decorate([
-        aurelia_framework_1.computedFrom("createToolbar"),
-        __metadata("design:type", String),
-        __metadata("design:paramtypes", [])
-    ], View.prototype, "className", null);
-    __decorate([
-        aurelia_framework_1.computedFrom("view.controller.currentViewModel.toolbarOptions"),
-        __metadata("design:type", Object),
-        __metadata("design:paramtypes", [])
-    ], View.prototype, "toolbarOptions", null);
-    View = __decorate([
+    ], StackRouterLinkCustomAttribute.prototype, "clearStack", void 0);
+    StackRouterLinkCustomAttribute = __decorate([
         aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [aurelia_framework_1.BindingEngine])
-    ], View);
-    exports.View = View;
+        __metadata("design:paramtypes", [Element,
+            history_service_1.HistoryService])
+    ], StackRouterLinkCustomAttribute);
+    exports.StackRouterLinkCustomAttribute = StackRouterLinkCustomAttribute;
 });
 
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -3202,67 +3346,79 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-define('framework/forms/classes/form-base-import',["require", "exports", "aurelia-framework", "./models", "./functions", "./commands", "./variables", "./command-server-data", "../services/toolbar-service", "../services/command-service", "../widget-services/widget-creator-service", "../../base/export"], function (require, exports, aurelia_framework_1, models_1, functions_1, commands_1, variables_1, command_server_data_1, toolbar_service_1, command_service_1, widget_creator_service_1, export_1) {
+define('framework/stack-router/views/view/view',["require", "exports", "aurelia-framework"], function (require, exports, aurelia_framework_1) {
     "use strict";
-    var FormBaseImport = (function () {
-        function FormBaseImport(bindingEngine, taskQueue, widgetCreator, command, toolbar, models, variables, functions, commands, commandServerData, onFormAttached, onFormReady) {
+    var View = (function () {
+        function View(bindingEngine) {
             this.bindingEngine = bindingEngine;
-            this.taskQueue = taskQueue;
-            this.widgetCreator = widgetCreator;
-            this.command = command;
-            this.toolbar = toolbar;
-            this.models = models;
-            this.variables = variables;
-            this.functions = functions;
-            this.commands = commands;
-            this.commandServerData = commandServerData;
-            this.onFormAttached = onFormAttached;
-            this.onFormReady = onFormReady;
+            this.createToolbar = true;
         }
-        return FormBaseImport;
+        Object.defineProperty(View.prototype, "className", {
+            get: function () {
+                if (this.createToolbar) {
+                    return "t--view-with-toolbar";
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(View.prototype, "toolbarOptions", {
+            get: function () {
+                if (!this.view || !this.view.controller || !this.view.controller.currentViewModel) {
+                    return null;
+                }
+                return this.view.controller.currentViewModel.toolbarOptions;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return View;
     }());
-    FormBaseImport = __decorate([
-        aurelia_framework_1.transient(),
-        __metadata("design:paramtypes", [aurelia_framework_1.BindingEngine,
-            aurelia_framework_1.TaskQueue,
-            widget_creator_service_1.WidgetCreatorService,
-            command_service_1.CommandService,
-            toolbar_service_1.ToolbarService,
-            models_1.Models,
-            variables_1.Variables,
-            functions_1.Functions,
-            commands_1.Commands,
-            command_server_data_1.CommandServerData,
-            export_1.CustomEvent,
-            export_1.CustomEvent])
-    ], FormBaseImport);
-    exports.FormBaseImport = FormBaseImport;
-});
-
-define('framework/forms/event-args/form-ready',["require", "exports"], function (require, exports) {
-    "use strict";
+    __decorate([
+        aurelia_framework_1.bindable,
+        __metadata("design:type", Boolean)
+    ], View.prototype, "createToolbar", void 0);
+    __decorate([
+        aurelia_framework_1.bindable,
+        __metadata("design:type", Object)
+    ], View.prototype, "view", void 0);
+    __decorate([
+        aurelia_framework_1.computedFrom("createToolbar"),
+        __metadata("design:type", String),
+        __metadata("design:paramtypes", [])
+    ], View.prototype, "className", null);
+    __decorate([
+        aurelia_framework_1.computedFrom("view.controller.currentViewModel.toolbarOptions"),
+        __metadata("design:type", Object),
+        __metadata("design:paramtypes", [])
+    ], View.prototype, "toolbarOptions", null);
+    View = __decorate([
+        aurelia_framework_1.autoinject,
+        __metadata("design:paramtypes", [aurelia_framework_1.BindingEngine])
+    ], View);
+    exports.View = View;
 });
 
 define('text!app.html', ['module'], function(module) { module.exports = "<template>\r\n  <require from=\"./framework/default-ui/views/container/container\"></require>\r\n  <container></container>\r\n</template>\r\n"; });
 define('text!framework/login/login.html', ['module'], function(module) { module.exports = "<template>\r\n  <require from=\"../stack-router/views/stack-router/stack-router\"></require>\r\n  <require from=\"./login.css\"></require>\r\n\r\n  <div class=\"t--login-container\">\r\n    <div class=\"t--login-image\">\r\n      <div class=\"t--login-banner\">\r\n        ${title}\r\n      </div>\r\n    </div>  \r\n    <div class=\"t--login-data\">\r\n      <stack-router create-toolbar.bind=\"false\"></stack-router>\r\n    </div>\r\n  </div>\r\n</template>"; });
 define('text!framework/dx/elements/dx-widget.html', ['module'], function(module) { module.exports = "<template class=\"dx-widget\">\r\n</template>"; });
-define('text!framework/default-ui/views/container/container.html', ['module'], function(module) { module.exports = "<template class=\"t--container\" class.bind=\"className\">\r\n  <require from=\"./container.css\"></require>\r\n  \r\n  <require from=\"../sidebar/sidebar\"></require>\r\n  <require from=\"../header/header\"></require>\r\n  <require from=\"../content/content\"></require>\r\n\r\n  <sidebar></sidebar>\r\n  <header></header>\r\n  <content></content>\r\n</template>\r\n"; });
 define('text!framework/login/login.css', ['module'], function(module) { module.exports = ".t--login-container {\n  display: flex;\n  height: 100vh;\n  width: 100vw;\n}\n.t--login-image {\n  position: relative;\n  flex-grow: 1;\n  background-image: url('http://www.aesthetic-lounge.de/wp-content/uploads/2015/02/Mann-_nr_2.jpg');\n  background-position: center center;\n  background-size: cover;\n  border-right: 1px solid lightgray;\n}\n.t--login-banner {\n  position: absolute;\n  padding: 12px 36px;\n  bottom: 30vh;\n  font-size: 60px;\n  font-weight: 100;\n  color: white;\n  background-color: rgba(0, 0, 0, 0.3);\n}\n.t--login-data {\n  display: flex;\n  width: 350px;\n  align-items: center;\n  background-color: #f7f7f7;\n}\n.t--login-data .t--view-content {\n  display: flex;\n  margin-top: -4vh;\n  flex-direction: column;\n  justify-content: center;\n}\n.t--login-logo {\n  margin-bottom: 40px;\n  text-align: center;\n}\n.t--login-logo img {\n  max-width: 200px;\n}\n"; });
 define('text!framework/default-ui/views/content/content.html', ['module'], function(module) { module.exports = "<template class=\"t--content\">\r\n  <require from=\"./content.css\"></require>\r\n\r\n  <stack-router></stack-router>\r\n</template>\r\n"; });
-define('text!framework/default-ui/views/header/header.html', ['module'], function(module) { module.exports = "<template class=\"t--header\">\r\n  <require from=\"./header.css\"></require>\r\n\r\n  <div class=\"t--header-flex\">\r\n    <div class=\"t--header-title\">\r\n      ${router.currentViewItem.title}\r\n    </div>\r\n    <div class=\"t--header-options\">\r\n      <a href=\"#\" click.delegate=\"logout()\">Abmelden</a>\r\n    </div>\r\n  </div>\r\n</template>"; });
+define('text!framework/default-ui/views/container/container.html', ['module'], function(module) { module.exports = "<template class=\"t--container\" class.bind=\"className\">\r\n  <require from=\"./container.css\"></require>\r\n  \r\n  <require from=\"../sidebar/sidebar\"></require>\r\n  <require from=\"../header/header\"></require>\r\n  <require from=\"../content/content\"></require>\r\n\r\n  <sidebar></sidebar>\r\n  <header></header>\r\n  <content></content>\r\n</template>\r\n"; });
 define('text!framework/base/styles/styles.css', ['module'], function(module) { module.exports = "body {\n  margin: 0;\n  padding: 0;\n  font-family: \"Helvetica Neue\", \"Segoe UI\", Helvetica, Verdana, sans-serif;\n  font-size: 12px;\n}\n.t--margin-top {\n  margin-top: 12px;\n}\n.t--editor-caption {\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n.t--cursor-pointer {\n  cursor: pointer;\n}\n.t--invisible-submit {\n  height: 0;\n  width: 0;\n  margin: 0;\n  padding: 0;\n  border: 0;\n}\n"; });
 define('text!framework/base/styles/variables.css', ['module'], function(module) { module.exports = ""; });
 define('text!framework/default-ui/views/sidebar/sidebar.html', ['module'], function(module) { module.exports = "<template class=\"t--sidebar\">\r\n  <require from=\"./sidebar.css\"></require>\r\n\r\n  <div class=\"t--sidebar-header\" click.delegate=\"onHeaderClicked()\">\r\n    <div class=\"t--sidebar-header-title\">\r\n      Navigation\r\n    </div>\r\n    <div class=\"t--sidebar-header-icon\">\r\n      <i class=\"fa fa-${headerIcon}\"></i>\r\n    </div>\r\n  </div>\r\n\r\n  <ul>\r\n    <li\r\n      class=\"t--sidebar-item\" \r\n      repeat.for=\"route of router.navigationRoutes\">\r\n      <a href=\"#${route.route}\" stack-router-link=\"clear-stack.bind: true\">\r\n        <span class=\"t--sidebar-item-title\">\r\n          ${route.title}\r\n        </span>\r\n        <span class=\"t--sidebar-item-icon\" if.bind=\"route.icon\">\r\n          <i class=\"fa fa-${route.icon}\"></i>\r\n        </span>\r\n      </a>\r\n    </li>\r\n  </ul>\r\n</template>\r\n"; });
+define('text!framework/default-ui/views/header/header.html', ['module'], function(module) { module.exports = "<template class=\"t--header\">\r\n  <require from=\"./header.css\"></require>\r\n\r\n  <div class=\"t--header-flex\">\r\n    <div class=\"t--header-title\">\r\n      ${router.currentViewItem.title}\r\n    </div>\r\n    <div class=\"t--header-options\">\r\n      <a href=\"#\" click.delegate=\"logout()\">Abmelden</a>\r\n    </div>\r\n  </div>\r\n</template>"; });
+define('text!framework/forms/styles/styles.css', ['module'], function(module) { module.exports = ".t--form-element-flex-box {\n  display: flex;\n}\n.t--form-element-flex-box-with-padding > *:not(:first-child) {\n  margin-left: 12px;\n}\n.t--form-element-image-inline {\n  background-size: contain;\n  background-position: center center;\n  background-repeat: no-repeat;\n}\n.t--form-element-image {\n  max-width: 100%;\n}\n"; });
 define('text!framework/login/views/login/login-form.html', ['module'], function(module) { module.exports = "<template>\n    <div class=\"t--margin-top col-xs-12 t--login-logo\">\n        <img class=\"t--form-element-image\" src=\"http://2014.erp-future.com/sites/2014.erp-future.com/files/1_business/Logo_U_TIP.png\"></img>\n    </div>\n    <form submit.delegate=\"submitForm('functions.$f.loginCommand')\">\n        <button class=\"t--invisible-submit\" type=\"submit\"></button>\n        <div class=\"col-xs-12\">\n            <div>Geben Sie hier Ihren Benutzernamen und Passwort ein und klicken Sie auf \"Anmelden\".</div>\n        </div>\n        <div class=\"t--margin-top col-xs-12\">\n            <div class=\"t--editor-caption\">Benutzername</div>\n            <dx-widget name=\"dxTextBox\" options.bind=\"usernameOptions\" view-model.ref=\"username\"></dx-widget>\n        </div>\n        <div class=\"t--margin-top col-xs-12\">\n            <div class=\"t--editor-caption\">Passwort</div>\n            <dx-widget name=\"dxTextBox\" options.bind=\"wd1Options\"></dx-widget>\n        </div>\n        <div class=\"t--margin-top col-xs-12\">\n            <div class=\"t--editor-caption\">&nbsp;</div>\n            <dx-widget name=\"dxCheckBox\" options.bind=\"wd2Options\"></dx-widget>\n        </div>\n        <div class=\"t--margin-top col-xs-12\">\n            <div class=\"t--editor-caption\">&nbsp;</div>\n            <dx-widget name=\"dxButton\" options.bind=\"wd3Options\"></dx-widget>\n        </div>\n    </form>\n</template>"; });
 define('text!framework/security/views/authgroup/authgroup-edit-form.html', ['module'], function(module) { module.exports = "<template>\n    <div class=\"t--margin-top col-xs-12 col-md-6\">\n        <div class=\"t--editor-caption\">Bezeichnung</div>\n        <dx-widget name=\"dxTextBox\" options.bind=\"wd1Options\"></dx-widget>\n    </div>\n    <div class=\"t--margin-top col-xs-12 col-md-6\">\n        <div class=\"t--editor-caption\">Mandant</div>\n        <dx-widget name=\"dxSelectBox\" options.bind=\"wd2Options\"></dx-widget>\n    </div>\n</template>"; });
-define('text!framework/forms/styles/styles.css', ['module'], function(module) { module.exports = ".t--form-element-flex-box {\n  display: flex;\n}\n.t--form-element-flex-box-with-padding > *:not(:first-child) {\n  margin-left: 12px;\n}\n.t--form-element-image-inline {\n  background-size: contain;\n  background-position: center center;\n  background-repeat: no-repeat;\n}\n.t--form-element-image {\n  max-width: 100%;\n}\n"; });
-define('text!framework/security/views/authgroup/authgroup-list-form.html', ['module'], function(module) { module.exports = "<template>\n    <div class=\"col-xs-12\">\n        <dx-widget name=\"dxDataGrid\" options.bind=\"wd1Options\"></dx-widget>\n    </div>\n</template>"; });
-define('text!framework/stack-router/views/stack-router/stack-router.html', ['module'], function(module) { module.exports = "<template class=\"t--stack-router\">\r\n  <require from=\"./stack-router.css\"></require>\r\n  <require from=\"../view/view\"></require>\r\n\r\n  <div \r\n    class=\"t--stack-router-item\" \r\n    class.bind=\"item.className\"\r\n    repeat.for=\"item of router.viewStack\">\r\n    <view view.bind=\"item\" create-toolbar.bind=\"$parent.createToolbar\"></view>\r\n  </div>\r\n</template>"; });
-define('text!framework/default-ui/views/container/container.css', ['module'], function(module) { module.exports = ".t--container {\n  display: block;\n  width: 100vw;\n  height: 100vh;\n}\n"; });
-define('text!framework/stack-router/views/view/view.html', ['module'], function(module) { module.exports = "<template class=\"t--view\" class.bind=\"className\">\r\n  <require from=\"./view.css\"></require>\r\n\r\n  <div class=\"t--view-toolbar\" if.bind=\"createToolbar\">\r\n    <dx-widget if.bind=\"toolbarOptions\" name=\"dxToolbar\" options.bind=\"toolbarOptions\">\r\n      <dx-template name=\"itemTemplate\">\r\n        <a class=\"t--view-toolbar-item\" click.delegate=\"data.guardedExecute()\">\r\n          <div if.bind=\"data.command.badgeText\" class=\"t--view-toolbar-item-badge\">\r\n            ${data.command.badgeText}\r\n          </div>\r\n          <div>\r\n            <div if.bind=\"data.command.icon\" class=\"t--view-toolbar-item-icon\">\r\n              <i class=\"fa fa-fw fa-${data.command.icon}\"></i>\r\n            </div>\r\n            <div if.bind=\"data.command.title\" class=\"t--view-toolbar-item-title\">\r\n              ${data.command.title}\r\n            </div>\r\n          </div>\r\n        </a>\r\n      </dx-template>\r\n    </dx-widget>\r\n  </div>\r\n  <div class=\"t--view-content\">\r\n    <div class=\"container-fluid\">\r\n      <div class=\"row\">\r\n        <compose\r\n          view-model.ref=\"view.controller\" \r\n          view-model.bind=\"view.moduleId\" \r\n          model.bind=\"view.model\" \r\n          class=\"t--view-content\"></compose>\r\n      </div>\r\n    </div>\r\n  </div>\r\n</template>"; });
 define('text!framework/default-ui/views/content/content.css', ['module'], function(module) { module.exports = ".t--content {\n  display: block;\n  margin-left: 280px;\n  height: calc(100% - 60px);\n}\n.t--sidebar-collapsed .t--content {\n  margin-left: 60px;\n}\n.t--view-current {\n  display: block;\n}\n.t--view-history {\n  display: none;\n}\n.t--view-toolbar .dx-toolbar {\n  height: 60px;\n}\n.t--view-toolbar-item {\n  display: flex;\n  height: 60px;\n  padding: 0 12px;\n  justify-content: center;\n  align-items: center;\n  text-align: center;\n  color: white;\n  text-decoration: none;\n  cursor: pointer;\n  -webkit-user-select: none;\n}\n.t--view-toolbar-item i {\n  font-size: 16px;\n}\n.t--view-toolbar-item:hover {\n  background-color: #4F4F4F;\n}\n.dx-state-disabled .t--view-toolbar-item {\n  cursor: default;\n  color: lightgray;\n}\n.dx-state-disabled .t--view-toolbar-item:hover {\n  background-color: inherit;\n}\n"; });
-define('text!framework/default-ui/views/header/header.css', ['module'], function(module) { module.exports = ".t--header {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  margin-left: 280px;\n  padding: 0 12px;\n}\n.t--header-flex {\n  display: flex;\n  width: 100%;\n}\n.t--header-title {\n  flex-grow: 1;\n}\n.t--sidebar-collapsed .t--header {\n  margin-left: 60px;\n}\n"; });
+define('text!framework/security/views/authgroup/authgroup-list-form.html', ['module'], function(module) { module.exports = "<template>\n    <div class=\"col-xs-12\">\n        <dx-widget name=\"dxDataGrid\" options.bind=\"wd1Options\"></dx-widget>\n    </div>\n</template>"; });
+define('text!framework/stack-router/views/view/view.html', ['module'], function(module) { module.exports = "<template class=\"t--view\" class.bind=\"className\">\r\n  <require from=\"./view.css\"></require>\r\n\r\n  <div class=\"t--view-toolbar\" if.bind=\"createToolbar\">\r\n    <dx-widget if.bind=\"toolbarOptions\" name=\"dxToolbar\" options.bind=\"toolbarOptions\">\r\n      <dx-template name=\"itemTemplate\">\r\n        <a class=\"t--view-toolbar-item\" click.delegate=\"data.guardedExecute()\">\r\n          <div if.bind=\"data.command.badgeText\" class=\"t--view-toolbar-item-badge\">\r\n            ${data.command.badgeText}\r\n          </div>\r\n          <div>\r\n            <div if.bind=\"data.command.icon\" class=\"t--view-toolbar-item-icon\">\r\n              <i class=\"fa fa-fw fa-${data.command.icon}\"></i>\r\n            </div>\r\n            <div if.bind=\"data.command.title\" class=\"t--view-toolbar-item-title\">\r\n              ${data.command.title}\r\n            </div>\r\n          </div>\r\n        </a>\r\n      </dx-template>\r\n    </dx-widget>\r\n  </div>\r\n  <div class=\"t--view-content\">\r\n    <div class=\"container-fluid\">\r\n      <div class=\"row\">\r\n        <compose\r\n          view-model.ref=\"view.controller\" \r\n          view-model.bind=\"view.moduleId\" \r\n          model.bind=\"view.model\" \r\n          class=\"t--view-content\"></compose>\r\n      </div>\r\n    </div>\r\n  </div>\r\n</template>"; });
+define('text!framework/default-ui/views/container/container.css', ['module'], function(module) { module.exports = ".t--container {\n  display: block;\n  width: 100vw;\n  height: 100vh;\n}\n"; });
+define('text!framework/stack-router/views/stack-router/stack-router.html', ['module'], function(module) { module.exports = "<template class=\"t--stack-router\">\r\n  <require from=\"./stack-router.css\"></require>\r\n  <require from=\"../view/view\"></require>\r\n\r\n  <div \r\n    class=\"t--stack-router-item\" \r\n    class.bind=\"item.className\"\r\n    repeat.for=\"item of router.viewStack\">\r\n    <view view.bind=\"item\" create-toolbar.bind=\"$parent.createToolbar\"></view>\r\n  </div>\r\n</template>"; });
 define('text!framework/default-ui/views/sidebar/sidebar.css', ['module'], function(module) { module.exports = ".t--sidebar {\n  display: block;\n  position: fixed;\n  top: 0;\n  bottom: 0;\n  left: 0;\n  z-index: 10;\n  width: 280px;\n  background-color: #2a2e35;\n}\n.t--sidebar ul {\n  padding: 0;\n  margin: 0;\n  list-style: none;\n}\n.t--sidebar-collapsed .t--sidebar {\n  left: -220px;\n}\n.t--sidebar-header {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  background-color: #262930;\n  color: white;\n  cursor: pointer;\n}\n.t--sidebar-header-title {\n  flex-grow: 1;\n  font-size: 26px;\n  font-weight: 100;\n  padding: 12px;\n}\n.t--sidebar-header-icon {\n  display: flex;\n  width: 60px;\n  align-items: center;\n  justify-content: center;\n}\n.t--sidebar-item a {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  color: lightgray;\n  text-decoration: none;\n}\n.t--sidebar-item a:hover {\n  background-color: #17C4BB;\n  color: white;\n}\n.t--sidebar-item-title {\n  flex-grow: 1;\n  padding: 12px;\n}\n.t--sidebar-item-icon {\n  display: flex;\n  width: 60px;\n  align-items: center;\n  justify-content: center;\n}\n"; });
-define('text!framework/stack-router/views/stack-router/stack-router.css', ['module'], function(module) { module.exports = ".t--stack-router,\n.t--stack-router-item {\n  display: block;\n  height: 100%;\n}\n"; });
+define('text!framework/default-ui/views/header/header.css', ['module'], function(module) { module.exports = ".t--header {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  margin-left: 280px;\n  padding: 0 12px;\n}\n.t--header-flex {\n  display: flex;\n  width: 100%;\n}\n.t--header-title {\n  flex-grow: 1;\n}\n.t--sidebar-collapsed .t--header {\n  margin-left: 60px;\n}\n"; });
 define('text!framework/stack-router/views/view/view.css', ['module'], function(module) { module.exports = ".t--view {\n  display: block;\n  position: relative;\n  height: 100%;\n}\n.t--view-toolbar {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  background-color: #808080;\n  color: white;\n}\n.t--view-toolbar .dx-toolbar {\n  background-color: transparent;\n}\n.t--view-toolbar-title {\n  font-size: 26px;\n  font-weight: 100;\n  color: white;\n  padding: 0 12px;\n}\n.t--view-content {\n  height: 100%;\n  overflow-x: hidden;\n  overflow-y: auto;\n  -webkit-overflow-scrolling: touch;\n}\n.t--view-with-toolbar .t--view-content {\n  height: calc(100% - 60px);\n}\n"; });
+define('text!framework/stack-router/views/stack-router/stack-router.css', ['module'], function(module) { module.exports = ".t--stack-router,\n.t--stack-router-item {\n  display: block;\n  height: 100%;\n}\n"; });
 //# sourceMappingURL=app-bundle.js.map

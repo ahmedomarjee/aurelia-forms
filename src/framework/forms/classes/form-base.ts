@@ -39,8 +39,11 @@ import {
 import {
   FormBaseImport
 } from "./form-base-import";
+import {
+  IExpressionProvider
+} from "../../base/interfaces/expression-provider";
 
-export class FormBase {
+export class FormBase implements IExpressionProvider {
   constructor(
     private formBaseImport: FormBaseImport
   ) {

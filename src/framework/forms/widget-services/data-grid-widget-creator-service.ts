@@ -10,12 +10,16 @@ import {
 import {
   SelectionModeEnum
 } from "../enums/selection-mode-enum";
+import {
+  DataSourceService
+} from "../../base/services/data-source-service";
 import * as WidgetOptions from "../widget-options/export";
 
 @autoinject
 export class DataGridWidgetCreatorService {
   constructor(
-    private baseWidgetCreator: BaseWidgetCreatorService
+    private baseWidgetCreator: BaseWidgetCreatorService,
+    private dataSource: DataSourceService
   ) { }
 
   addDataGrid(form: FormBase, options: WidgetOptions.IDataGridOptions): DevExpress.ui.dxDataGridOptions {
@@ -23,7 +27,7 @@ export class DataGridWidgetCreatorService {
 
     if (options.dataModel) {
       const model = form.models.getInfo(options.dataModel);
-      const dataSource = form.models.createDataSource(model);
+      const dataSource = this.dataSource.createDataSource(form, model);
       dataGridOptions.dataSource = dataSource;
 
       dataGridOptions.remoteOperations = {
