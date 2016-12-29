@@ -6,6 +6,8 @@ import {
 } from "../interfaces/export";
 
 export class CommandService {
+  private isCommandExecuting = false;
+
   isVisible(form: FormBase, command: ICommandData): boolean {
     if (command.isVisible != undefined) {
       return command.isVisible;
@@ -30,6 +32,10 @@ export class CommandService {
   }
 
   execute(form: FormBase, command: ICommandData): boolean  {
+    if (this.isCommandExecuting) {
+      return;
+    }
+
     if (!this.isVisibleAndEnabled(form, command)) {
       return false;
     }
@@ -37,7 +43,19 @@ export class CommandService {
       return false;
     }
 
-    command.execute.bind(form)();
+    this.isCommandExecuting = true;
+    const result = command.execute.bind(form)();
+
+    if (result && result.then && result.catch) {
+      result
+        .catch(() => {
+        })
+        .then(() => {
+          this.isCommandExecuting = false;
+        });
+    } else {
+      this.isCommandExecuting = false;
+    }
     return true;
   }
 }

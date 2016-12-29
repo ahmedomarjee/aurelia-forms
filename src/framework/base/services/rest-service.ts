@@ -1,5 +1,6 @@
 import {
-  autoinject
+  autoinject,
+  computedFrom
 } from "aurelia-framework";
 import {
   HttpClient
@@ -21,6 +22,11 @@ export class RestService {
 
   loadingCount = 0;
   getAuthHeader: {(): any};
+
+    @computedFrom("loadingCount")
+    get isLoading(): boolean {
+      return this.loadingCount > 0;
+    }
 
   delete(options: Interfaces.IRestDeleteOptions): Promise<any> {
     if (!options.id) {

@@ -8,13 +8,7 @@ import {
 
 @autoinject
 export class Loading {
-
   constructor(
     private rest: RestService
   ) { }
-
-  @computedFrom("rest.loadingCount")
-  get isLoading(): boolean {
-    return this.rest.loadingCount > 0;
-  }
 }

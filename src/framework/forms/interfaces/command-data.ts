@@ -12,5 +12,5 @@ export interface ICommandData {
     isEnabledExpression?: string
     isVisible?: boolean;
     isVisibleExpression?: string;
-    execute?: {(): void};
+    execute?: {(): void} | {(): Promise<any>};
 }
