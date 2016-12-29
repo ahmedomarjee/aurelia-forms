@@ -1,6 +1,6 @@
 import {
   autoinject,
-  bindable
+  computedFrom
 } from "aurelia-framework";
 import {
   RouterService
@@ -12,7 +12,19 @@ export class Login {
     private router: RouterService
   ) { }
 
-  @bindable title: string;
+  @computedFrom("router.currentViewItem.controller.currentViewModel.title")
+  get title(): string {
+    if (!this.router.currentViewItem || !this.router.currentViewItem.controller) {
+      return null;
+    }
+
+    const currentViewModel = (<any>this.router.currentViewItem.controller).currentViewModel;
+    if (!currentViewModel) {
+      return;
+    }
+
+    return currentViewModel.title;
+  }
 
   attached() {
     this.router.registerRoutes([

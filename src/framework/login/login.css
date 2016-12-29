@@ -22,10 +22,15 @@
 }
 .t--login-data {
   display: flex;
-  max-width: 350px;
-  margin-top: -25vh;
+  width: 350px;
   align-items: center;
   background-color: #f7f7f7;
+}
+.t--login-data .t--view-content {
+  display: flex;
+  margin-top: -4vh;
+  flex-direction: column;
+  justify-content: center;
 }
 .t--login-logo {
   margin-bottom: 40px;

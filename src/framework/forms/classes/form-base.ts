@@ -2,7 +2,8 @@ import * as Interfaces from "../interfaces/export";
 import {
   BindingEngine,
   Expression,
-  Container
+  Container,
+  TaskQueue
 } from "aurelia-framework";
 import {
   Models
@@ -32,22 +33,28 @@ import {
   CustomEvent
 } from "../../base/export";
 import {
-  IFormAttachedEventArgs
+  IFormAttachedEventArgs,
+  IFormReadyEventArgs
 } from "../event-args/export";
+import {
+  FormBaseImport
+} from "./form-base-import";
 
 export class FormBase {
   constructor(
-    private bindingEngine: BindingEngine,
-    public widgetCreator: WidgetCreatorService,
-    public command: CommandService,
-    public toolbar: ToolbarService,
-    public models: Models,
-    public variables: Variables,
-    public functions: Functions,
-    public commands: Commands,
-    public commandServerData: CommandServerData,
-    public onFormAttached: CustomEvent<IFormAttachedEventArgs>
+    private formBaseImport: FormBaseImport
   ) {
+    this.widgetCreator = formBaseImport.widgetCreator;
+    this.command = formBaseImport.command;
+    this.toolbar = formBaseImport.toolbar;
+    this.models = formBaseImport.models;
+    this.variables = formBaseImport.variables;
+    this.functions = formBaseImport.functions;
+    this.commands = formBaseImport.commands;
+    this.commandServerData = formBaseImport.commandServerData;
+    this.onFormAttached = formBaseImport.onFormAttached;
+    this.onFormReady = formBaseImport.onFormReady;
+
     this.expression = new Map();
 
     this.models.registerForm(this);
@@ -61,12 +68,31 @@ export class FormBase {
   toolbarOptions: DevExpress.ui.dxToolbarOptions;
   title: string;
 
+  widgetCreator: WidgetCreatorService;
+  command: CommandService;
+  toolbar: ToolbarService;
+  models: Models;
+  variables: Variables;
+  functions: Functions;
+  commands: Commands;
+  commandServerData: CommandServerData;
+  onFormAttached: CustomEvent<IFormAttachedEventArgs>;
+  onFormReady: CustomEvent<IFormReadyEventArgs>;
+
   protected readonly expression: Map<string, Expression>;
 
   attached() {
-    return this.onFormAttached.fire({
+    const promise = this.onFormAttached.fire({
       form: this
     });
+
+    this.formBaseImport.taskQueue.queueTask(() => {
+      this.onFormReady.fire({
+        form: this,
+      });
+    });
+
+    return promise;    
   }
   activate(routeInfo: any) {
     if (routeInfo && routeInfo.parameters && routeInfo.parameters.id) {
@@ -76,6 +102,7 @@ export class FormBase {
 
   createObserver(expression: string, action: {(newValue?: any, oldValue?: any): void}, bindingContext?: any): {(): void} {
     return this
+      .formBaseImport
       .bindingEngine
       .expressionObserver(bindingContext || this, expression)
       .subscribe(action)
@@ -85,7 +112,7 @@ export class FormBase {
     let parsed = this.expression.get(expression);
 
     if (!parsed) {
-      parsed = this.bindingEngine.parseExpression(expression);
+      parsed = this.formBaseImport.bindingEngine.parseExpression(expression);
       this.expression.set(expression, parsed);
     }
 

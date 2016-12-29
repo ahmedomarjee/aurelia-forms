@@ -230,6 +230,9 @@ export class SimpleWidgetCreatorService {
     if (options.maxLength) {
       editorOptions.maxLength = options.maxLength;
     }
+    if (options.mode) {
+      editorOptions.mode = options.mode;
+    }
 
     return editorOptions;
   }

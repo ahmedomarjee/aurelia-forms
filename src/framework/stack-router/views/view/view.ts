@@ -13,7 +13,6 @@ export class View {
 
   @bindable createToolbar: boolean = true;
   @bindable view;
-  controller: any;
 
   @computedFrom("createToolbar")
   get className(): string {
@@ -22,12 +21,12 @@ export class View {
     }
   }
 
-  @computedFrom("controller.currentViewModel.toolbarOptions")
+  @computedFrom("view.controller.currentViewModel.toolbarOptions")
   get toolbarOptions(): DevExpress.ui.dxToolbarOptions {
-    if (!this.controller || !this.controller.currentViewModel) {
+    if (!this.view || !this.view.controller || !this.view.controller.currentViewModel) {
       return null;
     }
     
-    return this.controller.currentViewModel.toolbarOptions;
+    return this.view.controller.currentViewModel.toolbarOptions;
   }
 }

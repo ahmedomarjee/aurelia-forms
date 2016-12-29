@@ -27,10 +27,14 @@ export class LoginFuncs {
 
   bind(form: FormBase) {
     this.form = form;
-    this.authorization.openApp();
 
     this.form.onFormAttached.register((r) => {
       this.goToUrlAfterLogin = this.history.getUrl();
+      return Promise.resolve();
+    });
+    this.form.onFormReady.register((r) => {
+      const username: DevExpress.ui.dxTextBox = (<any>this.form).username.instance;
+      username.focus();
       return Promise.resolve();
     });
 

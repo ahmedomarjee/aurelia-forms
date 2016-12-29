@@ -37,7 +37,7 @@ define('framework/stack-router/classes/view-item',["require", "exports", "aureli
         function ViewItem(routeInfo) {
             this.routeInfo = routeInfo;
             this.title = routeInfo.route.title;
-            this.viewModel = routeInfo.route.moduleId;
+            this.moduleId = routeInfo.route.moduleId;
             this.model = routeInfo;
             this.isCurrent = true;
         }
@@ -1793,6 +1793,9 @@ define('framework/forms/widget-services/simple-widget-creator-service',["require
             if (options.maxLength) {
                 editorOptions.maxLength = options.maxLength;
             }
+            if (options.mode) {
+                editorOptions.mode = options.mode;
+            }
             return editorOptions;
         };
         SimpleWidgetCreatorService.prototype.addTextArea = function (form, options) {
@@ -2038,17 +2041,18 @@ define('framework/forms/event-args/export',["require", "exports"], function (req
 define('framework/forms/classes/form-base',["require", "exports"], function (require, exports) {
     "use strict";
     var FormBase = (function () {
-        function FormBase(bindingEngine, widgetCreator, command, toolbar, models, variables, functions, commands, commandServerData, onFormAttached) {
-            this.bindingEngine = bindingEngine;
-            this.widgetCreator = widgetCreator;
-            this.command = command;
-            this.toolbar = toolbar;
-            this.models = models;
-            this.variables = variables;
-            this.functions = functions;
-            this.commands = commands;
-            this.commandServerData = commandServerData;
-            this.onFormAttached = onFormAttached;
+        function FormBase(formBaseImport) {
+            this.formBaseImport = formBaseImport;
+            this.widgetCreator = formBaseImport.widgetCreator;
+            this.command = formBaseImport.command;
+            this.toolbar = formBaseImport.toolbar;
+            this.models = formBaseImport.models;
+            this.variables = formBaseImport.variables;
+            this.functions = formBaseImport.functions;
+            this.commands = formBaseImport.commands;
+            this.commandServerData = formBaseImport.commandServerData;
+            this.onFormAttached = formBaseImport.onFormAttached;
+            this.onFormReady = formBaseImport.onFormReady;
             this.expression = new Map();
             this.models.registerForm(this);
             this.variables.registerForm(this);
@@ -2057,9 +2061,16 @@ define('framework/forms/classes/form-base',["require", "exports"], function (req
             this.toolbarOptions = this.toolbar.createToolbarOptions(this);
         }
         FormBase.prototype.attached = function () {
-            return this.onFormAttached.fire({
+            var _this = this;
+            var promise = this.onFormAttached.fire({
                 form: this
             });
+            this.formBaseImport.taskQueue.queueTask(function () {
+                _this.onFormReady.fire({
+                    form: _this,
+                });
+            });
+            return promise;
         };
         FormBase.prototype.activate = function (routeInfo) {
             if (routeInfo && routeInfo.parameters && routeInfo.parameters.id) {
@@ -2068,6 +2079,7 @@ define('framework/forms/classes/form-base',["require", "exports"], function (req
         };
         FormBase.prototype.createObserver = function (expression, action, bindingContext) {
             return this
+                .formBaseImport
                 .bindingEngine
                 .expressionObserver(bindingContext || this, expression)
                 .subscribe(action)
@@ -2076,7 +2088,7 @@ define('framework/forms/classes/form-base',["require", "exports"], function (req
         FormBase.prototype.evaluateExpression = function (expression, overrideContext) {
             var parsed = this.expression.get(expression);
             if (!parsed) {
-                parsed = this.bindingEngine.parseExpression(expression);
+                parsed = this.formBaseImport.bindingEngine.parseExpression(expression);
                 this.expression.set(expression, parsed);
             }
             return parsed.evaluate({
@@ -2195,6 +2207,13 @@ define('framework/forms/export',["require", "exports", "./classes/export", "./en
     __export(export_2);
     __export(export_3);
     __export(export_4);
+});
+
+define('framework/forms/form-export',["require", "exports", "aurelia-framework", "./classes/form-base", "./classes/form-base-import"], function (require, exports, aurelia_framework_1, form_base_1, form_base_import_1) {
+    "use strict";
+    exports.autoinject = aurelia_framework_1.autoinject;
+    exports.FormBase = form_base_1.FormBase;
+    exports.FormBaseImport = form_base_import_1.FormBaseImport;
 });
 
 define('framework/forms/index',["require", "exports"], function (require, exports) {
@@ -2348,6 +2367,20 @@ define('framework/login/login',["require", "exports", "aurelia-framework", "../s
         function Login(router) {
             this.router = router;
         }
+        Object.defineProperty(Login.prototype, "title", {
+            get: function () {
+                if (!this.router.currentViewItem || !this.router.currentViewItem.controller) {
+                    return null;
+                }
+                var currentViewModel = this.router.currentViewItem.controller.currentViewModel;
+                if (!currentViewModel) {
+                    return;
+                }
+                return currentViewModel.title;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Login.prototype.attached = function () {
             this.router.registerRoutes([
                 {
@@ -2362,9 +2395,10 @@ define('framework/login/login',["require", "exports", "aurelia-framework", "../s
         return Login;
     }());
     __decorate([
-        aurelia_framework_1.bindable,
-        __metadata("design:type", String)
-    ], Login.prototype, "title", void 0);
+        aurelia_framework_1.computedFrom("router.currentViewItem.controller.currentViewModel.title"),
+        __metadata("design:type", String),
+        __metadata("design:paramtypes", [])
+    ], Login.prototype, "title", null);
     Login = __decorate([
         aurelia_framework_1.autoinject,
         __metadata("design:paramtypes", [export_1.RouterService])
@@ -2751,9 +2785,13 @@ define('framework/login/views/login/login-form-funcs',["require", "exports", "au
         LoginFuncs.prototype.bind = function (form) {
             var _this = this;
             this.form = form;
-            this.authorization.openApp();
             this.form.onFormAttached.register(function (r) {
                 _this.goToUrlAfterLogin = _this.history.getUrl();
+                return Promise.resolve();
+            });
+            this.form.onFormReady.register(function (r) {
+                var username = _this.form.username.instance;
+                username.focus();
                 return Promise.resolve();
             });
             form.models.data.$m_login = {
@@ -2784,13 +2822,14 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-define('framework/login/views/login/login-form',["require", "exports", "aurelia-framework", "../../../forms/classes/form-base", "aurelia-framework", "../../../forms/widget-services/widget-creator-service", "../../../forms/services/command-service", "../../../forms/services/toolbar-service", "../../../forms/classes/models", "../../../forms/classes/variables", "../../../forms/classes/functions", "../../../forms/classes/commands", "../../../forms/classes/command-server-data", "../../../base/classes/custom-event", "./login-form-funcs"], function (require, exports, aurelia_framework_1, form_base_1, aurelia_framework_2, widget_creator_service_1, command_service_1, toolbar_service_1, models_1, variables_1, functions_1, commands_1, command_server_data_1, custom_event_1, login_form_funcs_1) {
+define('framework/login/views/login/login-form',["require", "exports", "../../../forms/form-export", "./login-form-funcs"], function (require, exports, fwx, login_form_funcs_1) {
     "use strict";
-    var LoginDataForm = (function (_super) {
-        __extends(LoginDataForm, _super);
-        function LoginDataForm(bindingEngine, widgetCreator, command, toolbar, models, variables, functions, commands, commandServerData, onFormAttached, $f) {
-            var _this = _super.call(this, bindingEngine, widgetCreator, command, toolbar, models, variables, functions, commands, commandServerData, onFormAttached) || this;
+    var LoginForm = (function (_super) {
+        __extends(LoginForm, _super);
+        function LoginForm(formBaseImport, $f) {
+            var _this = _super.call(this, formBaseImport) || this;
             _this.$f = $f;
+            _this.title = "Anmeldedaten";
             _this.addModel({
                 "id": "$m_login",
                 "filters": []
@@ -2804,13 +2843,14 @@ define('framework/login/views/login/login-form',["require", "exports", "aurelia-
                     "bindToFQ": "models.data.$m_login.Username"
                 },
                 "validationRules": [],
-                "id": "idca16b7abb289497a948cadaa59744b2a",
+                "id": "username",
                 "options": {
-                    "optionsName": "idca16b7abb289497a948cadaa59744b2aOptions",
-                    "optionsNameFQ": "idca16b7abb289497a948cadaa59744b2aOptions"
+                    "optionsName": "usernameOptions",
+                    "optionsNameFQ": "usernameOptions"
                 }
             });
             _this.widgetCreator.addTextBox(_this, {
+                "mode": "password",
                 "caption": "Passwort",
                 "binding": {
                     "dataContext": "$m_login",
@@ -2818,10 +2858,10 @@ define('framework/login/views/login/login-form',["require", "exports", "aurelia-
                     "bindToFQ": "models.data.$m_login.Password"
                 },
                 "validationRules": [],
-                "id": "id1fbe5b172d104e3cbc9c1b61a38e76a2",
+                "id": "wd1",
                 "options": {
-                    "optionsName": "id1fbe5b172d104e3cbc9c1b61a38e76a2Options",
-                    "optionsNameFQ": "id1fbe5b172d104e3cbc9c1b61a38e76a2Options"
+                    "optionsName": "wd1Options",
+                    "optionsNameFQ": "wd1Options"
                 }
             });
             _this.widgetCreator.addCheckBox(_this, {
@@ -2832,17 +2872,17 @@ define('framework/login/views/login/login-form',["require", "exports", "aurelia-
                     "bindToFQ": "models.data.$m_login.StayLoggedOn"
                 },
                 "validationRules": [],
-                "id": "idf02276bfd9234915915c65c09390c499",
+                "id": "wd2",
                 "options": {
-                    "optionsName": "idf02276bfd9234915915c65c09390c499Options",
-                    "optionsNameFQ": "idf02276bfd9234915915c65c09390c499Options"
+                    "optionsName": "wd2Options",
+                    "optionsNameFQ": "wd2Options"
                 }
             });
             _this.widgetCreator.addCommand(_this, {
-                "id": "ida671bfa0bc6d40299ab7046611179638",
+                "id": "wd3",
                 "options": {
-                    "optionsName": "ida671bfa0bc6d40299ab7046611179638Options",
-                    "optionsNameFQ": "ida671bfa0bc6d40299ab7046611179638Options"
+                    "optionsName": "wd3Options",
+                    "optionsNameFQ": "wd3Options"
                 },
                 "binding": {
                     "bindTo": "$f.loginCommand",
@@ -2852,155 +2892,13 @@ define('framework/login/views/login/login-form',["require", "exports", "aurelia-
             });
             return _this;
         }
-        return LoginDataForm;
-    }(form_base_1.FormBase));
-    LoginDataForm = __decorate([
-        aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [aurelia_framework_2.BindingEngine, widget_creator_service_1.WidgetCreatorService, command_service_1.CommandService, toolbar_service_1.ToolbarService, models_1.Models, variables_1.Variables, functions_1.Functions, commands_1.Commands, command_server_data_1.CommandServerData, custom_event_1.CustomEvent, login_form_funcs_1.LoginFuncs])
-    ], LoginDataForm);
-    exports.LoginDataForm = LoginDataForm;
-});
-
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/security/views/authgroup/authgroup-edit-form',["require", "exports", "aurelia-framework", "../../../forms/classes/form-base", "aurelia-framework", "../../../forms/widget-services/widget-creator-service", "../../../forms/services/command-service", "../../../forms/services/toolbar-service", "../../../forms/classes/models", "../../../forms/classes/variables", "../../../forms/classes/functions", "../../../forms/classes/commands", "../../../forms/classes/command-server-data", "../../../base/classes/custom-event"], function (require, exports, aurelia_framework_1, form_base_1, aurelia_framework_2, widget_creator_service_1, command_service_1, toolbar_service_1, models_1, variables_1, functions_1, commands_1, command_server_data_1, custom_event_1) {
-    "use strict";
-    var AuthgroupEditForm = (function (_super) {
-        __extends(AuthgroupEditForm, _super);
-        function AuthgroupEditForm(bindingEngine, widgetCreator, command, toolbar, models, variables, functions, commands, commandServerData, onFormAttached) {
-            var _this = _super.call(this, bindingEngine, widgetCreator, command, toolbar, models, variables, functions, commands, commandServerData, onFormAttached) || this;
-            _this.addModel({
-                "id": "$m_A",
-                "webApiAction": "base/Security/Authgroup",
-                "key": "variables.data.$id",
-                "keyProperty": "Id",
-                "postOnSave": true,
-                "isMain": true,
-                "filters": []
-            });
-            _this.widgetCreator.addTextBox(_this, {
-                "caption": "Bezeichnung",
-                "binding": {
-                    "dataContext": "$m_A",
-                    "bindTo": "Name",
-                    "bindToFQ": "models.data.$m_A.Name"
-                },
-                "validationRules": [],
-                "id": "idc2102f10fd6d473c85ef52abb6c16aed",
-                "options": {
-                    "optionsName": "idc2102f10fd6d473c85ef52abb6c16aedOptions",
-                    "optionsNameFQ": "idc2102f10fd6d473c85ef52abb6c16aedOptions"
-                }
-            });
-            _this.widgetCreator.addSelectBox(_this, {
-                "idSelect": "mandator",
-                "caption": "Mandant",
-                "binding": {
-                    "dataContext": "$m_A",
-                    "bindTo": "IdMandator",
-                    "bindToFQ": "models.data.$m_A.IdMandator"
-                },
-                "validationRules": [],
-                "id": "ida4592fc6512745da923694bfae480b25",
-                "options": {
-                    "optionsName": "ida4592fc6512745da923694bfae480b25Options",
-                    "optionsNameFQ": "ida4592fc6512745da923694bfae480b25Options"
-                }
-            }, {
-                "id": "mandator",
-                "elementName": "select-box",
-                "valueMember": "Id",
-                "displayMember": "Name",
-                "action": "base/Security/Mandator",
-                "columns": ["Name", "Id"]
-            });
-            return _this;
-        }
-        return AuthgroupEditForm;
-    }(form_base_1.FormBase));
-    AuthgroupEditForm = __decorate([
-        aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [aurelia_framework_2.BindingEngine, widget_creator_service_1.WidgetCreatorService, command_service_1.CommandService, toolbar_service_1.ToolbarService, models_1.Models, variables_1.Variables, functions_1.Functions, commands_1.Commands, command_server_data_1.CommandServerData, custom_event_1.CustomEvent])
-    ], AuthgroupEditForm);
-    exports.AuthgroupEditForm = AuthgroupEditForm;
-});
-
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/security/views/authgroup/authgroup-list-form',["require", "exports", "aurelia-framework", "../../../forms/classes/form-base", "aurelia-framework", "../../../forms/widget-services/widget-creator-service", "../../../forms/services/command-service", "../../../forms/services/toolbar-service", "../../../forms/classes/models", "../../../forms/classes/variables", "../../../forms/classes/functions", "../../../forms/classes/commands", "../../../forms/classes/command-server-data", "../../../base/classes/custom-event"], function (require, exports, aurelia_framework_1, form_base_1, aurelia_framework_2, widget_creator_service_1, command_service_1, toolbar_service_1, models_1, variables_1, functions_1, commands_1, command_server_data_1, custom_event_1) {
-    "use strict";
-    var AuthgroupListForm = (function (_super) {
-        __extends(AuthgroupListForm, _super);
-        function AuthgroupListForm(bindingEngine, widgetCreator, command, toolbar, models, variables, functions, commands, commandServerData, onFormAttached) {
-            var _this = _super.call(this, bindingEngine, widgetCreator, command, toolbar, models, variables, functions, commands, commandServerData, onFormAttached) || this;
-            _this.addModel({
-                "id": "$m_A",
-                "webApiAction": "base/Security/Authgroup",
-                "webApiExpand": {
-                    "Mandator": null
-                },
-                "keyProperty": "Id",
-                "filters": []
-            });
-            _this.widgetCreator.addDataGrid(_this, {
-                "columns": [{
-                        "bindTo": "Name",
-                        "sortIndex": 0,
-                        "sortOrder": "asc"
-                    }, {
-                        "caption": "Mandant",
-                        "bindTo": "Mandator.Name"
-                    }],
-                "binding": {
-                    "dataContext": "$m_A",
-                    "bindToFQ": "models.data.$m_A."
-                },
-                "dataModel": "$m_A",
-                "editUrl": "security/authgroup",
-                "addShortscuts": true,
-                "isMainList": true,
-                "edits": [],
-                "filters": [],
-                "commands": [],
-                "id": "idc3891eded234452db40c6fa6e07e8e91",
-                "options": {
-                    "optionsName": "idc3891eded234452db40c6fa6e07e8e91Options",
-                    "optionsNameFQ": "idc3891eded234452db40c6fa6e07e8e91Options"
-                }
-            });
-            return _this;
-        }
-        return AuthgroupListForm;
-    }(form_base_1.FormBase));
-    AuthgroupListForm = __decorate([
-        aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [aurelia_framework_2.BindingEngine, widget_creator_service_1.WidgetCreatorService, command_service_1.CommandService, toolbar_service_1.ToolbarService, models_1.Models, variables_1.Variables, functions_1.Functions, commands_1.Commands, command_server_data_1.CommandServerData, custom_event_1.CustomEvent])
-    ], AuthgroupListForm);
-    exports.AuthgroupListForm = AuthgroupListForm;
+        return LoginForm;
+    }(fwx.FormBase));
+    LoginForm = __decorate([
+        fwx.autoinject,
+        __metadata("design:paramtypes", [fwx.FormBaseImport, login_form_funcs_1.LoginFuncs])
+    ], LoginForm);
+    exports.LoginForm = LoginForm;
 });
 
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -3044,6 +2942,212 @@ define('framework/stack-router/attributes/stack-router-link/stack-router-link',[
             history_service_1.HistoryService])
     ], StackRouterLinkCustomAttribute);
     exports.StackRouterLinkCustomAttribute = StackRouterLinkCustomAttribute;
+});
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+define('framework/security/views/authgroup/authgroup-edit-form',["require", "exports", "../../../forms/form-export"], function (require, exports, fwx) {
+    "use strict";
+    var AuthgroupEditForm = (function (_super) {
+        __extends(AuthgroupEditForm, _super);
+        function AuthgroupEditForm(formBaseImport) {
+            var _this = _super.call(this, formBaseImport) || this;
+            _this.title = "";
+            _this.addModel({
+                "id": "$m_A",
+                "webApiAction": "base/Security/Authgroup",
+                "key": "variables.data.$id",
+                "keyProperty": "Id",
+                "postOnSave": true,
+                "isMain": true,
+                "filters": []
+            });
+            _this.widgetCreator.addTextBox(_this, {
+                "caption": "Bezeichnung",
+                "binding": {
+                    "dataContext": "$m_A",
+                    "bindTo": "Name",
+                    "bindToFQ": "models.data.$m_A.Name"
+                },
+                "validationRules": [],
+                "id": "wd1",
+                "options": {
+                    "optionsName": "wd1Options",
+                    "optionsNameFQ": "wd1Options"
+                }
+            });
+            _this.widgetCreator.addSelectBox(_this, {
+                "idSelect": "mandator",
+                "caption": "Mandant",
+                "binding": {
+                    "dataContext": "$m_A",
+                    "bindTo": "IdMandator",
+                    "bindToFQ": "models.data.$m_A.IdMandator"
+                },
+                "validationRules": [],
+                "id": "wd2",
+                "options": {
+                    "optionsName": "wd2Options",
+                    "optionsNameFQ": "wd2Options"
+                }
+            }, {
+                "id": "mandator",
+                "elementName": "select-box",
+                "valueMember": "Id",
+                "displayMember": "Name",
+                "action": "base/Security/Mandator",
+                "columns": ["Name", "Id"]
+            });
+            return _this;
+        }
+        return AuthgroupEditForm;
+    }(fwx.FormBase));
+    AuthgroupEditForm = __decorate([
+        fwx.autoinject,
+        __metadata("design:paramtypes", [fwx.FormBaseImport])
+    ], AuthgroupEditForm);
+    exports.AuthgroupEditForm = AuthgroupEditForm;
+});
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+define('framework/security/views/authgroup/authgroup-list-form',["require", "exports", "../../../forms/form-export"], function (require, exports, fwx) {
+    "use strict";
+    var AuthgroupListForm = (function (_super) {
+        __extends(AuthgroupListForm, _super);
+        function AuthgroupListForm(formBaseImport) {
+            var _this = _super.call(this, formBaseImport) || this;
+            _this.title = "";
+            _this.addModel({
+                "id": "$m_A",
+                "webApiAction": "base/Security/Authgroup",
+                "webApiExpand": {
+                    "Mandator": null
+                },
+                "keyProperty": "Id",
+                "filters": []
+            });
+            _this.widgetCreator.addDataGrid(_this, {
+                "columns": [{
+                        "bindTo": "Name",
+                        "sortIndex": 0,
+                        "sortOrder": "asc"
+                    }, {
+                        "caption": "Mandant",
+                        "bindTo": "Mandator.Name"
+                    }],
+                "binding": {
+                    "dataContext": "$m_A",
+                    "bindToFQ": "models.data.$m_A."
+                },
+                "dataModel": "$m_A",
+                "editUrl": "security/authgroup",
+                "addShortscuts": true,
+                "isMainList": true,
+                "edits": [],
+                "filters": [],
+                "commands": [],
+                "id": "wd1",
+                "options": {
+                    "optionsName": "wd1Options",
+                    "optionsNameFQ": "wd1Options"
+                }
+            });
+            return _this;
+        }
+        return AuthgroupListForm;
+    }(fwx.FormBase));
+    AuthgroupListForm = __decorate([
+        fwx.autoinject,
+        __metadata("design:paramtypes", [fwx.FormBaseImport])
+    ], AuthgroupListForm);
+    exports.AuthgroupListForm = AuthgroupListForm;
+});
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+define('framework/stack-router/views/view/view',["require", "exports", "aurelia-framework"], function (require, exports, aurelia_framework_1) {
+    "use strict";
+    var View = (function () {
+        function View(bindingEngine) {
+            this.bindingEngine = bindingEngine;
+            this.createToolbar = true;
+        }
+        Object.defineProperty(View.prototype, "className", {
+            get: function () {
+                if (this.createToolbar) {
+                    return "t--view-with-toolbar";
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(View.prototype, "toolbarOptions", {
+            get: function () {
+                if (!this.view || !this.view.controller || !this.view.controller.currentViewModel) {
+                    return null;
+                }
+                return this.view.controller.currentViewModel.toolbarOptions;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return View;
+    }());
+    __decorate([
+        aurelia_framework_1.bindable,
+        __metadata("design:type", Boolean)
+    ], View.prototype, "createToolbar", void 0);
+    __decorate([
+        aurelia_framework_1.bindable,
+        __metadata("design:type", Object)
+    ], View.prototype, "view", void 0);
+    __decorate([
+        aurelia_framework_1.computedFrom("createToolbar"),
+        __metadata("design:type", String),
+        __metadata("design:paramtypes", [])
+    ], View.prototype, "className", null);
+    __decorate([
+        aurelia_framework_1.computedFrom("view.controller.currentViewModel.toolbarOptions"),
+        __metadata("design:type", Object),
+        __metadata("design:paramtypes", [])
+    ], View.prototype, "toolbarOptions", null);
+    View = __decorate([
+        aurelia_framework_1.autoinject,
+        __metadata("design:paramtypes", [aurelia_framework_1.BindingEngine])
+    ], View);
+    exports.View = View;
 });
 
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -3098,79 +3202,67 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-define('framework/stack-router/views/view/view',["require", "exports", "aurelia-framework"], function (require, exports, aurelia_framework_1) {
+define('framework/forms/classes/form-base-import',["require", "exports", "aurelia-framework", "./models", "./functions", "./commands", "./variables", "./command-server-data", "../services/toolbar-service", "../services/command-service", "../widget-services/widget-creator-service", "../../base/export"], function (require, exports, aurelia_framework_1, models_1, functions_1, commands_1, variables_1, command_server_data_1, toolbar_service_1, command_service_1, widget_creator_service_1, export_1) {
     "use strict";
-    var View = (function () {
-        function View(bindingEngine) {
+    var FormBaseImport = (function () {
+        function FormBaseImport(bindingEngine, taskQueue, widgetCreator, command, toolbar, models, variables, functions, commands, commandServerData, onFormAttached, onFormReady) {
             this.bindingEngine = bindingEngine;
-            this.createToolbar = true;
+            this.taskQueue = taskQueue;
+            this.widgetCreator = widgetCreator;
+            this.command = command;
+            this.toolbar = toolbar;
+            this.models = models;
+            this.variables = variables;
+            this.functions = functions;
+            this.commands = commands;
+            this.commandServerData = commandServerData;
+            this.onFormAttached = onFormAttached;
+            this.onFormReady = onFormReady;
         }
-        Object.defineProperty(View.prototype, "className", {
-            get: function () {
-                if (this.createToolbar) {
-                    return "t--view-with-toolbar";
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(View.prototype, "toolbarOptions", {
-            get: function () {
-                if (!this.controller || !this.controller.currentViewModel) {
-                    return null;
-                }
-                return this.controller.currentViewModel.toolbarOptions;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return View;
+        return FormBaseImport;
     }());
-    __decorate([
-        aurelia_framework_1.bindable,
-        __metadata("design:type", Boolean)
-    ], View.prototype, "createToolbar", void 0);
-    __decorate([
-        aurelia_framework_1.bindable,
-        __metadata("design:type", Object)
-    ], View.prototype, "view", void 0);
-    __decorate([
-        aurelia_framework_1.computedFrom("createToolbar"),
-        __metadata("design:type", String),
-        __metadata("design:paramtypes", [])
-    ], View.prototype, "className", null);
-    __decorate([
-        aurelia_framework_1.computedFrom("controller.currentViewModel.toolbarOptions"),
-        __metadata("design:type", Object),
-        __metadata("design:paramtypes", [])
-    ], View.prototype, "toolbarOptions", null);
-    View = __decorate([
-        aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [aurelia_framework_1.BindingEngine])
-    ], View);
-    exports.View = View;
+    FormBaseImport = __decorate([
+        aurelia_framework_1.transient(),
+        __metadata("design:paramtypes", [aurelia_framework_1.BindingEngine,
+            aurelia_framework_1.TaskQueue,
+            widget_creator_service_1.WidgetCreatorService,
+            command_service_1.CommandService,
+            toolbar_service_1.ToolbarService,
+            models_1.Models,
+            variables_1.Variables,
+            functions_1.Functions,
+            commands_1.Commands,
+            command_server_data_1.CommandServerData,
+            export_1.CustomEvent,
+            export_1.CustomEvent])
+    ], FormBaseImport);
+    exports.FormBaseImport = FormBaseImport;
 });
 
-define('text!app.html', ['module'], function(module) { module.exports = "<template>\n  <require from=\"./framework/default-ui/views/container/container\"></require>\n  <container></container>\n</template>\n"; });
-define('text!framework/login/login.html', ['module'], function(module) { module.exports = "<template>\n  <require from=\"../stack-router/views/stack-router/stack-router\"></require>\n  <require from=\"./login.css\"></require>\n\n  <div class=\"t--login-container\">\n    <div class=\"t--login-image\">\n      <div class=\"t--login-banner\">\n        ${title}\n      </div>\n    </div>  \n    <div class=\"t--login-data\">\n      <stack-router create-toolbar.bind=\"false\"></stack-router>\n    </div>\n  </div>\n</template>"; });
-define('text!framework/dx/elements/dx-widget.html', ['module'], function(module) { module.exports = "<template class=\"dx-widget\">\n</template>"; });
-define('text!framework/default-ui/views/container/container.html', ['module'], function(module) { module.exports = "<template class=\"t--container\" class.bind=\"className\">\n  <require from=\"./container.css\"></require>\n  \n  <require from=\"../sidebar/sidebar\"></require>\n  <require from=\"../header/header\"></require>\n  <require from=\"../content/content\"></require>\n\n  <sidebar></sidebar>\n  <header></header>\n  <content></content>\n</template>\n"; });
-define('text!framework/login/login.css', ['module'], function(module) { module.exports = ".t--login-container {\n  display: flex;\n  height: 100vh;\n  width: 100vw;\n}\n.t--login-image {\n  position: relative;\n  flex-grow: 1;\n  background-image: url('http://www.aesthetic-lounge.de/wp-content/uploads/2015/02/Mann-_nr_2.jpg');\n  background-position: center center;\n  background-size: cover;\n  border-right: 1px solid lightgray;\n}\n.t--login-banner {\n  position: absolute;\n  padding: 12px 36px;\n  bottom: 30vh;\n  font-size: 60px;\n  font-weight: 100;\n  color: white;\n  background-color: rgba(0, 0, 0, 0.3);\n}\n.t--login-data {\n  display: flex;\n  max-width: 350px;\n  align-items: center;\n  background-color: #f7f7f7;\n}\n.t--login-data .t--view-content {\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n}\n.t--login-logo {\n  margin-bottom: 40px;\n  text-align: center;\n}\n.t--login-logo img {\n  max-width: 200px;\n}\n"; });
-define('text!framework/default-ui/views/header/header.html', ['module'], function(module) { module.exports = "<template class=\"t--header\">\n  <require from=\"./header.css\"></require>\n\n  <div class=\"t--header-flex\">\n    <div class=\"t--header-title\">\n      ${router.currentViewItem.title}\n    </div>\n    <div class=\"t--header-options\">\n      <a href=\"#\" click.delegate=\"logout()\">Abmelden</a>\n    </div>\n  </div>\n</template>"; });
-define('text!framework/default-ui/views/content/content.html', ['module'], function(module) { module.exports = "<template class=\"t--content\">\n  <require from=\"./content.css\"></require>\n\n  <stack-router></stack-router>\n</template>\n"; });
+define('framework/forms/event-args/form-ready',["require", "exports"], function (require, exports) {
+    "use strict";
+});
+
+define('text!app.html', ['module'], function(module) { module.exports = "<template>\r\n  <require from=\"./framework/default-ui/views/container/container\"></require>\r\n  <container></container>\r\n</template>\r\n"; });
+define('text!framework/login/login.html', ['module'], function(module) { module.exports = "<template>\r\n  <require from=\"../stack-router/views/stack-router/stack-router\"></require>\r\n  <require from=\"./login.css\"></require>\r\n\r\n  <div class=\"t--login-container\">\r\n    <div class=\"t--login-image\">\r\n      <div class=\"t--login-banner\">\r\n        ${title}\r\n      </div>\r\n    </div>  \r\n    <div class=\"t--login-data\">\r\n      <stack-router create-toolbar.bind=\"false\"></stack-router>\r\n    </div>\r\n  </div>\r\n</template>"; });
+define('text!framework/dx/elements/dx-widget.html', ['module'], function(module) { module.exports = "<template class=\"dx-widget\">\r\n</template>"; });
+define('text!framework/default-ui/views/container/container.html', ['module'], function(module) { module.exports = "<template class=\"t--container\" class.bind=\"className\">\r\n  <require from=\"./container.css\"></require>\r\n  \r\n  <require from=\"../sidebar/sidebar\"></require>\r\n  <require from=\"../header/header\"></require>\r\n  <require from=\"../content/content\"></require>\r\n\r\n  <sidebar></sidebar>\r\n  <header></header>\r\n  <content></content>\r\n</template>\r\n"; });
+define('text!framework/login/login.css', ['module'], function(module) { module.exports = ".t--login-container {\n  display: flex;\n  height: 100vh;\n  width: 100vw;\n}\n.t--login-image {\n  position: relative;\n  flex-grow: 1;\n  background-image: url('http://www.aesthetic-lounge.de/wp-content/uploads/2015/02/Mann-_nr_2.jpg');\n  background-position: center center;\n  background-size: cover;\n  border-right: 1px solid lightgray;\n}\n.t--login-banner {\n  position: absolute;\n  padding: 12px 36px;\n  bottom: 30vh;\n  font-size: 60px;\n  font-weight: 100;\n  color: white;\n  background-color: rgba(0, 0, 0, 0.3);\n}\n.t--login-data {\n  display: flex;\n  width: 350px;\n  align-items: center;\n  background-color: #f7f7f7;\n}\n.t--login-data .t--view-content {\n  display: flex;\n  margin-top: -4vh;\n  flex-direction: column;\n  justify-content: center;\n}\n.t--login-logo {\n  margin-bottom: 40px;\n  text-align: center;\n}\n.t--login-logo img {\n  max-width: 200px;\n}\n"; });
+define('text!framework/default-ui/views/content/content.html', ['module'], function(module) { module.exports = "<template class=\"t--content\">\r\n  <require from=\"./content.css\"></require>\r\n\r\n  <stack-router></stack-router>\r\n</template>\r\n"; });
+define('text!framework/default-ui/views/header/header.html', ['module'], function(module) { module.exports = "<template class=\"t--header\">\r\n  <require from=\"./header.css\"></require>\r\n\r\n  <div class=\"t--header-flex\">\r\n    <div class=\"t--header-title\">\r\n      ${router.currentViewItem.title}\r\n    </div>\r\n    <div class=\"t--header-options\">\r\n      <a href=\"#\" click.delegate=\"logout()\">Abmelden</a>\r\n    </div>\r\n  </div>\r\n</template>"; });
 define('text!framework/base/styles/styles.css', ['module'], function(module) { module.exports = "body {\n  margin: 0;\n  padding: 0;\n  font-family: \"Helvetica Neue\", \"Segoe UI\", Helvetica, Verdana, sans-serif;\n  font-size: 12px;\n}\n.t--margin-top {\n  margin-top: 12px;\n}\n.t--editor-caption {\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n.t--cursor-pointer {\n  cursor: pointer;\n}\n.t--invisible-submit {\n  height: 0;\n  width: 0;\n  margin: 0;\n  padding: 0;\n  border: 0;\n}\n"; });
 define('text!framework/base/styles/variables.css', ['module'], function(module) { module.exports = ""; });
-define('text!framework/default-ui/views/sidebar/sidebar.html', ['module'], function(module) { module.exports = "<template class=\"t--sidebar\">\n  <require from=\"./sidebar.css\"></require>\n\n  <div class=\"t--sidebar-header\" click.delegate=\"onHeaderClicked()\">\n    <div class=\"t--sidebar-header-title\">\n      Navigation\n    </div>\n    <div class=\"t--sidebar-header-icon\">\n      <i class=\"fa fa-${headerIcon}\"></i>\n    </div>\n  </div>\n\n  <ul>\n    <li\n      class=\"t--sidebar-item\" \n      repeat.for=\"route of router.navigationRoutes\">\n      <a href=\"#${route.route}\" stack-router-link=\"clear-stack.bind: true\">\n        <span class=\"t--sidebar-item-title\">\n          ${route.title}\n        </span>\n        <span class=\"t--sidebar-item-icon\" if.bind=\"route.icon\">\n          <i class=\"fa fa-${route.icon}\"></i>\n        </span>\n      </a>\n    </li>\n  </ul>\n</template>\n"; });
-define('text!framework/login/views/login/login-form.html', ['module'], function(module) { module.exports = "<template>\n    <div class=\"t--margin-top col-xs-12 t--login-logo\">\n        <img class=\"t--form-element-image\" src=\"http://2014.erp-future.com/sites/2014.erp-future.com/files/1_business/Logo_U_TIP.png\"></img>\n    </div>\n    <form submit.delegate=\"submitForm('functions.$f.loginCommand')\">\n        <button class=\"t--invisible-submit\" type=\"submit\"></button>\n        <div class=\"col-xs-12\">\n            <div>Geben Sie hier Ihren Benutzernamen und Passwort ein und klicken Sie auf \"Anmelden\".</div>\n        </div>\n        <div class=\"t--margin-top col-xs-12\">\n            <div class=\"t--editor-caption\">Benutzername</div>\n            <dx-widget name=\"dxTextBox\" options.bind=\"idca16b7abb289497a948cadaa59744b2aOptions\"></dx-widget>\n        </div>\n        <div class=\"t--margin-top col-xs-12\">\n            <div class=\"t--editor-caption\">Passwort</div>\n            <dx-widget name=\"dxTextBox\" options.bind=\"id1fbe5b172d104e3cbc9c1b61a38e76a2Options\"></dx-widget>\n        </div>\n        <div class=\"t--margin-top col-xs-12\">\n            <div class=\"t--editor-caption\">&nbsp;</div>\n            <dx-widget name=\"dxCheckBox\" options.bind=\"idf02276bfd9234915915c65c09390c499Options\"></dx-widget>\n        </div>\n        <div class=\"t--margin-top col-xs-12\">\n            <div class=\"t--editor-caption\">&nbsp;</div>\n            <dx-widget name=\"dxButton\" options.bind=\"ida671bfa0bc6d40299ab7046611179638Options\"></dx-widget>\n        </div>\n    </form>\n</template>"; });
+define('text!framework/default-ui/views/sidebar/sidebar.html', ['module'], function(module) { module.exports = "<template class=\"t--sidebar\">\r\n  <require from=\"./sidebar.css\"></require>\r\n\r\n  <div class=\"t--sidebar-header\" click.delegate=\"onHeaderClicked()\">\r\n    <div class=\"t--sidebar-header-title\">\r\n      Navigation\r\n    </div>\r\n    <div class=\"t--sidebar-header-icon\">\r\n      <i class=\"fa fa-${headerIcon}\"></i>\r\n    </div>\r\n  </div>\r\n\r\n  <ul>\r\n    <li\r\n      class=\"t--sidebar-item\" \r\n      repeat.for=\"route of router.navigationRoutes\">\r\n      <a href=\"#${route.route}\" stack-router-link=\"clear-stack.bind: true\">\r\n        <span class=\"t--sidebar-item-title\">\r\n          ${route.title}\r\n        </span>\r\n        <span class=\"t--sidebar-item-icon\" if.bind=\"route.icon\">\r\n          <i class=\"fa fa-${route.icon}\"></i>\r\n        </span>\r\n      </a>\r\n    </li>\r\n  </ul>\r\n</template>\r\n"; });
+define('text!framework/login/views/login/login-form.html', ['module'], function(module) { module.exports = "<template>\n    <div class=\"t--margin-top col-xs-12 t--login-logo\">\n        <img class=\"t--form-element-image\" src=\"http://2014.erp-future.com/sites/2014.erp-future.com/files/1_business/Logo_U_TIP.png\"></img>\n    </div>\n    <form submit.delegate=\"submitForm('functions.$f.loginCommand')\">\n        <button class=\"t--invisible-submit\" type=\"submit\"></button>\n        <div class=\"col-xs-12\">\n            <div>Geben Sie hier Ihren Benutzernamen und Passwort ein und klicken Sie auf \"Anmelden\".</div>\n        </div>\n        <div class=\"t--margin-top col-xs-12\">\n            <div class=\"t--editor-caption\">Benutzername</div>\n            <dx-widget name=\"dxTextBox\" options.bind=\"usernameOptions\" view-model.ref=\"username\"></dx-widget>\n        </div>\n        <div class=\"t--margin-top col-xs-12\">\n            <div class=\"t--editor-caption\">Passwort</div>\n            <dx-widget name=\"dxTextBox\" options.bind=\"wd1Options\"></dx-widget>\n        </div>\n        <div class=\"t--margin-top col-xs-12\">\n            <div class=\"t--editor-caption\">&nbsp;</div>\n            <dx-widget name=\"dxCheckBox\" options.bind=\"wd2Options\"></dx-widget>\n        </div>\n        <div class=\"t--margin-top col-xs-12\">\n            <div class=\"t--editor-caption\">&nbsp;</div>\n            <dx-widget name=\"dxButton\" options.bind=\"wd3Options\"></dx-widget>\n        </div>\n    </form>\n</template>"; });
+define('text!framework/security/views/authgroup/authgroup-edit-form.html', ['module'], function(module) { module.exports = "<template>\n    <div class=\"t--margin-top col-xs-12 col-md-6\">\n        <div class=\"t--editor-caption\">Bezeichnung</div>\n        <dx-widget name=\"dxTextBox\" options.bind=\"wd1Options\"></dx-widget>\n    </div>\n    <div class=\"t--margin-top col-xs-12 col-md-6\">\n        <div class=\"t--editor-caption\">Mandant</div>\n        <dx-widget name=\"dxSelectBox\" options.bind=\"wd2Options\"></dx-widget>\n    </div>\n</template>"; });
 define('text!framework/forms/styles/styles.css', ['module'], function(module) { module.exports = ".t--form-element-flex-box {\n  display: flex;\n}\n.t--form-element-flex-box-with-padding > *:not(:first-child) {\n  margin-left: 12px;\n}\n.t--form-element-image-inline {\n  background-size: contain;\n  background-position: center center;\n  background-repeat: no-repeat;\n}\n.t--form-element-image {\n  max-width: 100%;\n}\n"; });
-define('text!framework/security/views/authgroup/authgroup-edit-form.html', ['module'], function(module) { module.exports = "<template>\n    <div class=\"t--margin-top col-xs-12 col-md-6\">\n        <div class=\"t--editor-caption\">Bezeichnung</div>\n        <dx-widget name=\"dxTextBox\" options.bind=\"idc2102f10fd6d473c85ef52abb6c16aedOptions\"></dx-widget>\n    </div>\n    <div class=\"t--margin-top col-xs-12 col-md-6\">\n        <div class=\"t--editor-caption\">Mandant</div>\n        <dx-widget name=\"dxSelectBox\" options.bind=\"ida4592fc6512745da923694bfae480b25Options\"></dx-widget>\n    </div>\n</template>"; });
-define('text!framework/security/views/authgroup/authgroup-list-form.html', ['module'], function(module) { module.exports = "<template>\n    <div class=\"col-xs-12\">\n        <dx-widget name=\"dxDataGrid\" options.bind=\"idc3891eded234452db40c6fa6e07e8e91Options\"></dx-widget>\n    </div>\n</template>"; });
-define('text!framework/stack-router/views/view/view.html', ['module'], function(module) { module.exports = "<template class=\"t--view\" class.bind=\"className\">\n  <require from=\"./view.css\"></require>\n\n  <div class=\"t--view-toolbar\" if.bind=\"createToolbar\">\n    <dx-widget if.bind=\"toolbarOptions\" name=\"dxToolbar\" options.bind=\"toolbarOptions\">\n      <dx-template name=\"itemTemplate\">\n        <a class=\"t--view-toolbar-item\" click.delegate=\"data.guardedExecute()\">\n          <div if.bind=\"data.command.badgeText\" class=\"t--view-toolbar-item-badge\">\n            ${data.command.badgeText}\n          </div>\n          <div>\n            <div if.bind=\"data.command.icon\" class=\"t--view-toolbar-item-icon\">\n              <i class=\"fa fa-fw fa-${data.command.icon}\"></i>\n            </div>\n            <div if.bind=\"data.command.title\" class=\"t--view-toolbar-item-title\">\n              ${data.command.title}\n            </div>\n          </div>\n        </a>\n      </dx-template>\n    </dx-widget>\n  </div>\n  <div class=\"t--view-content\">\n    <div class=\"container-fluid\">\n      <div class=\"row\">\n        <compose\n          view-model.ref=\"controller\" \n          view-model.bind=\"view.viewModel\" \n          model.bind=\"view.model\" \n          class=\"t--view-content\"></compose>\n      </div>\n    </div>\n  </div>\n</template>"; });
+define('text!framework/security/views/authgroup/authgroup-list-form.html', ['module'], function(module) { module.exports = "<template>\n    <div class=\"col-xs-12\">\n        <dx-widget name=\"dxDataGrid\" options.bind=\"wd1Options\"></dx-widget>\n    </div>\n</template>"; });
+define('text!framework/stack-router/views/stack-router/stack-router.html', ['module'], function(module) { module.exports = "<template class=\"t--stack-router\">\r\n  <require from=\"./stack-router.css\"></require>\r\n  <require from=\"../view/view\"></require>\r\n\r\n  <div \r\n    class=\"t--stack-router-item\" \r\n    class.bind=\"item.className\"\r\n    repeat.for=\"item of router.viewStack\">\r\n    <view view.bind=\"item\" create-toolbar.bind=\"$parent.createToolbar\"></view>\r\n  </div>\r\n</template>"; });
 define('text!framework/default-ui/views/container/container.css', ['module'], function(module) { module.exports = ".t--container {\n  display: block;\n  width: 100vw;\n  height: 100vh;\n}\n"; });
-define('text!framework/stack-router/views/stack-router/stack-router.html', ['module'], function(module) { module.exports = "<template class=\"t--stack-router\">\n  <require from=\"./stack-router.css\"></require>\n  <require from=\"../view/view\"></require>\n\n  <div \n    class=\"t--stack-router-item\" \n    class.bind=\"item.className\"\n    repeat.for=\"item of router.viewStack\">\n    <view view.bind=\"item\" create-toolbar.bind=\"$parent.createToolbar\"></view>\n  </div>\n</template>"; });
-define('text!framework/default-ui/views/header/header.css', ['module'], function(module) { module.exports = ".t--header {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  margin-left: 280px;\n  padding: 0 12px;\n}\n.t--header-flex {\n  display: flex;\n  width: 100%;\n}\n.t--header-title {\n  flex-grow: 1;\n}\n.t--sidebar-collapsed .t--header {\n  margin-left: 60px;\n}\n"; });
+define('text!framework/stack-router/views/view/view.html', ['module'], function(module) { module.exports = "<template class=\"t--view\" class.bind=\"className\">\r\n  <require from=\"./view.css\"></require>\r\n\r\n  <div class=\"t--view-toolbar\" if.bind=\"createToolbar\">\r\n    <dx-widget if.bind=\"toolbarOptions\" name=\"dxToolbar\" options.bind=\"toolbarOptions\">\r\n      <dx-template name=\"itemTemplate\">\r\n        <a class=\"t--view-toolbar-item\" click.delegate=\"data.guardedExecute()\">\r\n          <div if.bind=\"data.command.badgeText\" class=\"t--view-toolbar-item-badge\">\r\n            ${data.command.badgeText}\r\n          </div>\r\n          <div>\r\n            <div if.bind=\"data.command.icon\" class=\"t--view-toolbar-item-icon\">\r\n              <i class=\"fa fa-fw fa-${data.command.icon}\"></i>\r\n            </div>\r\n            <div if.bind=\"data.command.title\" class=\"t--view-toolbar-item-title\">\r\n              ${data.command.title}\r\n            </div>\r\n          </div>\r\n        </a>\r\n      </dx-template>\r\n    </dx-widget>\r\n  </div>\r\n  <div class=\"t--view-content\">\r\n    <div class=\"container-fluid\">\r\n      <div class=\"row\">\r\n        <compose\r\n          view-model.ref=\"view.controller\" \r\n          view-model.bind=\"view.moduleId\" \r\n          model.bind=\"view.model\" \r\n          class=\"t--view-content\"></compose>\r\n      </div>\r\n    </div>\r\n  </div>\r\n</template>"; });
 define('text!framework/default-ui/views/content/content.css', ['module'], function(module) { module.exports = ".t--content {\n  display: block;\n  margin-left: 280px;\n  height: calc(100% - 60px);\n}\n.t--sidebar-collapsed .t--content {\n  margin-left: 60px;\n}\n.t--view-current {\n  display: block;\n}\n.t--view-history {\n  display: none;\n}\n.t--view-toolbar .dx-toolbar {\n  height: 60px;\n}\n.t--view-toolbar-item {\n  display: flex;\n  height: 60px;\n  padding: 0 12px;\n  justify-content: center;\n  align-items: center;\n  text-align: center;\n  color: white;\n  text-decoration: none;\n  cursor: pointer;\n  -webkit-user-select: none;\n}\n.t--view-toolbar-item i {\n  font-size: 16px;\n}\n.t--view-toolbar-item:hover {\n  background-color: #4F4F4F;\n}\n.dx-state-disabled .t--view-toolbar-item {\n  cursor: default;\n  color: lightgray;\n}\n.dx-state-disabled .t--view-toolbar-item:hover {\n  background-color: inherit;\n}\n"; });
+define('text!framework/default-ui/views/header/header.css', ['module'], function(module) { module.exports = ".t--header {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  margin-left: 280px;\n  padding: 0 12px;\n}\n.t--header-flex {\n  display: flex;\n  width: 100%;\n}\n.t--header-title {\n  flex-grow: 1;\n}\n.t--sidebar-collapsed .t--header {\n  margin-left: 60px;\n}\n"; });
 define('text!framework/default-ui/views/sidebar/sidebar.css', ['module'], function(module) { module.exports = ".t--sidebar {\n  display: block;\n  position: fixed;\n  top: 0;\n  bottom: 0;\n  left: 0;\n  z-index: 10;\n  width: 280px;\n  background-color: #2a2e35;\n}\n.t--sidebar ul {\n  padding: 0;\n  margin: 0;\n  list-style: none;\n}\n.t--sidebar-collapsed .t--sidebar {\n  left: -220px;\n}\n.t--sidebar-header {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  background-color: #262930;\n  color: white;\n  cursor: pointer;\n}\n.t--sidebar-header-title {\n  flex-grow: 1;\n  font-size: 26px;\n  font-weight: 100;\n  padding: 12px;\n}\n.t--sidebar-header-icon {\n  display: flex;\n  width: 60px;\n  align-items: center;\n  justify-content: center;\n}\n.t--sidebar-item a {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  color: lightgray;\n  text-decoration: none;\n}\n.t--sidebar-item a:hover {\n  background-color: #17C4BB;\n  color: white;\n}\n.t--sidebar-item-title {\n  flex-grow: 1;\n  padding: 12px;\n}\n.t--sidebar-item-icon {\n  display: flex;\n  width: 60px;\n  align-items: center;\n  justify-content: center;\n}\n"; });
-define('text!framework/stack-router/views/view/view.css', ['module'], function(module) { module.exports = ".t--view {\n  display: block;\n  position: relative;\n  height: 100%;\n}\n.t--view-toolbar {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  background-color: #808080;\n  color: white;\n}\n.t--view-toolbar .dx-toolbar {\n  background-color: transparent;\n}\n.t--view-toolbar-title {\n  font-size: 26px;\n  font-weight: 100;\n  color: white;\n  padding: 0 12px;\n}\n.t--view-content {\n  height: 100%;\n  overflow-x: hidden;\n  overflow-y: scroll;\n  -webkit-overflow-scrolling: touch;\n}\n.t--view-with-toolbar .t--view-content {\n  height: calc(100% - 60px);\n}\n"; });
 define('text!framework/stack-router/views/stack-router/stack-router.css', ['module'], function(module) { module.exports = ".t--stack-router,\n.t--stack-router-item {\n  display: block;\n  height: 100%;\n}\n"; });
+define('text!framework/stack-router/views/view/view.css', ['module'], function(module) { module.exports = ".t--view {\n  display: block;\n  position: relative;\n  height: 100%;\n}\n.t--view-toolbar {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  background-color: #808080;\n  color: white;\n}\n.t--view-toolbar .dx-toolbar {\n  background-color: transparent;\n}\n.t--view-toolbar-title {\n  font-size: 26px;\n  font-weight: 100;\n  color: white;\n  padding: 0 12px;\n}\n.t--view-content {\n  height: 100%;\n  overflow-x: hidden;\n  overflow-y: auto;\n  -webkit-overflow-scrolling: touch;\n}\n.t--view-with-toolbar .t--view-content {\n  height: calc(100% - 60px);\n}\n"; });
 //# sourceMappingURL=app-bundle.js.map

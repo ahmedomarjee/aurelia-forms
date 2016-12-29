@@ -5,4 +5,5 @@ import {IEditorOptions} from "./editor-options";
 
 export interface ITextBoxOptions extends IEditorOptions {
     maxLength?: number;
+    mode?: string;
 }

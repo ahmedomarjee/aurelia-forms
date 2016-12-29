@@ -1,48 +1,10 @@
-import {
-    autoinject,
-    computedFrom
-} from "aurelia-framework";
-import {
-    FormBase
-} from "../../../forms/classes/form-base";
-import {
-    IFormAttachedEventArgs
-} from "../../../forms/event-args/form-attached";
-import {
-    BindingEngine
-} from "aurelia-framework";
-import {
-    WidgetCreatorService
-} from "../../../forms/widget-services/widget-creator-service";
-import {
-    CommandService
-} from "../../../forms/services/command-service";
-import {
-    ToolbarService
-} from "../../../forms/services/toolbar-service";
-import {
-    Models
-} from "../../../forms/classes/models";
-import {
-    Variables
-} from "../../../forms/classes/variables";
-import {
-    Functions
-} from "../../../forms/classes/functions";
-import {
-    Commands
-} from "../../../forms/classes/commands";
-import {
-    CommandServerData
-} from "../../../forms/classes/command-server-data";
-import {
-    CustomEvent
-} from "../../../base/classes/custom-event";
+import * as fwx from "../../../forms/form-export";
 
-@autoinject
-export class AuthgroupListForm extends FormBase {
-    constructor(bindingEngine: BindingEngine, widgetCreator: WidgetCreatorService, command: CommandService, toolbar: ToolbarService, models: Models, variables: Variables, functions: Functions, commands: Commands, commandServerData: CommandServerData, onFormAttached: CustomEvent < IFormAttachedEventArgs > ) {
-        super(bindingEngine, widgetCreator, command, toolbar, models, variables, functions, commands, commandServerData, onFormAttached);
+@fwx.autoinject
+export class AuthgroupListForm extends fwx.FormBase {
+    constructor(
+        formBaseImport: fwx.FormBaseImport) {
+        super(formBaseImport);
         this.addModel({
             "id": "$m_A",
             "webApiAction": "base/Security/Authgroup",
@@ -72,11 +34,12 @@ export class AuthgroupListForm extends FormBase {
             "edits": [],
             "filters": [],
             "commands": [],
-            "id": "idc3891eded234452db40c6fa6e07e8e91",
+            "id": "wd1",
             "options": {
-                "optionsName": "idc3891eded234452db40c6fa6e07e8e91Options",
-                "optionsNameFQ": "idc3891eded234452db40c6fa6e07e8e91Options"
+                "optionsName": "wd1Options",
+                "optionsNameFQ": "wd1Options"
             }
         });
     }
+    title = "";
 }
