@@ -7,8 +7,10 @@ import {
   RestService, CustomEvent
 } from "../../base/export";
 import {
-  IModelLoadRequiredEventArgs
-} from "../event-args/model-load-required";
+  IModelLoadRequiredEventArgs,
+  IModelLoadedEventArgs,
+  IModelLoadedInterceptorEventArgs
+} from "../event-args/export";
 import {
   FormBase
 } from "./form-base";
@@ -26,7 +28,9 @@ export class Models {
   constructor(
     private rest: RestService,
     private dataSource: DataSourceService,
-    public onLoadRequired: CustomEvent<IModelLoadRequiredEventArgs>
+    public onLoadRequired: CustomEvent<IModelLoadRequiredEventArgs>,
+    public onLoadedInterceptor: CustomEvent<IModelLoadedInterceptorEventArgs>,
+    public onLoaded: CustomEvent<IModelLoadedEventArgs>
   ) {
     this.onLoadRequired.waitTimeout = 10;
 
@@ -42,7 +46,17 @@ export class Models {
           getOptions,
           increaseLoadingCount: true
         }).then(r => {
+          this.onLoadedInterceptor.fire({
+            model: args.model,
+            data: r
+          });
+
           this.data[args.model.id] = r;
+
+          this.onLoaded.fire({
+            model: args.model,
+            data: r
+          });
         });
       }
 
@@ -65,12 +79,69 @@ export class Models {
 
     return model;
   }
+  getModels(): Interfaces.IModel[] {
+    const arr: Interfaces.IModel[] = [];
+
+    for (let i in this.info) {
+      arr.push(this.info[i]);
+    }
+
+    return arr;
+  }
   registerForm(form: FormBase) {
     if (this.form) {
       throw new Error("Form was already registered");
     }
 
     this.form = form;
+  }
+
+  save(): Promise<any> {
+    const promiseArr = this.getModels()
+      .filter(m => m.postOnSave && this.data[m.id])
+      .map(m => {
+        
+        let method = "post";
+
+        if (!this.data[m.id][m.keyProperty]) {
+          method = "put";
+        }
+
+        const promise = this.rest[method]({
+            url: this.rest.getWebApiUrl(m.webApiAction),
+            data: this.data[m.id],
+            increaseLoadingCount: true,
+            getOptions: this.dataSource.createGetOptions(this.form, m)
+          }).then(r => {
+            this.data[m.id] = r;
+          });
+
+        return promise;
+      });
+
+    return Promise
+      .all(promiseArr)
+      .then(() => {
+        return this.form.nestedForms.getNestedForms().map(f => f.models.save());
+      });
+  }
+  delete(): Promise<any> {
+    const promiseArr = this.getModels()
+      .filter(m => m.postOnSave && this.data[m.id] && this.data[m.id][m.keyProperty])
+      .map(m => {
+        const promise = this.rest.delete({
+            url: this.rest.getWebApiUrl(m.webApiAction),
+            id: this.data[m.id][m.key],
+            increaseLoadingCount: true
+          });
+
+        return promise;
+      });
+
+    return Promise.all(promiseArr)
+      .then(() => {
+        return this.form.nestedForms.getNestedForms().map(f => f.models.delete());
+      });
   }
 
   private addObservers(model: Interfaces.IModel) {

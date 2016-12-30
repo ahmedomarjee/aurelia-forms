@@ -11,7 +11,6 @@ export class AuthgroupEditForm extends fwx.FormBase {
             "key": "variables.data.$id",
             "keyProperty": "Id",
             "postOnSave": true,
-            "isMain": true,
             "filters": []
         });
         this.widgetCreator.addTextBox(this, {
@@ -52,6 +51,7 @@ export class AuthgroupEditForm extends fwx.FormBase {
                 "columns": ["Name", "Id"]
             }
         });
+        super.onConstructionFinished();
     }
-    title = "";
+    title = "Berechtigungsgruppe";
 }

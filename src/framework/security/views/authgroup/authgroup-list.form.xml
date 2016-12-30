@@ -1,4 +1,4 @@
-<form>
+<form caption="Berechtigungsgruppen">
   <models>
     <model id="$m_A" web-api-action="base/Security/Authgroup" web-api-expand="{ Mandator: null }" />
   </models>

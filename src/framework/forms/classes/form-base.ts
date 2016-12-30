@@ -18,6 +18,9 @@ import {
   Variables
 } from "./variables";
 import {
+  NestedForms
+} from "./nested-forms";
+import {
   CommandServerData
 } from "./command-server-data";
 import {
@@ -52,6 +55,7 @@ export class FormBase implements IExpressionProvider {
     this.toolbar = formBaseImport.toolbar;
     this.models = formBaseImport.models;
     this.variables = formBaseImport.variables;
+    this.nestedForms = formBaseImport.nestedForms;
     this.functions = formBaseImport.functions;
     this.commands = formBaseImport.commands;
     this.commandServerData = formBaseImport.commandServerData;
@@ -64,8 +68,6 @@ export class FormBase implements IExpressionProvider {
     this.variables.registerForm(this);
     this.functions.registerForm(this);
     this.commands.registerForm(this);
-
-    this.toolbarOptions = this.toolbar.createToolbarOptions(this);
   }
 
   toolbarOptions: DevExpress.ui.dxToolbarOptions;
@@ -76,6 +78,7 @@ export class FormBase implements IExpressionProvider {
   toolbar: ToolbarService;
   models: Models;
   variables: Variables;
+  nestedForms: NestedForms;
   functions: Functions;
   commands: Commands;
   commandServerData: CommandServerData;
@@ -127,6 +130,9 @@ export class FormBase implements IExpressionProvider {
   getFileDownloadUrl(key: string): string {
     return this.evaluateExpression(key);
   }
+  getFormsInclOwn(): FormBase[] {
+    return [this, ...this.nestedForms.getNestedForms()];
+  }
 
   protected addModel(model: Interfaces.IModel): void {
     this.models.addInfo(model);
@@ -143,6 +149,9 @@ export class FormBase implements IExpressionProvider {
   protected addFunction(id: string, functionInstance: any, namespace: string, customParameter?: any): void {
     this.functions.add(id, functionInstance, namespace, customParameter);
   }
+  protected addNestedForm(id: string): void {
+    this.nestedForms.addInfo(id);
+  }
   protected addEditPopup(editPopup: Interfaces.IEditPopup): void {
 
   }
@@ -156,5 +165,8 @@ export class FormBase implements IExpressionProvider {
     }
 
     this.command.execute(this, command);
+  }
+  protected onConstructionFinished(): void {
+    this.toolbarOptions = this.toolbar.createToolbarOptions(this);
   }
 }

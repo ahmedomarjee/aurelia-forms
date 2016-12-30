@@ -1,6 +1,6 @@
-<form>
+<form caption="Berechtigungsgruppe">
   <models>
-    <model id="$m_A" web-api-action="base/Security/Authgroup" key="$id" post-on-save="true" is-main="true" />
+    <model id="$m_A" web-api-action="base/Security/Authgroup" key="$id" post-on-save="true" />
   </models>
   <content>
     <data-context data-context="$m_A">

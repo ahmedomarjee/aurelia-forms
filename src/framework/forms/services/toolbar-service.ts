@@ -33,17 +33,20 @@ export class ToolbarService {
       .map(i => this.convertToToolbarItem(form, () => component, i));
 
     const titleItem: DevExpress.ui.dxPopupToolbarItemOptions = {
-      text: form.title
+      html: this.createTitleHtml(form.title),
+      location: "before"
     };
     items.splice(0, 0, titleItem);
     options.items = items;
 
     form.createObserver("title", (newValue) => {
-      titleItem.text = newValue;
+      const title = this.createTitleHtml(newValue);
 
       if (component) {
-        component.option("items[0].text", newValue);
+        component.option("items[0].text", title);
       }
+
+      titleItem.text = this.createTitleHtml(title);
     });
 
     return options;
@@ -54,6 +57,7 @@ export class ToolbarService {
 
     items.push(this.defaultCommands.getSaveCommand(form));
     items.push(this.defaultCommands.getDeleteCommand(form));
+    items.push(this.defaultCommands.getGoBackCommand(form));
 
     for (let command of form.commands.getCommands()) {
       items.push(command);
@@ -77,10 +81,19 @@ export class ToolbarService {
     return item;
   }
 
+  private createTitleHtml(title: string): string {
+    if (!title) {
+      return null;
+    }
+
+    return `<div class="t--toolbar-title">${title}</div>`;
+  }
+
   private setEnabled(form: FormBase, getToolbar: {(): DevExpress.ui.dxToolbar}, command: Interfaces.ICommandData, item: DevExpress.ui.dxPopupToolbarItemOptions) {
     const setEnabled = (val) => {
-      item.disabled = !val;
       this.setItemOption(getToolbar, item, "disabled", !val);
+      item.disabled = !val;
+      command.isEnabled = val;
     }
 
     item.disabled = !this.command.isEnabled(form, command);
@@ -96,8 +109,9 @@ export class ToolbarService {
   }
   private setVisible(form: FormBase, getToolbar: {(): DevExpress.ui.dxToolbar}, command: Interfaces.ICommandData, item: DevExpress.ui.dxPopupToolbarItemOptions) {
     const setVisible = (val) => {
-      item.visible = val;
       this.setItemOption(getToolbar, item, "visible", val);
+      item.visible = val;
+      command.isVisible = val;
     }
 
     item.visible = this.command.isVisible(form, command);
@@ -111,7 +125,6 @@ export class ToolbarService {
       });
     }
   }
-
   private setItemOption(getToolbar: {(): DevExpress.ui.dxToolbar}, item: DevExpress.ui.dxPopupToolbarItemOptions, property: string, value: any) {
     const toolbar = getToolbar();
     if (!toolbar) {

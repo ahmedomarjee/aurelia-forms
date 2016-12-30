@@ -12,9 +12,6 @@
 .t--view-history {
   display: none;
 }
-.t--view-toolbar .dx-toolbar {
-  height: 60px;
-}
 .t--view-toolbar-item {
   display: flex;
   height: 60px;

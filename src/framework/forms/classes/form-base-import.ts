@@ -18,6 +18,9 @@ import {
   Variables
 } from "./variables";
 import {
+  NestedForms
+} from "./nested-forms";
+import {
   CommandServerData
 } from "./command-server-data";
 import {
@@ -46,6 +49,7 @@ export class FormBaseImport {
     public command: CommandService,
     public toolbar: ToolbarService,
     public models: Models,
+    public nestedForms: NestedForms,
     public variables: Variables,
     public functions: Functions,
     public commands: Commands,

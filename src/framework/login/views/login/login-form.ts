@@ -69,6 +69,7 @@ export class LoginForm extends fwx.FormBase {
                 "propertyPrefix": "$f"
             }
         });
+        super.onConstructionFinished();
     }
     title = "Anmeldedaten";
 }

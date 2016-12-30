@@ -23,6 +23,7 @@ export class HistoryService {
 	}
 
 	pipelineUrl: string;
+	lastRequestUrl: string;
 
 	getUrl(url?: string): string {
 		let hash = url || location.hash;
@@ -31,7 +32,11 @@ export class HistoryService {
 			return "";
 		}
 
-		return hash.substr(1);
+		if (hash.substr(0, 1) === "#") {
+			return hash.substr(1);
+		} else {
+			return hash;
+		}
 	}
 	navigateCurrentOrInPipeline() {
 		if (this.pipelineUrl) {
@@ -81,6 +86,7 @@ export class HistoryService {
 		});
 	}
 	private navigate(navigationArgs: Interfaces.INavigationArgs) {
+		this.lastRequestUrl = navigationArgs.url;
 		this.router.navigate(navigationArgs);
 
 		if (navigationArgs.routeInfo && navigationArgs.routeInfo.isFallback) {

@@ -76,19 +76,19 @@ export class RouterService {
           return route;
         }
 
-        for (const child of route.children) {
-          const route = getRoute(child.children);
-
-          if (route) {
-            return route;
-          }
+        const childRoute = getRoute(route.children);
+        if (childRoute) {
+          return childRoute;
         }
       }
-
-      throw new Error("Fallback route not found");
     };
 
-    return getRoute(this.routes);
+    const fallbackRoute = getRoute(this.routes);
+    if (!fallbackRoute) {
+      throw new Error("Fallback route not found");
+    }
+
+    return fallbackRoute;
   }
   private getNavigationRoutes(routes: Interfaces.IRoute[]): Interfaces.INavigationRoute[] {
     const result: Interfaces.INavigationRoute[] = [];

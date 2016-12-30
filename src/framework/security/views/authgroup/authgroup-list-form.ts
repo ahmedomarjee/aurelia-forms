@@ -40,6 +40,7 @@ export class AuthgroupListForm extends fwx.FormBase {
                 "optionsNameFQ": "wd1Options"
             }
         });
+        super.onConstructionFinished();
     }
-    title = "";
+    title = "Berechtigungsgruppen";
 }
