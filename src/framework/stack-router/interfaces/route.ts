@@ -1,7 +1,7 @@
 export interface IRoute {
-  route: string | string[];
   title: string;
-  moduleId: string;
+  route?: string | string[];
+  moduleId?: string;
   navigation?: any;
 
   children?: IRoute[];

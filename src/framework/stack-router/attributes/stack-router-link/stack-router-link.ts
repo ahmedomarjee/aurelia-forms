@@ -22,9 +22,13 @@ export class StackRouterLinkCustomAttribute {
         && !event.altKey
         && !event.shiftKey
         && !event.metaKey) {
-        this.history.navigateByCode(
-          this.element.getAttribute("href"),
-          this.clearStack);
+        const href = this.element.getAttribute("href");
+
+        if (href) {
+          this.history.navigateByCode(
+            this.element.getAttribute("href"),
+            this.clearStack);
+        }
 
         e.preventDefault();
       }

@@ -85,7 +85,7 @@ export class RouterService {
         }
       }
 
-      return null;
+      throw new Error("Fallback route not found");
     };
 
     return getRoute(this.routes);
@@ -141,13 +141,23 @@ export class RouterService {
       url = url.substr(0, indexQuestionMark);
     }
 
-    for (const route of this.routes) {
-      const routeInfo = this.isRoute(route, url);
+    const searchRouteInfo = (routes: Interfaces.IRoute[]) => {
+      for (const route of routes) {
+        const routeInfo = this.isRoute(route, url)
+          || searchRouteInfo(route.children);
 
-      if (routeInfo == void (0)) {
-        continue;
+        if (routeInfo == void (0)) {
+          continue;
+        }
+
+        return routeInfo;
       }
 
+      return null;
+    }
+
+    const routeInfo = searchRouteInfo(this.routes);
+    if (routeInfo != void(0)) {
       return routeInfo;
     }
 
@@ -159,6 +169,10 @@ export class RouterService {
     };
   }
   private isRoute(route: Interfaces.IRoute, url: string): Interfaces.IRouteInfo {
+    if (route.route == void(0)) {
+      return null;
+    }
+
     if (Array.isArray(route.route)) {
       for (const part of route.route) {
         const result = this.isRoutePattern(part, url);
@@ -229,10 +243,7 @@ export class RouterService {
       }
 
       route.children = route.children || [];
-
-      for (const child of route.children) {
-        this.validateRoutes(child.children);
-      }
+      this.validateRoutes(route.children);
     }
 
     return routes;

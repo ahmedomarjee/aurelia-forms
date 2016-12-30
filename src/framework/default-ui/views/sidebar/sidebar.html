@@ -1,4 +1,5 @@
 <template class="t--sidebar">
+  <require from="../sidebar-sub/sidebar-sub"></require>
   <require from="./sidebar.css"></require>
 
   <div class="t--sidebar-header" click.delegate="onHeaderClicked()">
@@ -12,14 +13,18 @@
 
   <ul>
     <li
-      class="t--sidebar-item" 
       repeat.for="route of router.navigationRoutes">
-      <a href="#${route.route}" stack-router-link="clear-stack.bind: true">
+      <sidebar-sub route.bind="route" if.bind="route.sidebarExpanded"></sidebar-sub>
+      <a 
+        href.bind="route.route ? '#' + route.route : ''" 
+        class="t--sidebar-item"
+        click.delegate="onRouteClicked(route)"
+        stack-router-link="clear-stack.bind: true">
         <span class="t--sidebar-item-title">
           ${route.title}
         </span>
-        <span class="t--sidebar-item-icon" if.bind="route.icon">
-          <i class="fa fa-${route.icon}"></i>
+        <span class="t--sidebar-item-icon" if.bind="route.navigation.icon">
+          <i class="fa fa-${route.navigation.icon}"></i>
         </span>
       </a>
     </li>

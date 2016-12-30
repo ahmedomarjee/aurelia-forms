@@ -36,14 +36,14 @@
   align-items: center;
   justify-content: center;
 }
-.t--sidebar-item a {
+.t--sidebar-item {
   display: flex;
   align-items: center;
   height: 60px;
   color: lightgray;
   text-decoration: none;
 }
-.t--sidebar-item a:hover {
+.t--sidebar-item:hover {
   background-color: #17C4BB;
   color: white;
 }
@@ -56,4 +56,19 @@
   width: 60px;
   align-items: center;
   justify-content: center;
+}
+.t--sidebar-sub {
+  position: fixed;
+  left: 280px;
+  min-width: 280px;
+  min-height: 60px;
+  background-color: #2a2e35;
+  padding: 12px;
+}
+.t--sidebar-sub-item {
+  color: lightgray;
+  text-decoration: none;
+}
+.t--sidebar-sub-item:hover {
+  color: white;
 }

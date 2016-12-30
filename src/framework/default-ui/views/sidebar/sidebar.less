@@ -45,14 +45,13 @@
 }
 
 .t--sidebar-item {
-  a {
-    display: flex;
-    align-items: center;
-    height: @headerHeight;
-    color: lightgray;
-    text-decoration: none;
-  }
-  a:hover {
+  display: flex;
+  align-items: center;
+  height: @headerHeight;
+  color: lightgray;
+  text-decoration: none;
+
+  &:hover {
     background-color: @themeColor;
     color: white;
   }
@@ -66,4 +65,20 @@
   width: @sidebarCollapsedWidth;
   align-items: center;
   justify-content: center;
+}
+.t--sidebar-sub {
+  position: fixed;
+  left: @sidebarExpandedWidth;
+  min-width: @sidebarExpandedWidth;
+  min-height: @headerHeight;
+  background-color: #2a2e35;
+  padding: @padding;
+}
+.t--sidebar-sub-item {
+  color: lightgray;
+  text-decoration: none;
+
+  &:hover {
+    color: white;
+  }
 }

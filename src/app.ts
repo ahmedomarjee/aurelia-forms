@@ -14,18 +14,27 @@ export class App {
   attached() {
     this.router.registerRoutes([
       {
-        moduleId: "framework/security/views/authgroup/authgroup-list-form",
-        title: "Berechtigungsgruppen",
-        route: "security/authgroup",
+        title: "Einstellungen",
         navigation: {
-          icon: "shield"          
-        }
-      },
-      {
-        moduleId: "framework/security/views/authgroup/authgroup-edit-form",
-        title: "Berechtigungsgruppen",
-        route: "security/authgroup/:id{[0-9]*}"
+          icon: "shield"
+        },
+        children: [
+          {
+            moduleId: "framework/security/views/authgroup/authgroup-list-form",
+            title: "Berechtigungsgruppen",
+            route: "security/authgroup",
+            navigation: {
+                       
+            }
+          },
+          {
+            moduleId: "framework/security/views/authgroup/authgroup-edit-form",
+            title: "Berechtigungsgruppen",
+            route: "security/authgroup/:id{[0-9]*}"
+          }
+        ]
       }
+      
     ], "security/authgroup");
   }
 }

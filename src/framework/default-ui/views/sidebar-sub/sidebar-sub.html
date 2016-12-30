@@ -1,0 +1,14 @@
+<template class="t--sidebar-sub">
+  <ul>
+    <li repeat.for="child of route.children">
+      <a 
+        href.bind="child.route ? '#' + child.route : ''" 
+        class="t--sidebar-sub-item"
+        stack-router-link="clear-stack.bind: true">
+        <span class="t--sidebar-sub-item-title">
+          ${route.title}
+        </span>
+      </a>
+    </li>
+  </ul>
+</template>
