@@ -115,6 +115,12 @@ define('framework/stack-router/services/router-service',["require", "exports", "
         RouterService.prototype.removeLastViewItem = function () {
             this.viewStack.pop();
             this.setCurrentViewItem();
+            if (this.currentViewItem) {
+                var currentViewModel = this.currentViewItem.controller["currentViewModel"];
+                if (currentViewModel && typeof currentViewModel.reactivate === "function") {
+                    currentViewModel.reactivate();
+                }
+            }
         };
         RouterService.prototype.getFallbackRoute = function () {
             var _this = this;
@@ -2284,18 +2290,16 @@ define('framework/forms/widget-services/data-grid-widget-creator-service',["requ
         DataGridWidgetCreatorService.prototype.addDataGrid = function (form, options) {
             var dataGridOptions = this.baseWidgetCreator.createWidgetOptions(form, options);
             if (options.dataModel) {
-                var model_1 = form.models.getInfo(options.dataModel);
-                var dataSource_1 = this.dataSource.createDataSource(form, model_1);
+                var model = form.models.getInfo(options.dataModel);
+                var dataSource_1 = this.dataSource.createDataSource(form, model);
                 dataGridOptions.dataSource = dataSource_1;
                 dataGridOptions.remoteOperations = {
                     filtering: true,
                     paging: true,
                     sorting: true
                 };
-                form.models.onLoadRequired.register(function (e) {
-                    if (e.model == model_1) {
-                        dataSource_1.reload();
-                    }
+                form.onFormReactivated.register(function (e) {
+                    dataSource_1.reload();
                     return Promise.resolve();
                 });
             }
@@ -2341,10 +2345,10 @@ define('framework/forms/widget-services/data-grid-widget-creator-service',["requ
                 });
             }
             if (options.editUrl && options.dataModel) {
-                var model_2 = form.models.getInfo(options.dataModel);
-                if (model_2) {
+                var model_1 = form.models.getInfo(options.dataModel);
+                if (model_1) {
                     clickActions.push(function (e) {
-                        location.assign("#" + options.editUrl + "/" + e.data[model_2.keyProperty]);
+                        location.assign("#" + options.editUrl + "/" + e.data[model_1.keyProperty]);
                     });
                 }
             }
@@ -2495,7 +2499,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 define('framework/forms/classes/form-base-import',["require", "exports", "aurelia-framework", "./models", "./functions", "./commands", "./variables", "./nested-forms", "./command-server-data", "../services/toolbar-service", "../services/command-service", "../widget-services/widget-creator-service", "../../base/export"], function (require, exports, aurelia_framework_1, models_1, functions_1, commands_1, variables_1, nested_forms_1, command_server_data_1, toolbar_service_1, command_service_1, widget_creator_service_1, export_1) {
     "use strict";
     var FormBaseImport = (function () {
-        function FormBaseImport(bindingEngine, taskQueue, widgetCreator, command, toolbar, models, nestedForms, variables, functions, commands, commandServerData, onFormAttached, onFormReady) {
+        function FormBaseImport(bindingEngine, taskQueue, widgetCreator, command, toolbar, models, nestedForms, variables, functions, commands, commandServerData, onFormAttached, onFormReady, onFormReactivated) {
             this.bindingEngine = bindingEngine;
             this.taskQueue = taskQueue;
             this.widgetCreator = widgetCreator;
@@ -2509,6 +2513,7 @@ define('framework/forms/classes/form-base-import',["require", "exports", "aureli
             this.commandServerData = commandServerData;
             this.onFormAttached = onFormAttached;
             this.onFormReady = onFormReady;
+            this.onFormReactivated = onFormReactivated;
         }
         return FormBaseImport;
     }());
@@ -2525,6 +2530,7 @@ define('framework/forms/classes/form-base-import',["require", "exports", "aureli
             functions_1.Functions,
             commands_1.Commands,
             command_server_data_1.CommandServerData,
+            export_1.CustomEvent,
             export_1.CustomEvent,
             export_1.CustomEvent])
     ], FormBaseImport);
@@ -2547,6 +2553,7 @@ define('framework/forms/classes/form-base',["require", "exports"], function (req
             this.commandServerData = formBaseImport.commandServerData;
             this.onFormAttached = formBaseImport.onFormAttached;
             this.onFormReady = formBaseImport.onFormReady;
+            this.onFormReactivated = formBaseImport.onFormReactivated;
             this.expression = new Map();
             this.models.registerForm(this);
             this.variables.registerForm(this);
@@ -2569,6 +2576,11 @@ define('framework/forms/classes/form-base',["require", "exports"], function (req
             if (routeInfo && routeInfo.parameters && routeInfo.parameters.id) {
                 this.variables.data.$id = routeInfo.parameters.id;
             }
+        };
+        FormBase.prototype.reactivate = function () {
+            this.onFormReactivated.fire({
+                form: this
+            });
         };
         FormBase.prototype.createObserver = function (expression, action, bindingContext) {
             return this
@@ -2881,7 +2893,7 @@ define('framework/login/login',["require", "exports", "aurelia-framework", "../s
                 if (!this.router.currentViewItem || !this.router.currentViewItem.controller) {
                     return null;
                 }
-                var currentViewModel = this.router.currentViewItem.controller.currentViewModel;
+                var currentViewModel = this.router.currentViewItem.controller["currentViewModel"];
                 if (!currentViewModel) {
                     return;
                 }
@@ -3812,6 +3824,10 @@ define('framework/stack-router/views/stack-router/stack-router',["require", "exp
             aurelia_event_aggregator_1.EventAggregator])
     ], StackRouter);
     exports.StackRouter = StackRouter;
+});
+
+define('framework/forms/event-args/form-reactivated',["require", "exports"], function (require, exports) {
+    "use strict";
 });
 
 define('text!app.html', ['module'], function(module) { module.exports = "<template>\r\n  <require from=\"./framework/default-ui/views/container/container\"></require>\r\n  <container></container>\r\n</template>\r\n"; });

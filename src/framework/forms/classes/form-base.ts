@@ -37,7 +37,8 @@ import {
 } from "../../base/export";
 import {
   IFormAttachedEventArgs,
-  IFormReadyEventArgs
+  IFormReadyEventArgs,
+  IFormReactivatedEventArgs
 } from "../event-args/export";
 import {
   FormBaseImport
@@ -61,6 +62,7 @@ export class FormBase implements IExpressionProvider {
     this.commandServerData = formBaseImport.commandServerData;
     this.onFormAttached = formBaseImport.onFormAttached;
     this.onFormReady = formBaseImport.onFormReady;
+    this.onFormReactivated = formBaseImport.onFormReactivated;
 
     this.expression = new Map();
 
@@ -84,6 +86,7 @@ export class FormBase implements IExpressionProvider {
   commandServerData: CommandServerData;
   onFormAttached: CustomEvent<IFormAttachedEventArgs>;
   onFormReady: CustomEvent<IFormReadyEventArgs>;
+  onFormReactivated: CustomEvent<IFormReadyEventArgs>;
 
   protected readonly expression: Map<string, Expression>;
 
@@ -104,6 +107,11 @@ export class FormBase implements IExpressionProvider {
     if (routeInfo && routeInfo.parameters && routeInfo.parameters.id) {
       this.variables.data.$id = routeInfo.parameters.id;
     }
+  }
+  reactivate() {
+    this.onFormReactivated.fire({
+      form: this
+    });
   }
 
   createObserver(expression: string, action: {(newValue?: any, oldValue?: any): void}, bindingContext?: any): {(): void} {

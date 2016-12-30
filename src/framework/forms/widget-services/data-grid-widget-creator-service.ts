@@ -36,11 +36,8 @@ export class DataGridWidgetCreatorService {
         sorting: true
       }
 
-      form.models.onLoadRequired.register(e => {
-        if (e.model == model) {
-          dataSource.reload();
-        }
-
+      form.onFormReactivated.register(e => {
+        dataSource.reload();
         return Promise.resolve();
       });
     }

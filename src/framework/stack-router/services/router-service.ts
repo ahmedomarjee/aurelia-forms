@@ -64,6 +64,13 @@ export class RouterService {
   private removeLastViewItem() {
     this.viewStack.pop();
     this.setCurrentViewItem();
+
+    if (this.currentViewItem) {
+      const currentViewModel = this.currentViewItem.controller["currentViewModel"];
+      if (currentViewModel && typeof currentViewModel.reactivate === "function") {
+        currentViewModel.reactivate();
+      }
+    }
   }
   private getFallbackRoute(): Interfaces.IRoute {
     if (!this.fallbackRoute) {

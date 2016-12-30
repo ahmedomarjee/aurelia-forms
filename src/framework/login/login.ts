@@ -18,7 +18,7 @@ export class Login {
       return null;
     }
 
-    const currentViewModel = (<any>this.router.currentViewItem.controller).currentViewModel;
+    const currentViewModel = this.router.currentViewItem.controller["currentViewModel"];
     if (!currentViewModel) {
       return;
     }
