@@ -31,9 +31,7 @@ export class Login {
       {
         moduleId: "framework/login/views/login/login-form",
         title: "Login",
-        icon: "shield",
-        route: "login",
-        isNavigation: true
+        route: "login"
       }
     ], "login");
   }

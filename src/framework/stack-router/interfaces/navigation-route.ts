@@ -1,7 +1,7 @@
 export interface INavigationRoute {
   title: string;
-  icon?: string;
   route: string;
+  navigation?: any;
 
   children: INavigationRoute[];
 }

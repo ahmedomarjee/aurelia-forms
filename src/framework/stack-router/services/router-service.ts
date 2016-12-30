@@ -94,7 +94,7 @@ export class RouterService {
     const result: Interfaces.INavigationRoute[] = [];
 
     for (const route of routes) {
-      if (!route.isNavigation) {
+      if (!route.navigation) {
         continue;
       }
       if (!route.canActivate()) {
@@ -103,8 +103,8 @@ export class RouterService {
 
       const navigationRoute: Interfaces.INavigationRoute = {
         title: route.title,
-        icon: route.icon,
         route: route.route[0],
+        navigation: route.navigation,
         children: this.getNavigationRoutes(route.children)
       };
       result.push(navigationRoute);

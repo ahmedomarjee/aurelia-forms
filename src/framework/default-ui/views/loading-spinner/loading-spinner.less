@@ -1,3 +1,5 @@
+@import "../../../base/styles/variables.less";
+
 .t--loading {
   position: fixed;
   top: 0;
@@ -12,12 +14,12 @@
   align-items: center;
   background-color: rgba(255, 255, 255, 0.8);
   z-index: 9999;
+  opacity: 0;
+  transition-delay: 500ms;
+  .transition(opacity);
 
-  &.au-enter {
-    opacity: 0;
-  }
-  &.au-enter-active {
-    animation: 700ms ease-in 300ms animationLoading;
+  &.t--loading-active {
+    opacity: 1;
   }
 }
 

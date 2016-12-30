@@ -16,14 +16,14 @@ export class App {
       {
         moduleId: "framework/security/views/authgroup/authgroup-list-form",
         title: "Berechtigungsgruppen",
-        icon: "shield",
         route: "security/authgroup",
-        isNavigation: true
+        navigation: {
+          icon: "shield"          
+        }
       },
       {
         moduleId: "framework/security/views/authgroup/authgroup-edit-form",
         title: "Berechtigungsgruppen",
-        icon: "shield",
         route: "security/authgroup/:id{[0-9]*}"
       }
     ], "security/authgroup");
