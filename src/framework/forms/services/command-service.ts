@@ -1,6 +1,6 @@
 import {
-  FormBase
-} from "../classes/form-base";
+  Expressions
+} from "../classes/expressions";
 import {
   ICommandData
 } from "../interfaces/export";
@@ -8,35 +8,35 @@ import {
 export class CommandService {
   private isCommandExecuting = false;
 
-  isVisible(form: FormBase, command: ICommandData): boolean {
+  isVisible(expressions: Expressions, command: ICommandData): boolean {
     if (command.isVisible != undefined) {
       return command.isVisible;
     } else if (command.isVisibleExpression) {
-      return form.evaluateExpression(command.isVisibleExpression);
+      return expressions.evaluateExpression(command.isVisibleExpression);
     }
 
     return true;
   }
-  isEnabled(form: FormBase,command: ICommandData): boolean {
+  isEnabled(expressions: Expressions, command: ICommandData): boolean {
     if (command.isEnabled != undefined) {
       return command.isEnabled;
     } else if (command.isEnabledExpression) {
-      return form.evaluateExpression(command.isEnabledExpression);
+      return expressions.evaluateExpression(command.isEnabledExpression);
     }
 
     return true;
   }
-  isVisibleAndEnabled(form: FormBase, command: ICommandData): boolean {
-    return this.isVisible(form, command)
-      && this.isEnabled(form, command);
+  isVisibleAndEnabled(expressions: Expressions, command: ICommandData): boolean {
+    return this.isVisible(expressions, command)
+      && this.isEnabled(expressions, command);
   }
 
-  execute(form: FormBase, command: ICommandData): boolean  {
+  execute(expressions: Expressions, command: ICommandData): boolean  {
     if (this.isCommandExecuting) {
       return;
     }
 
-    if (!this.isVisibleAndEnabled(form, command)) {
+    if (!this.isVisibleAndEnabled(expressions, command)) {
       return false;
     }
     if (!command.execute) {
@@ -44,7 +44,7 @@ export class CommandService {
     }
 
     this.isCommandExecuting = true;
-    const result = command.execute.bind(form)();
+    const result = command.execute.bind(expressions)();
 
     if (result && result.then && result.catch) {
       result

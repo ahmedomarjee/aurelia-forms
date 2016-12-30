@@ -27,7 +27,7 @@ export class DataGridWidgetCreatorService {
 
     if (options.dataModel) {
       const model = form.models.getInfo(options.dataModel);
-      const dataSource = this.dataSource.createDataSource(form, model);
+      const dataSource = this.dataSource.createDataSource(form.expressions, model);
       dataGridOptions.dataSource = dataSource;
 
       dataGridOptions.remoteOperations = {
@@ -82,7 +82,7 @@ export class DataGridWidgetCreatorService {
 
     if (options.onItemClick) {
       clickActions.push(e => {
-        form.evaluateExpression(options.onItemClick, { e })
+        form.expressions.evaluateExpression(options.onItemClick, { e })
       });
     }
     if (options.editDataContext) {

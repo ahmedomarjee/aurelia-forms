@@ -56,6 +56,14 @@ export class RouterService {
     this.viewStack.splice(0, this.viewStack.length);
     this.navigationRoutes = [];
   }
+  removeViewModel(viewModel: any) {
+    const view = this.viewStack.find(i => i.controller["currentViewModel"] == viewModel);
+    if (!view) {
+      return;
+    }
+
+    this.viewStack.splice(this.viewStack.indexOf(view), 1);
+  }
 
   private addViewItem(viewItem: ViewItem) {
     this.viewStack.push(viewItem);

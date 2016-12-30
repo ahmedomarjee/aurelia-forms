@@ -23,7 +23,7 @@ export class DefaultCommandsService {
       isVisible: this.canSave(form),
       isEnabled: true,
       execute() {
-        form.models.save();
+        form.save();
       }
     };
   }
@@ -40,7 +40,7 @@ export class DefaultCommandsService {
           "Frage")
           .then(r => {
             if (r) {
-              form.models.delete();
+              form.delete();
             }
           })
       }

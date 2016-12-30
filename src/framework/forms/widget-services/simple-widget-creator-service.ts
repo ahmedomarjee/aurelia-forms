@@ -80,7 +80,7 @@ export class SimpleWidgetCreatorService {
     if (options.binding.dataContext) {
       command = form.commandServerData[`${options.binding.dataContext};${options.binding.bindTo}`];
     } else {
-      command = form.evaluateExpression(options.binding.bindToFQ);
+      command = form.expressions.evaluateExpression(options.binding.bindToFQ);
     }
 
     const buttonOptions: DevExpress.ui.dxButtonOptions = {};
@@ -91,7 +91,7 @@ export class SimpleWidgetCreatorService {
       if (typeof command.execute === "function") {
         command.execute();
       } else if (typeof command.execute === "string") {
-        form.evaluateExpression(command.execute);
+        form.expressions.evaluateExpression(command.execute);
       } else {
         throw new Error();
       }
@@ -191,7 +191,7 @@ export class SimpleWidgetCreatorService {
         where.push(selectContainerOptions.selectItem.where);
       }
 
-      editorOptions.dataSource = this.dataSource.createDataSource(form, {
+      editorOptions.dataSource = this.dataSource.createDataSource(form.expressions, {
         keyProperty: selectContainerOptions.selectItem.valueMember,
         webApiAction: selectContainerOptions.selectItem.action,
         webApiColumns: selectContainerOptions.selectItem.columns,
@@ -221,7 +221,7 @@ export class SimpleWidgetCreatorService {
       };
 
       if (page.if) {
-        form.createObserver(page.if, (newValue) => {
+        form.expressions.createObserver(page.if, (newValue) => {
           //TODO - Binding
           pageOptions.visible = newValue;
         });
@@ -240,7 +240,7 @@ export class SimpleWidgetCreatorService {
         return;
       }
 
-      form.evaluateExpression(page.__options.onActivated);
+      form.expressions.evaluateExpression(page.__options.onActivated);
     };
 
     return tabOptions;

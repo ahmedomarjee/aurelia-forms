@@ -39,7 +39,7 @@ export class ToolbarService {
     items.splice(0, 0, titleItem);
     options.items = items;
 
-    form.createObserver("title", (newValue) => {
+    form.expressions.createObserver("title", (newValue) => {
       const title = this.createTitleHtml(newValue);
 
       if (component) {
@@ -55,9 +55,9 @@ export class ToolbarService {
   private collectItems(form: FormBase): Interfaces.ICommandData[] {
     const items: Interfaces.ICommandData[] = [];
 
+    items.push(this.defaultCommands.getGoBackCommand(form));
     items.push(this.defaultCommands.getSaveCommand(form));
     items.push(this.defaultCommands.getDeleteCommand(form));
-    items.push(this.defaultCommands.getGoBackCommand(form));
 
     for (let command of form.commands.getCommands()) {
       items.push(command);
@@ -75,7 +75,7 @@ export class ToolbarService {
     (<any>item).locateInMenu = command.locateInMenu;
     (<any>item).command = command;
     (<any>item).guardedExecute = () => {
-      this.command.execute(form, command);
+      this.command.execute(form.expressions, command);
     };
 
     return item;
@@ -96,13 +96,13 @@ export class ToolbarService {
       command.isEnabled = val;
     }
 
-    item.disabled = !this.command.isEnabled(form, command);
+    item.disabled = !this.command.isEnabled(form.expressions, command);
     if (command.isEnabled != undefined) {
-      form.createObserver("isEnabled", (newValue) => {
+      form.expressions.createObserver("isEnabled", (newValue) => {
         setEnabled(newValue);
       }, command);
     } else if (command.isEnabledExpression) {
-      form.createObserver(command.isEnabledExpression, (newValue) => {
+      form.expressions.createObserver(command.isEnabledExpression, (newValue) => {
         setEnabled(newValue);
       });
     }
@@ -114,13 +114,13 @@ export class ToolbarService {
       command.isVisible = val;
     }
 
-    item.visible = this.command.isVisible(form, command);
+    item.visible = this.command.isVisible(form.expressions, command);
     if (command.isVisible != undefined) {
-      form.createObserver("isVisible", (newValue) => {
+      form.expressions.createObserver("isVisible", (newValue) => {
         setVisible(newValue);
       }, command);
     } else if (command.isVisibleExpression) {
-      form.createObserver(command.isVisibleExpression, (newValue) => {
+      form.expressions.createObserver(command.isVisibleExpression, (newValue) => {
         setVisible(newValue);
       });
     }

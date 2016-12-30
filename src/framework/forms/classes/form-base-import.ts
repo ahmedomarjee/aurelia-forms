@@ -18,6 +18,9 @@ import {
   Variables
 } from "./variables";
 import {
+  Expressions
+} from "./expressions";
+import {
   NestedForms
 } from "./nested-forms";
 import {
@@ -36,6 +39,12 @@ import {
   CustomEvent
 } from "../../base/export";
 import {
+  ErrorService
+} from "../../base/services/error-service";
+import {
+  RouterService
+} from "../../stack-router/services/router-service";
+import {
   IFormAttachedEventArgs,
   IFormReadyEventArgs,
   IFormReactivatedEventArgs
@@ -49,11 +58,14 @@ export class FormBaseImport {
     public widgetCreator: WidgetCreatorService,
     public command: CommandService,
     public toolbar: ToolbarService,
+    public router: RouterService,
+    public error: ErrorService,
     public models: Models,
     public nestedForms: NestedForms,
     public variables: Variables,
     public functions: Functions,
     public commands: Commands,
+    public expressions: Expressions,
     public commandServerData: CommandServerData,
     public onFormAttached: CustomEvent<IFormAttachedEventArgs>,
     public onFormReady: CustomEvent<IFormAttachedEventArgs>,

@@ -44,10 +44,10 @@ import {
   FormBaseImport
 } from "./form-base-import";
 import {
-  IExpressionProvider
-} from "../../base/interfaces/expression-provider";
+  Expressions
+} from "./expressions";
 
-export class FormBase implements IExpressionProvider {
+export class FormBase {
   constructor(
     private formBaseImport: FormBaseImport
   ) {
@@ -58,18 +58,18 @@ export class FormBase implements IExpressionProvider {
     this.variables = formBaseImport.variables;
     this.nestedForms = formBaseImport.nestedForms;
     this.functions = formBaseImport.functions;
+    this.expressions = formBaseImport.expressions;
     this.commands = formBaseImport.commands;
     this.commandServerData = formBaseImport.commandServerData;
     this.onFormAttached = formBaseImport.onFormAttached;
     this.onFormReady = formBaseImport.onFormReady;
     this.onFormReactivated = formBaseImport.onFormReactivated;
 
-    this.expression = new Map();
-
     this.models.registerForm(this);
     this.variables.registerForm(this);
     this.functions.registerForm(this);
     this.commands.registerForm(this);
+    this.expressions.registerForm(this);
   }
 
   toolbarOptions: DevExpress.ui.dxToolbarOptions;
@@ -83,12 +83,11 @@ export class FormBase implements IExpressionProvider {
   nestedForms: NestedForms;
   functions: Functions;
   commands: Commands;
+  expressions: Expressions;
   commandServerData: CommandServerData;
   onFormAttached: CustomEvent<IFormAttachedEventArgs>;
   onFormReady: CustomEvent<IFormReadyEventArgs>;
   onFormReactivated: CustomEvent<IFormReadyEventArgs>;
-
-  protected readonly expression: Map<string, Expression>;
 
   attached() {
     const promise = this.onFormAttached.fire({
@@ -114,32 +113,31 @@ export class FormBase implements IExpressionProvider {
     });
   }
 
-  createObserver(expression: string, action: {(newValue?: any, oldValue?: any): void}, bindingContext?: any): {(): void} {
-    return this
-      .formBaseImport
-      .bindingEngine
-      .expressionObserver(bindingContext || this, expression)
-      .subscribe(action)
-      .dispose;
-  }
-  evaluateExpression(expression: string, overrideContext?: any): any {
-    let parsed = this.expression.get(expression);
 
-    if (!parsed) {
-      parsed = this.formBaseImport.bindingEngine.parseExpression(expression);
-      this.expression.set(expression, parsed);
-    }
-
-    return parsed.evaluate({
-      bindingContext: this,
-      overrideContext: overrideContext  
-    });
-  }
   getFileDownloadUrl(key: string): string {
-    return this.evaluateExpression(key);
+    return this.expressions.evaluateExpression(key);
   }
   getFormsInclOwn(): FormBase[] {
     return [this, ...this.nestedForms.getNestedForms()];
+  }
+
+  save(): Promise<any> {
+    return this.models.save()
+      .then(() => {
+        DevExpress.ui.notify("Daten wurden erfolgreich gespeichert", "SUCCESS", 3000);
+      })
+      .catch(r => {
+        this.formBaseImport.error.showAndLogError(r);
+      });
+  }
+  delete(): Promise<any> {
+    return this.models.save()
+      .then(() => {
+        this.formBaseImport.router.removeViewModel(this);
+      })
+      .catch(r => {
+        this.formBaseImport.error.showAndLogError(r);
+      });
   }
 
   protected addModel(model: Interfaces.IModel): void {
@@ -167,12 +165,12 @@ export class FormBase implements IExpressionProvider {
 
   }
   protected submitForm(commandExpression: string): void {
-    const command: Interfaces.ICommandData = this.evaluateExpression(commandExpression);
+    const command: Interfaces.ICommandData = this.expressions.evaluateExpression(commandExpression);
     if (!command || !command.execute) {
       return;
     }
 
-    this.command.execute(this, command);
+    this.command.execute(this.expressions, command);
   }
   protected onConstructionFinished(): void {
     this.toolbarOptions = this.toolbar.createToolbarOptions(this);

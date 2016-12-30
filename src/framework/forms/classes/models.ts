@@ -17,12 +17,16 @@ import {
 import {
   DataSourceService
 } from "../../base/services/data-source-service";
+import {
+  Expressions
+} from "./expressions";
 import * as Interfaces from "../interfaces/export";
 
 @autoinject
 @singleton(true)
 export class Models {
   private form: FormBase;
+  private expressions: Expressions;
   private info: any;
 
   constructor(
@@ -39,10 +43,10 @@ export class Models {
 
     this.onLoadRequired.register((args) => {
       if (args.model.key || args.model.autoLoad) {
-        const getOptions = this.dataSource.createGetOptions(this.form, args.model);
+        const getOptions = this.dataSource.createGetOptions(this.expressions, args.model);
 
         return this.rest.get({
-          url: this.rest.getWebApiUrl(`${args.model.webApiAction}/${this.form.evaluateExpression(args.model.key)}`),
+          url: this.rest.getWebApiUrl(`${args.model.webApiAction}/${this.expressions.evaluateExpression(args.model.key)}`),
           getOptions,
           increaseLoadingCount: true
         }).then(r => {
@@ -94,6 +98,7 @@ export class Models {
     }
 
     this.form = form;
+    this.expressions = form.expressions;
   }
 
   save(): Promise<any> {
@@ -111,7 +116,7 @@ export class Models {
             url: this.rest.getWebApiUrl(m.webApiAction),
             data: this.data[m.id],
             increaseLoadingCount: true,
-            getOptions: this.dataSource.createGetOptions(this.form, m)
+            getOptions: this.dataSource.createGetOptions(this.expressions, m)
           }).then(r => {
             this.data[m.id] = r;
           });
@@ -147,7 +152,7 @@ export class Models {
   private addObservers(model: Interfaces.IModel) {
     this.addObserversDetail(model, model.key);
 
-    this.dataSource.addObservers(this.form, model, () => {
+    this.dataSource.addObservers(this.form.expressions, model, () => {
       this.onLoadRequired.fire({
         model
       });
@@ -158,7 +163,7 @@ export class Models {
       return;
     }
 
-    this.form.createObserver(expression, (newValue, oldValue) => {
+    this.expressions.createObserver(expression, (newValue, oldValue) => {
       this.onLoadRequired.fire({
         model
       });
