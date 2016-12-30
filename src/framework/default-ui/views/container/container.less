@@ -4,6 +4,13 @@
   display: block;
   width: 100vw;
   height: 100vh;
+
+  .dx-toolbar {
+    height: @toolbarHeight;
+  }
+  .dx-toolbar .dx-toolbar-items-container {
+    height: @toolbarHeight;
+  }
 }
 .t--toolbar-title {
   min-width: 220px;
@@ -11,11 +18,4 @@
   font-size: 20px;
   font-weight: 100;
   color: white;
-}
-
-.dx-toolbar {
-  height: @toolbarHeight;
-}
-.dx-toolbar .dx-toolbar-items-container {
-  height: @toolbarHeight;
 }

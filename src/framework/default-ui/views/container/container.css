@@ -3,16 +3,16 @@
   width: 100vw;
   height: 100vh;
 }
+.t--container .dx-toolbar {
+  height: 60px;
+}
+.t--container .dx-toolbar .dx-toolbar-items-container {
+  height: 60px;
+}
 .t--toolbar-title {
   min-width: 220px;
   padding: 0 12px;
   font-size: 20px;
   font-weight: 100;
   color: white;
-}
-.dx-toolbar {
-  height: 60px;
-}
-.dx-toolbar .dx-toolbar-items-container {
-  height: 60px;
 }
