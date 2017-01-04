@@ -105,9 +105,11 @@ export class RestService {
         })
         .then(r => {
           if (r.ok) {
+            //TODO - Datums konvertieren
             return r.json();
           }
           if (r.status == 401) {
+            //TODO - onUnauthorized in Event ändern
             this.onUnauthorizated.fire({});
             return;
           }

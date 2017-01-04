@@ -45,6 +45,9 @@ import {
   RouterService
 } from "../../stack-router/services/router-service";
 import {
+  GlobalizationService
+} from "../../base/services/globalization-service";
+import {
   IFormAttachedEventArgs,
   IFormReadyEventArgs,
   IFormReactivatedEventArgs
@@ -66,6 +69,7 @@ export class FormBaseImport {
     public functions: Functions,
     public commands: Commands,
     public expressions: Expressions,
+    public globalization: GlobalizationService,
     public commandServerData: CommandServerData,
     public onFormAttached: CustomEvent<IFormAttachedEventArgs>,
     public onFormReady: CustomEvent<IFormAttachedEventArgs>,

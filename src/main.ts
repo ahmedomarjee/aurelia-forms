@@ -13,7 +13,6 @@ import {AuthorizationService} from "./framework/base/services/authorization-serv
 export function configure(aurelia: Aurelia) {
   aurelia.use
     .basicConfiguration()
-    .globalResources("devextreme")
     .plugin("aurelia-animator-css")
     .feature("framework/base")
     .feature("framework/dx")

@@ -5,6 +5,9 @@ import {
   FormBase
 } from "../classes/form-base";
 import {
+  GlobalizationService
+} from "../../base/services/globalization-service";
+import {
   BaseWidgetCreatorService
 } from "./base-widget-creator-service";
 import {
@@ -19,28 +22,9 @@ import * as WidgetOptions from "../widget-options/export";
 export class SimpleWidgetCreatorService {
   constructor(
     private baseWidgetCreator: BaseWidgetCreatorService,
-    private dataSource: DataSourceService
+    private dataSource: DataSourceService,
+    private globalization: GlobalizationService
   ) { }
-
-  createEditorOptions(form: FormBase, options: WidgetOptions.IEditorOptions): any {
-    const editorOptions: DevExpress.ui.EditorOptions = this.baseWidgetCreator.createWidgetOptions(form, options);
-
-    if (options.binding && options.binding.bindToFQ) {
-      editorOptions.bindingOptions["value"] = options.binding.bindToFQ;
-    }
-
-    if (options.isReadOnly) {
-      editorOptions.readOnly = true;
-    } else if (options.isReadOnlyExpression) {
-      editorOptions.bindingOptions["readOnly"] = options.isReadOnlyExpression;
-    }
-
-    if (options.placeholder) {
-      (<any>editorOptions).placeholder = options.placeholder;
-    }
-
-    return editorOptions;
-  }
 
   addAccordion(form: FormBase, options: WidgetOptions.IAccordionOptions): DevExpress.ui.dxAccordionOptions {
     return this.baseWidgetCreator.createWidgetOptions(form, options);
@@ -69,8 +53,9 @@ export class SimpleWidgetCreatorService {
     if (options.max) {
       editorOptions.max = options.max;
     }
-
-    //TODO - format
+    if (options.format) {
+      editorOptions.displayFormat = this.globalization.getFormatterParser(options.format);
+    }
 
     return editorOptions;
   }
@@ -121,7 +106,7 @@ export class SimpleWidgetCreatorService {
   addLookup(form: FormBase, options: WidgetOptions.ISelectOptions, selectContainerOptions: WidgetOptions.ISelectItemContainerOptions): DevExpress.ui.dxLookupOptions {
     const editorOptions: DevExpress.ui.dxLookupOptions = this.createEditorOptions(form, options);
 
-    //TODO - SelectItem
+    this.addDataExpressionOptions(form, options, selectContainerOptions, editorOptions);
 
     return editorOptions;
   }
@@ -143,8 +128,6 @@ export class SimpleWidgetCreatorService {
     if (options.step) {
       editorOptions.step = options.step;
     }
-
-    //TODO - format
 
     return editorOptions;
   }
@@ -172,48 +155,29 @@ export class SimpleWidgetCreatorService {
   addRadioGroup(form: FormBase, options: WidgetOptions.ISelectOptions, selectContainerOptions: WidgetOptions.ISelectItemContainerOptions): DevExpress.ui.dxRadioGroupOptions {
     const editorOptions: DevExpress.ui.dxRadioGroupOptions = this.createEditorOptions(form, options);
 
-    //TODO - SelectItem
+    this.addDataExpressionOptions(form, options, selectContainerOptions, editorOptions);
 
     return editorOptions;
   }
   addSelectBox(form: FormBase, options: WidgetOptions.ISelectOptions, selectContainerOptions: WidgetOptions.ISelectItemContainerOptions): DevExpress.ui.dxSelectBoxOptions {
     const editorOptions: DevExpress.ui.dxSelectBoxOptions = this.createEditorOptions(form, options);
 
-    if (selectContainerOptions.selectItem.items 
-      && selectContainerOptions.selectItem.items.length > 0) {
-      editorOptions.dataSource = selectContainerOptions.selectItem.items;
-    } else if (selectContainerOptions.selectItem.action) {
-      const where = [];
-      if (selectContainerOptions.filter) {
-        where.push(selectContainerOptions.filter);
-      }
-      if (selectContainerOptions.selectItem.where) {
-        where.push(selectContainerOptions.selectItem.where);
-      }
-
-      editorOptions.dataSource = this.dataSource.createDataSource(form.expressions, {
-        keyProperty: selectContainerOptions.selectItem.valueMember,
-        webApiAction: selectContainerOptions.selectItem.action,
-        webApiColumns: selectContainerOptions.selectItem.columns,
-        webApiExpand: selectContainerOptions.selectItem.expand,
-        webApiOrderBy: selectContainerOptions.selectItem.orderBy,
-        webApiWhere: where,
-        filters: selectContainerOptions.customs
-      });
-    }
-
-    editorOptions.valueExpr = selectContainerOptions.selectItem.valueMember;
-    editorOptions.displayExpr = selectContainerOptions.selectItem.displayMember;
+    this.addDataExpressionOptions(form, options, selectContainerOptions, editorOptions);
 
     return editorOptions;
   }
   addTab(form: FormBase, options: WidgetOptions.ITabOptions): DevExpress.ui.dxTabsOptions {
     const tabOptions: DevExpress.ui.dxTabsOptions = this.baseWidgetCreator.createWidgetOptions(form, options);
 
+    let component: DevExpress.ui.dxTabs;
+    tabOptions.onInitialized = (e) => {
+      component = e.component;
+    }
+
     tabOptions.items = [];
     tabOptions.bindingOptions["selectedIndex"] = `${options.id}Selected`;
 
-    options.pages.forEach(page => {
+    options.pages.forEach((page, index) => {
       const pageOptions = {
         text: page.caption,
         visible: true,
@@ -222,7 +186,7 @@ export class SimpleWidgetCreatorService {
 
       if (page.if) {
         form.expressions.createObserver(page.if, (newValue) => {
-          //TODO - Binding
+          component.option(`items[${index}].visible`, newValue);
           pageOptions.visible = newValue;
         });
       }
@@ -272,5 +236,52 @@ export class SimpleWidgetCreatorService {
     }
 
     return editorOptions;
+  }
+
+  private createEditorOptions(form: FormBase, options: WidgetOptions.IEditorOptions): any {
+    const editorOptions: DevExpress.ui.EditorOptions = this.baseWidgetCreator.createWidgetOptions(form, options);
+
+    if (options.binding && options.binding.bindToFQ) {
+      editorOptions.bindingOptions["value"] = options.binding.bindToFQ;
+    }
+
+    if (options.isReadOnly) {
+      editorOptions.readOnly = true;
+    } else if (options.isReadOnlyExpression) {
+      editorOptions.bindingOptions["readOnly"] = options.isReadOnlyExpression;
+    }
+
+    if (options.placeholder) {
+      (<any>editorOptions).placeholder = options.placeholder;
+    }
+
+    return editorOptions;
+  }
+  private addDataExpressionOptions(form: FormBase, options: WidgetOptions.ISelectOptions, selectContainerOptions: WidgetOptions.ISelectItemContainerOptions, current: DevExpress.ui.DataExpressionMixinOptions): void {
+    if (selectContainerOptions.selectItem.items
+      && selectContainerOptions.selectItem.items.length > 0) {
+      current.dataSource = selectContainerOptions.selectItem.items;
+    } else if (selectContainerOptions.selectItem.action) {
+      const where = [];
+      if (selectContainerOptions.filter) {
+        where.push(selectContainerOptions.filter);
+      }
+      if (selectContainerOptions.selectItem.where) {
+        where.push(selectContainerOptions.selectItem.where);
+      }
+
+      current.dataSource = this.dataSource.createDataSource(form.expressions, {
+        keyProperty: selectContainerOptions.selectItem.valueMember,
+        webApiAction: selectContainerOptions.selectItem.action,
+        webApiColumns: selectContainerOptions.selectItem.columns,
+        webApiExpand: selectContainerOptions.selectItem.expand,
+        webApiOrderBy: selectContainerOptions.selectItem.orderBy,
+        webApiWhere: where,
+        filters: selectContainerOptions.customs
+      });
+    }
+
+    current.valueExpr = selectContainerOptions.selectItem.valueMember;
+    current.displayExpr = selectContainerOptions.selectItem.displayMember;
   }
 }
