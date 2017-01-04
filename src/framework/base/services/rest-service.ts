@@ -9,24 +9,24 @@ import {
   CustomEvent
 } from "../classes/custom-event";
 import {
-  ICustomEventArgs
-} from "../event-args/custom-event-args";
+  IUnauthorizatedEventArgs
+} from "../event-args/export";
 import * as Interfaces from "../interfaces/export";
 import Config from "../../../config";
 
 @autoinject
 export class RestService {
   constructor(
-    public onUnauthorizated: CustomEvent<ICustomEventArgs>
+    public onUnauthorizated: CustomEvent<IUnauthorizatedEventArgs>
   ) { }
 
   loadingCount = 0;
-  getAuthHeader: {(): any};
+  getAuthHeader: { (): any };
 
-    @computedFrom("loadingCount")
-    get isLoading(): boolean {
-      return this.loadingCount > 0;
-    }
+  @computedFrom("loadingCount")
+  get isLoading(): boolean {
+    return this.loadingCount > 0;
+  }
 
   delete(options: Interfaces.IRestDeleteOptions): Promise<any> {
     if (!options.id) {
@@ -49,7 +49,7 @@ export class RestService {
     }
 
     return this.execute("POST", options.url, this.createHeaders(options), options.increaseLoadingCount, body);
-  }   
+  }
   put(options: Interfaces.IRestPostOptions): Promise<any> {
     let body = null;
     if (options.data) {
@@ -61,7 +61,7 @@ export class RestService {
     }
 
     return this.execute("PUT", options.url, this.createHeaders(options), options.increaseLoadingCount, body);
-  }  
+  }
 
   getUrl(suffix: string): string {
     return `${Config.baseUrl}/${suffix}`;
@@ -75,7 +75,7 @@ export class RestService {
 
   private createHeaders(options?: Interfaces.IRestGetOptions) {
     const headers: any = {};
-    
+
     if (options.getOptions) {
       headers["X-GET-OPTIONS"] = JSON.stringify(options.getOptions);
     }
@@ -91,11 +91,11 @@ export class RestService {
   }
   private execute(method: string, url: string, headers: any, changeLoadingCount: boolean, body?: any): Promise<any> {
     const client = new HttpClient();
-    
+
     if (changeLoadingCount) {
       this.loadingCount++;
     }
-    
+
     return new Promise<any>((success: any, error) => {
       client
         .fetch(url, {
@@ -109,8 +109,9 @@ export class RestService {
             return r.json();
           }
           if (r.status == 401) {
-            //TODO - onUnauthorized in Event ändern
-            this.onUnauthorizated.fire({});
+            this.onUnauthorizated.fire({
+              url: url
+            });
             return;
           }
 

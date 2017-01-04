@@ -669,7 +669,9 @@ define('framework/base/services/rest-service',["require", "exports", "aurelia-fr
                         return r.json();
                     }
                     if (r.status == 401) {
-                        _this.onUnauthorizated.fire({});
+                        _this.onUnauthorizated.fire({
+                            url: url
+                        });
                         return;
                     }
                     DevExpress.ui.notify(r.statusText, "error", 3000);
@@ -4098,6 +4100,14 @@ define('framework/stack-router/views/stack-router/stack-router',["require", "exp
             aurelia_event_aggregator_1.EventAggregator])
     ], StackRouter);
     exports.StackRouter = StackRouter;
+});
+
+
+
+define("framework/base/event-args/unauthorized-event-args", [],function(){});
+
+define('framework/base/event-args/unauthorized',["require", "exports"], function (require, exports) {
+    "use strict";
 });
 
 define('text!app.html', ['module'], function(module) { module.exports = "<template>\n  <require from=\"./framework/default-ui/views/container/container\"></require>\n  <container></container>\n</template>\n"; });
