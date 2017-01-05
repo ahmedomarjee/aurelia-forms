@@ -10,3 +10,17 @@
     transition: all @duration cubic-bezier(.62,.28,.23,.99);
     transition-property: @property;
 }
+.animatationLeftFadeIn() {
+    animation: leftFadeIn .3s cubic-bezier(.62,.28,.23,.99);
+}
+
+@keyframes leftFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}

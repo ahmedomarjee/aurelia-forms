@@ -10,6 +10,7 @@
   width: @sidebarExpandedWidth;
   background-color: #2a2e35;
   font-size: 14px;
+  .transition(left);
 
   ul {
     padding: 0;
@@ -69,11 +70,15 @@
 }
 .t--sidebar-sub {
   position: fixed;
+  z-index: -9;
   left: @sidebarExpandedWidth;
   min-width: @sidebarExpandedWidth;
-  min-height: @headerHeight;
   background-color: #2a2e35;
   padding: @padding;
+
+  &.au-enter-active {
+    .animatationLeftFadeIn();
+  }
 }
 .t--sidebar-sub-item {
   color: lightgray;

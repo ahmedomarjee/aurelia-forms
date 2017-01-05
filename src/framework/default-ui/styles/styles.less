@@ -1,0 +1,12 @@
+@import "../../base/styles/variables.less";
+
+.t--view-content {
+  opacity: 0;
+  transform: translateX(10px);
+  .transition(all);
+
+  &.t--view-content-attached {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
