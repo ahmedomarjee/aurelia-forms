@@ -35,9 +35,9 @@ export class GlobalizationService {
           return moment(value).locale(this.current.culture).format(format, );
         } else {
           const count = parseInt(format.substr(1));
-          format = format.substr(0, 1);
+          const formatClass = format.substr(0, 1);
 
-          if (format === "p") {
+          if (formatClass === "p") {
             value = value * 100;
           }
 
@@ -50,7 +50,7 @@ export class GlobalizationService {
             a = 0;
           }
 
-          switch (format) {
+          switch (formatClass) {
             case "n": {
               return `${this.addGroupSeparator(b)}${this.addDecimalSeparator(a, count)}`;
             }
@@ -100,9 +100,9 @@ export class GlobalizationService {
           }
 
           const count = parseInt(format.substr(1));
-          format = format.substr(0, 1);
+          const formatClass = format.substr(0, 1);
 
-          switch (format) {
+          switch (formatClass) {
             case "f":
             case "n": {
               return parseInt(b) + this.makeComma(a);
@@ -180,5 +180,5 @@ export class GermanGlobalizationProvider implements IGlobalizationProvider {
   T = "HH:mm:ss"
 
   commaSeparator = ",";
-  groupSeparator = ".";
+  groupSeparator = " ";
 }

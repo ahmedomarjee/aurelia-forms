@@ -1,10 +1,10 @@
 <template>
     <div class="t--margin-top col-xs-12 col-md-6">
         <div class="t--editor-caption">Bezeichnung</div>
-        <dx-widget name="dxTextBox" options.bind="wd1Options"></dx-widget>
+        <dx-widget name="dxTextBox" options.bind="nameOptions" view-model.ref="name"></dx-widget>
     </div>
     <div class="t--margin-top col-xs-12 col-md-6">
         <div class="t--editor-caption">Mandant</div>
-        <dx-widget name="dxSelectBox" options.bind="wd2Options"></dx-widget>
+        <dx-widget name="dxSelectBox" options.bind="mandatorOptions" view-model.ref="mandator"></dx-widget>
     </div>
 </template>

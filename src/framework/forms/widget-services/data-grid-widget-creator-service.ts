@@ -8,6 +8,9 @@ import {
   BaseWidgetCreatorService
 } from "./base-widget-creator-service";
 import {
+  GlobalizationService
+} from "../../base/services/globalization-service";
+import {
   SelectionModeEnum
 } from "../enums/selection-mode-enum";
 import {
@@ -19,7 +22,8 @@ import * as WidgetOptions from "../widget-options/export";
 export class DataGridWidgetCreatorService {
   constructor(
     private baseWidgetCreator: BaseWidgetCreatorService,
-    private dataSource: DataSourceService
+    private dataSource: DataSourceService,
+    private globalization: GlobalizationService
   ) { }
 
   addDataGrid(form: FormBase, options: WidgetOptions.IDataGridOptions): DevExpress.ui.dxDataGridOptions {
@@ -61,6 +65,9 @@ export class DataGridWidgetCreatorService {
         }
         if (col.width) {
           column.width = col.width;
+        }
+        if (col.format) {
+          column.format = this.globalization.getFormatterParser(col.format);
         }
 
         return column;

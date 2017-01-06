@@ -11,8 +11,8 @@
       <data-context data-context="$m_login">
         <text add-margin-top="false">Geben Sie hier Ihren Benutzernamen und Passwort ein und klicken Sie auf "Anmelden".</text>
         <text-box id="username" caption="Benutzername" bind-to="Username" />
-        <text-box caption="Passwort" bind-to="Password" mode="password" />
-        <check-box caption="Angemeldet bleiben" bind-to="StayLoggedOn" />
+        <text-box id="password" caption="Passwort" bind-to="Password" mode="password" />
+        <check-box id="stayLoggodOn" caption="Angemeldet bleiben" bind-to="StayLoggedOn" />
       </data-context>
 
       <command bind-to="$f.loginCommand" />

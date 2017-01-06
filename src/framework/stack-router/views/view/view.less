@@ -1,9 +1,10 @@
-@toolbarHeight: 60px;
+@import "../../../base/styles/variables.less";
 
 .t--view {
   display: block;
   position: relative;
   height: 100%;
+  overflow-x: hidden;
 }
 .t--view-toolbar {
   display: flex;
@@ -22,14 +23,20 @@
   color: white;
   padding: 0 12px;
 }
-.t--view-content {
+.t--view-content-wrapper {
+  display: block;
   height: 100%;
   overflow-x: hidden;
   overflow-y: auto;
+}
+.t--view-content {
+  display: table;
+  width: 100%;
+  margin-bottom: @padding;
   -webkit-overflow-scrolling: touch;
 }
 .t--view-with-toolbar {
-  .t--view-content {
+  .t--view-content-wrapper {
     height: ~"calc(100% - @{toolbarHeight})";
   }
 }

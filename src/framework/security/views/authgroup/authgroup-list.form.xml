@@ -3,11 +3,11 @@
     <model id="$m_A" web-api-action="base/Security/Authgroup" web-api-expand="{ Mandator: null }" />
   </models>
   <content>
-    <data-grid-search data-context="$m_A" edit-url="security/authgroup" add-shortcuts="true" is-main-list="true">
+    <data-grid id="authgroups" data-context="$m_A" edit-url="security/authgroup" add-shortcuts="true" is-main-list="true">
       <data-grid-columns>
-        <data-grid-column bind-to="Name" sort-index="0" sort-order="asc" />
-        <data-grid-column bind-to="Mandator.Name" caption="Mandant" />
+        <data-grid-column id="name" bind-to="Name" sort-index="0" sort-order="asc" />
+        <data-grid-column id="mandantor" bind-to="Mandator.Name" caption="Mandant" />
       </data-grid-columns>
-    </data-grid-search>
+    </data-grid>
   </content>
 </form>

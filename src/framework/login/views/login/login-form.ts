@@ -37,10 +37,10 @@ export class LoginForm extends fwx.FormBase {
                 "bindToFQ": "models.data.$m_login.Password"
             },
             "validationRules": [],
-            "id": "wd1",
+            "id": "password",
             "options": {
-                "optionsName": "wd1Options",
-                "optionsNameFQ": "wd1Options"
+                "optionsName": "passwordOptions",
+                "optionsNameFQ": "passwordOptions"
             }
         });
         this.widgetCreator.addCheckBox(this, {
@@ -51,17 +51,17 @@ export class LoginForm extends fwx.FormBase {
                 "bindToFQ": "models.data.$m_login.StayLoggedOn"
             },
             "validationRules": [],
-            "id": "wd2",
+            "id": "stayLoggodOn",
             "options": {
-                "optionsName": "wd2Options",
-                "optionsNameFQ": "wd2Options"
+                "optionsName": "stayLoggodOnOptions",
+                "optionsNameFQ": "stayLoggodOnOptions"
             }
         });
         this.widgetCreator.addCommand(this, {
-            "id": "wd3",
+            "id": "id5d9f1f517d6f4bda9fefbda68f8d809c",
             "options": {
-                "optionsName": "wd3Options",
-                "optionsNameFQ": "wd3Options"
+                "optionsName": "id5d9f1f517d6f4bda9fefbda68f8d809cOptions",
+                "optionsNameFQ": "id5d9f1f517d6f4bda9fefbda68f8d809cOptions"
             },
             "binding": {
                 "bindTo": "$f.loginCommand",

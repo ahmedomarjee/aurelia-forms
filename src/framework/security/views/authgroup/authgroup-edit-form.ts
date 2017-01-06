@@ -21,10 +21,10 @@ export class AuthgroupEditForm extends fwx.FormBase {
                 "bindToFQ": "models.data.$m_A.Name"
             },
             "validationRules": [],
-            "id": "wd1",
+            "id": "name",
             "options": {
-                "optionsName": "wd1Options",
-                "optionsNameFQ": "wd1Options"
+                "optionsName": "nameOptions",
+                "optionsNameFQ": "nameOptions"
             }
         });
         this.widgetCreator.addSelectBox(this, {
@@ -36,10 +36,10 @@ export class AuthgroupEditForm extends fwx.FormBase {
                 "bindToFQ": "models.data.$m_A.IdMandator"
             },
             "validationRules": [],
-            "id": "wd2",
+            "id": "mandator",
             "options": {
-                "optionsName": "wd2Options",
-                "optionsNameFQ": "wd2Options"
+                "optionsName": "mandatorOptions",
+                "optionsNameFQ": "mandatorOptions"
             }
         }, {
             "selectItem": {

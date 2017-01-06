@@ -16,13 +16,20 @@ export class AuthgroupListForm extends fwx.FormBase {
         });
         this.widgetCreator.addDataGrid(this, {
             "columns": [{
+                "id": "name",
+                "caption": "Bezeichnung",
                 "bindTo": "Name",
                 "sortIndex": 0,
                 "sortOrder": "asc"
             }, {
+                "id": "mandantor",
                 "caption": "Mandant",
                 "bindTo": "Mandator.Name"
             }],
+            "optionsToolbar": {
+                "optionsName": "authgroupsToolbarOptions",
+                "optionsNameFQ": "authgroupsToolbarOptions"
+            },
             "binding": {
                 "dataContext": "$m_A",
                 "bindToFQ": "models.data.$m_A."
@@ -34,10 +41,10 @@ export class AuthgroupListForm extends fwx.FormBase {
             "edits": [],
             "filters": [],
             "commands": [],
-            "id": "wd1",
+            "id": "authgroups",
             "options": {
-                "optionsName": "wd1Options",
-                "optionsNameFQ": "wd1Options"
+                "optionsName": "authgroupsOptions",
+                "optionsNameFQ": "authgroupsOptions"
             }
         });
         super.onConstructionFinished();
