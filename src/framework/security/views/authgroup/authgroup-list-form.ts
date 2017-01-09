@@ -17,13 +17,13 @@ export class AuthgroupListForm extends fwx.FormBase {
         this.widgetCreator.addDataGrid(this, {
             "columns": [{
                 "id": "name",
-                "caption": "Bezeichnung",
+                "caption": "name_caption",
                 "bindTo": "Name",
                 "sortIndex": 0,
                 "sortOrder": "asc"
             }, {
                 "id": "mandantor",
-                "caption": "Mandant",
+                "caption": "mandantor_caption",
                 "bindTo": "Mandator.Name"
             }],
             "optionsToolbar": {
@@ -50,4 +50,5 @@ export class AuthgroupListForm extends fwx.FormBase {
         super.onConstructionFinished();
     }
     title = "Berechtigungsgruppen";
+    id = "authgroup-list";
 }

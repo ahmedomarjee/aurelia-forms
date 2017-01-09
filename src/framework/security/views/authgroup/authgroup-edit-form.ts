@@ -14,7 +14,7 @@ export class AuthgroupEditForm extends fwx.FormBase {
             "filters": []
         });
         this.widgetCreator.addTextBox(this, {
-            "caption": "Bezeichnung",
+            "caption": "name_caption",
             "binding": {
                 "dataContext": "$m_A",
                 "bindTo": "Name",
@@ -29,7 +29,7 @@ export class AuthgroupEditForm extends fwx.FormBase {
         });
         this.widgetCreator.addSelectBox(this, {
             "idSelect": "mandator",
-            "caption": "Mandant",
+            "caption": "mandator_caption",
             "binding": {
                 "dataContext": "$m_A",
                 "bindTo": "IdMandator",
@@ -54,4 +54,5 @@ export class AuthgroupEditForm extends fwx.FormBase {
         super.onConstructionFinished();
     }
     title = "Berechtigungsgruppe";
+    id = "authgroup-edit";
 }

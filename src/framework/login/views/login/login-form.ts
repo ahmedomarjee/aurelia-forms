@@ -15,7 +15,7 @@ export class LoginForm extends fwx.FormBase {
         });
         this.addFunction("$f", $f, "functions.$f");
         this.widgetCreator.addTextBox(this, {
-            "caption": "Benutzername",
+            "caption": "username_caption",
             "binding": {
                 "dataContext": "$m_login",
                 "bindTo": "Username",
@@ -30,7 +30,7 @@ export class LoginForm extends fwx.FormBase {
         });
         this.widgetCreator.addTextBox(this, {
             "mode": "password",
-            "caption": "Passwort",
+            "caption": "password_caption",
             "binding": {
                 "dataContext": "$m_login",
                 "bindTo": "Password",
@@ -44,7 +44,7 @@ export class LoginForm extends fwx.FormBase {
             }
         });
         this.widgetCreator.addCheckBox(this, {
-            "caption": "Angemeldet bleiben",
+            "caption": "stayloggodon_caption",
             "binding": {
                 "dataContext": "$m_login",
                 "bindTo": "StayLoggedOn",
@@ -58,10 +58,10 @@ export class LoginForm extends fwx.FormBase {
             }
         });
         this.widgetCreator.addCommand(this, {
-            "id": "id5d9f1f517d6f4bda9fefbda68f8d809c",
+            "id": "ida134457972264fdea3bbe09007a8ee0f",
             "options": {
-                "optionsName": "id5d9f1f517d6f4bda9fefbda68f8d809cOptions",
-                "optionsNameFQ": "id5d9f1f517d6f4bda9fefbda68f8d809cOptions"
+                "optionsName": "ida134457972264fdea3bbe09007a8ee0fOptions",
+                "optionsNameFQ": "ida134457972264fdea3bbe09007a8ee0fOptions"
             },
             "binding": {
                 "bindTo": "$f.loginCommand",
@@ -72,4 +72,5 @@ export class LoginForm extends fwx.FormBase {
         super.onConstructionFinished();
     }
     title = "Anmeldedaten";
+    id = "login-form";
 }
