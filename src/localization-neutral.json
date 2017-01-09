@@ -6,6 +6,12 @@
     "stayloggodon_caption": "Angemeldet bleiben"
   },
   "authgroup-edit": {
+    "info_text": {
+      "text": "Hallo {0}",
+      "parameters": [
+        "models.data.$m_A.Name"
+      ]
+    },
     "name_caption": "Bezeichnung",
     "mandator_caption": "Mandant"
   },

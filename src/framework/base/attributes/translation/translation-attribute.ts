@@ -18,15 +18,8 @@ export class TrCustomAttribute {
   @bindable markdown: true;
 
   bind(bindingContext: any) {
-    switch(this.mode) {
-      case "html": {
-        this.element.innerHTML = this.localization.translate(bindingContext, this.key);
-        break;
-      }
-      default: {
-        this.element.innerHTML = this.localization.translate(bindingContext, this.key);
-        break;
-      }
-    }
+    this.localization.translate(bindingContext.expressions, this.key, (val) => {
+      this.element.innerHTML = val;
+    });
   }
 }
