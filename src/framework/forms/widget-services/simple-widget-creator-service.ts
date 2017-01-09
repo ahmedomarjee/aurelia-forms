@@ -5,8 +5,9 @@ import {
   FormBase
 } from "../classes/form-base";
 import {
-  GlobalizationService
-} from "../../base/services/globalization-service";
+  GlobalizationService,
+  LocalizationService
+} from "../../base/services/export";
 import {
   BaseWidgetCreatorService
 } from "./base-widget-creator-service";
@@ -23,7 +24,8 @@ export class SimpleWidgetCreatorService {
   constructor(
     private baseWidgetCreator: BaseWidgetCreatorService,
     private dataSource: DataSourceService,
-    private globalization: GlobalizationService
+    private globalization: GlobalizationService,
+    private localization: LocalizationService
   ) { }
 
   addAccordion(form: FormBase, options: WidgetOptions.IAccordionOptions): DevExpress.ui.dxAccordionOptions {
@@ -36,7 +38,7 @@ export class SimpleWidgetCreatorService {
     const editorOptions: DevExpress.ui.dxCheckBoxOptions = this.createEditorOptions(form, options);
 
     if (options.caption) {
-      editorOptions.text = options.caption;
+      editorOptions.text = this.localization.translate(form, options.caption);
     }
 
     return editorOptions;

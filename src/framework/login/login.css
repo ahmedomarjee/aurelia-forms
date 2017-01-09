@@ -1,3 +1,13 @@
+@keyframes leftFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
 .t--login-container {
   display: flex;
   height: 100vh;
@@ -28,7 +38,7 @@
 }
 .t--login-data .t--view-content {
   display: flex;
-  margin-top: -4vh;
+  margin-top: 4vh;
   flex-direction: column;
   justify-content: center;
 }

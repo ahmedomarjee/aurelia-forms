@@ -8,8 +8,9 @@ import {
   BaseWidgetCreatorService
 } from "./base-widget-creator-service";
 import {
-  GlobalizationService
-} from "../../base/services/globalization-service";
+  GlobalizationService,
+  LocalizationService
+} from "../../base/services/export";
 import {
   SelectionModeEnum
 } from "../enums/selection-mode-enum";
@@ -23,7 +24,8 @@ export class DataGridWidgetCreatorService {
   constructor(
     private baseWidgetCreator: BaseWidgetCreatorService,
     private dataSource: DataSourceService,
-    private globalization: GlobalizationService
+    private globalization: GlobalizationService,
+    private localization: LocalizationService
   ) { }
 
   addDataGrid(form: FormBase, options: WidgetOptions.IDataGridOptions): DevExpress.ui.dxDataGridOptions {
@@ -54,7 +56,7 @@ export class DataGridWidgetCreatorService {
         const column: DevExpress.ui.dxDataGridColumn = {};
 
         if (col.caption) {
-          column.caption = col.caption;
+          column.caption = this.localization.translate(form, col.caption);
         }
         if (col.bindTo) {
           column.dataField = col.bindTo;

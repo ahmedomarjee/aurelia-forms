@@ -5,6 +5,9 @@ import {
   FormBase
 } from "../classes/form-base";
 import {
+  LocalizationService
+} from "../../base/services/export";
+import {
   RouterService
 } from "../../stack-router/services/router-service";
 import * as Interfaces from "../interfaces/export";
@@ -12,14 +15,15 @@ import * as Interfaces from "../interfaces/export";
 @autoinject
 export class DefaultCommandsService {
   constructor(
-    private router: RouterService
+    private router: RouterService,
+    private localization: LocalizationService
   ) {}
 
   getSaveCommand(form: FormBase): Interfaces.ICommandData {
     return {
       id: "$cmdSave",
       icon: "floppy-o",
-      title: "Speichern",
+      title: this.localization.translate(form, "base.save"),
       isVisible: this.canSave(form),
       isEnabled: true,
       execute() {
@@ -31,13 +35,13 @@ export class DefaultCommandsService {
     const cmd = {
       id: "$cmdDelete",
       icon: "times",
-      title: "Löschen",
+      title: this.localization.translate(form, "base.delete"),
       isVisible: this.canSave(form),
       isEnabled: this.canDelete(form),
-      execute() {
+      execute: () => {
         DevExpress.ui.dialog.confirm(
-          "Sind Sie sicher, dass sie den aktuellen Datensatz löschen wollen?",
-          "Frage")
+          this.localization.translate(form, "base.sure_delete_question"),
+          this.localization.translate(form, "base.question"))
           .then(r => {
             if (r) {
               form.delete();

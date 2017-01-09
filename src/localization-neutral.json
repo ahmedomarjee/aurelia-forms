@@ -1,1 +1,23 @@
-{"login-form":{"enter_user_password_text":"Geben Sie hier Ihren Benutzernamen und Passwort ein und klicken Sie auf \"Anmelden\".","username_caption":"Benutzername","password_caption":"Passwort","stayloggodon_caption":"Angemeldet bleiben"},"authgroup-edit":{"name_caption":"Bezeichnung","mandator_caption":"Mandant"},"authgroup-list":{"name_caption":"Bezeichnung","mandantor_caption":"Mandant"}}
+{
+  "login-form": {
+    "enter_user_password_text": "Geben Sie hier Ihren Benutzernamen und Passwort ein und klicken Sie auf \"Anmelden\".",
+    "username_caption": "Benutzername",
+    "password_caption": "Passwort",
+    "stayloggodon_caption": "Angemeldet bleiben"
+  },
+  "authgroup-edit": {
+    "name_caption": "Bezeichnung",
+    "mandator_caption": "Mandant"
+  },
+  "authgroup-list": {
+    "name_caption": "Bezeichnung",
+    "mandantor_caption": "Mandant"
+  },
+  "base": {
+    "save": "Speichern",
+    "delete": "Löschen",
+    "question": "Frage",
+    "information": "Information",
+    "sure_delete_question": "Sind Sie sicher, dass sie den aktuellen Datensatz löschen wollen?"
+  }
+}

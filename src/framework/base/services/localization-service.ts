@@ -18,7 +18,7 @@ export class LocalizationService {
     this.neutral = JSON.parse(<any>localizationNeutral);
   }
 
-  translate(key: string): string {
+  translate(bindingSource: any, key: string): string {
     const items = key.split(".");
     
     let item: any = this.neutral;

@@ -5,14 +5,14 @@
     <form submit.delegate="submitForm('functions.$f.loginCommand')">
         <button class="t--invisible-submit" type="submit"></button>
         <div class="col-xs-12">
-            <div>enter_user_password_text</div>
+            <div tr="key: login-form.enter_user_password_text; markdown: true; mode: html"></div>
         </div>
         <div class="t--margin-top col-xs-12">
-            <div class="t--editor-caption">username_caption</div>
+            <div class="t--editor-caption" tr="key: login-form.username_caption"></div>
             <dx-widget name="dxTextBox" options.bind="usernameOptions" view-model.ref="username"></dx-widget>
         </div>
         <div class="t--margin-top col-xs-12">
-            <div class="t--editor-caption">password_caption</div>
+            <div class="t--editor-caption" tr="key: login-form.password_caption"></div>
             <dx-widget name="dxTextBox" options.bind="passwordOptions" view-model.ref="password"></dx-widget>
         </div>
         <div class="t--margin-top col-xs-12">
@@ -21,7 +21,7 @@
         </div>
         <div class="t--margin-top col-xs-12">
             <div class="t--editor-caption">&nbsp;</div>
-            <dx-widget name="dxButton" options.bind="ida134457972264fdea3bbe09007a8ee0fOptions"></dx-widget>
+            <dx-widget name="dxButton" options.bind="wd1Options"></dx-widget>
         </div>
     </form>
 </template>
