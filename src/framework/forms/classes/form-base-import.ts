@@ -36,17 +36,14 @@ import {
   WidgetCreatorService
 } from "../widget-services/widget-creator-service";
 import {
-  CustomEvent
-} from "../../base/export";
-import {
+  CustomEvent,
+  GlobalizationService,
+  LocalizationService,
   ErrorService
-} from "../../base/services/error-service";
+} from "../../base/export";
 import {
   RouterService
 } from "../../stack-router/services/router-service";
-import {
-  GlobalizationService
-} from "../../base/services/globalization-service";
 import {
   IFormAttachedEventArgs,
   IFormReadyEventArgs,
@@ -70,6 +67,7 @@ export class FormBaseImport {
     public commands: Commands,
     public expressions: Expressions,
     public globalization: GlobalizationService,
+    public localization: LocalizationService,
     public commandServerData: CommandServerData,
     public onFormAttached: CustomEvent<IFormAttachedEventArgs>,
     public onFormReady: CustomEvent<IFormAttachedEventArgs>,

@@ -72,6 +72,9 @@ export class RestService {
   getWebApiUrl(suffix: string): string {
     return `${Config.webApiUrl}/${suffix}`;
   }
+  getAppUrl(suffix: string): string {
+    return `${Config.appUrl}/${suffix}`;
+  }
 
   private createHeaders(options?: Interfaces.IRestGetOptions) {
     const headers: any = {};
