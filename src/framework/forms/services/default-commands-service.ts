@@ -23,7 +23,7 @@ export class DefaultCommandsService {
     return {
       id: "$cmdSave",
       icon: "floppy-o",
-      title: this.localization.translate(form, "base.save"),
+      title: this.localization.translate(form.expressions, "base.save"),
       isVisible: this.canSave(form),
       isEnabled: true,
       execute() {
@@ -35,13 +35,13 @@ export class DefaultCommandsService {
     const cmd = {
       id: "$cmdDelete",
       icon: "times",
-      title: this.localization.translate(form, "base.delete"),
+      title: this.localization.translate(form.expressions, "base.delete"),
       isVisible: this.canSave(form),
       isEnabled: this.canDelete(form),
       execute: () => {
         DevExpress.ui.dialog.confirm(
-          this.localization.translate(form, "base.sure_delete_question"),
-          this.localization.translate(form, "base.question"))
+          this.localization.translate(form.expressions, "base.sure_delete_question"),
+          this.localization.translate(form.expressions, "base.question"))
           .then(r => {
             if (r) {
               form.delete();

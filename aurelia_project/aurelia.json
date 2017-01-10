@@ -25,9 +25,9 @@
   },
   "textProcessor": {
     "id": "none",
-    "displayName": "Text",
+    "displayName": "None",
     "fileExtension": ".json",
-    "source": "src/**/*.json"
+    "source": "src/localization-neutral.json"
   },
   "cssProcessor": {
     "id": "less",

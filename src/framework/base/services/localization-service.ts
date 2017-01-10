@@ -21,8 +21,16 @@ export class LocalizationService {
     this.neutral = JSON.parse(<any>localizationNeutral);
   }
 
-  translate(expressionProvider: IExpressionProvider, key: string, callback?: {(val: string): void}): string | void {
+  translate(expressionProvider: IExpressionProvider, key: string, callback?: {(val: string): void}): string {
+    if (!key) {
+      return null;
+    }
+
     const item = this.getItem(key);
+
+    if (!item) {
+      throw new Error(`No localization found for ${key}`);
+    }
 
     if (callback) {
       if (typeof item === "object" && item.parameters.length > 0) {
@@ -33,7 +41,10 @@ export class LocalizationService {
         });
       }
 
-      callback(this.translateItem(expressionProvider, item));
+      const result = this.translateItem(expressionProvider, item);
+      callback(result);
+
+      return result;
     } else {
       return this.translateItem(expressionProvider, item);
     }

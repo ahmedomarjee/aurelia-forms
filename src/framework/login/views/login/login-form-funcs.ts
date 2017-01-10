@@ -43,7 +43,7 @@ export class LoginFuncs {
 
   loginCommand: ICommandData = {
     id: "$login",
-    title: "Anmelden",
+    title: "login-form-funcs.anmelden_caption",
     execute: () => {
       this.authorization
         .login(this.form.models.data.$m_login)

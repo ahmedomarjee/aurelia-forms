@@ -56,7 +56,7 @@ export class DataGridWidgetCreatorService {
         const column: DevExpress.ui.dxDataGridColumn = {};
 
         if (col.caption) {
-          column.caption = this.localization.translate(form, col.caption);
+          column.caption = this.localization.translate(form.expressions, col.caption);
         }
         if (col.bindTo) {
           column.dataField = col.bindTo;
