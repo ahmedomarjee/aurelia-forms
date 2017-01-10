@@ -4,6 +4,8 @@
     "delete": "Löschen",
     "question": "Frage",
     "information": "Information",
-    "sure_delete_question": "Sind Sie sicher, dass sie den aktuellen Datensatz löschen wollen?"
+    "sure_delete_question": "Sind Sie sicher, dass sie den aktuellen Datensatz löschen wollen?",
+    "login": "Anmelden",
+    "logout": "Abmelden"
   }
 }

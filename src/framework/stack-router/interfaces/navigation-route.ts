@@ -1,5 +1,5 @@
 export interface INavigationRoute {
-  title: string;
+  caption: string;
   route: string;
   navigation?: any;
 

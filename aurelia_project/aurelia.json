@@ -25,7 +25,11 @@
   },
   "textProcessor": {
     "displayName": "Text",
-    "source": "src/localization-neutral.json"
+    "source": [
+      "src/localization-neutral.json",
+      "src/routes/forms.json",
+      "src/routes/structure.json"
+    ]
   },
   "cssProcessor": {
     "id": "less",

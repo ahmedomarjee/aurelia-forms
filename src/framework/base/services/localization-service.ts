@@ -70,7 +70,12 @@ export class LocalizationService {
       let text: string = item.text;
 
       item.parameters.forEach((expr, index) => {
-        const val = expressionProvider.evaluateExpression(expr);
+        let val = expressionProvider.evaluateExpression(expr);
+
+        if (val == void(0)) {
+          val = "";
+        }
+
         text = text.replace(new RegExp("\\{" + index + "\\}", "g"), val);
       });
 

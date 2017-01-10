@@ -1,4 +1,4 @@
-<form id="authgroup-list" caption="Berechtigungsgruppen">
+<form id="authgroup-list" caption="Berechtigungsgruppen" nav-route="security/authgroup" nav-id-parent="settings" nav-is-enabled="true">
   <models>
     <model id="$m_A" web-api-action="base/Security/Authgroup" web-api-expand="{ Mandator: null }" />
   </models>

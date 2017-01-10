@@ -6,7 +6,7 @@ import * as Interfaces from "../interfaces/export";
 
 export class ViewItem {
   constructor(public routeInfo: Interfaces.IRouteInfo) {
-    this.title = routeInfo.route.title;
+    this.title = routeInfo.route.caption;
     this.moduleId = routeInfo.route.moduleId;
     this.model = routeInfo;
     this.isCurrent = true;

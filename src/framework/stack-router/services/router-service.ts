@@ -117,7 +117,7 @@ export class RouterService {
       }
 
       const navigationRoute: Interfaces.INavigationRoute = {
-        title: route.title,
+        caption: route.caption,
         route: route.route[0],
         navigation: route.navigation,
         children: this.getNavigationRoutes(route.children)
@@ -215,11 +215,11 @@ export class RouterService {
     const urlParts = url.split("/");
     const parameters: any = {};
 
-    for (let i = 0; i < urlParts.length; i++) {
-      if (routeParts.length < i + 1) {
-        return null;
-      }
+    if (routeParts.length !== urlParts.length) {
+      return null;
+    }
 
+    for (let i = 0; i < urlParts.length; i++) {
       if (routeParts[i].startsWith(":")) {
         let routePart = routeParts[i];
         const indexOfBracket = routePart.indexOf("{");

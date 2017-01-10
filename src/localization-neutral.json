@@ -1,11 +1,13 @@
 {
   "login-form": {
+    "form_title": "Anmeldedaten",
     "enter_user_password_text": "Geben Sie hier Ihren Benutzernamen und Passwort ein und klicken Sie auf \"Anmelden\".",
     "username_caption": "Benutzername",
     "password_caption": "Passwort",
     "stayloggodon_caption": "Angemeldet bleiben"
   },
   "authgroup-edit": {
+    "form_title": "Berechtigungsgruppe",
     "info_text": {
       "text": "Hallo {0}",
       "parameters": [
@@ -16,17 +18,23 @@
     "mandator_caption": "Mandant"
   },
   "authgroup-list": {
+    "form_title": "Berechtigungsgruppen",
     "name_caption": "Bezeichnung",
     "mandantor_caption": "Mandant"
   },
   "base": {
     "save": "Speichern",
     "delete": "Löschen",
-    "question": "Frage", 
+    "question": "Frage",
     "information": "Information",
-    "sure_delete_question": "Sind Sie sicher, dass sie den aktuellen Datensatz löschen wollen?"
+    "sure_delete_question": "Sind Sie sicher, dass sie den aktuellen Datensatz löschen wollen?",
+    "login": "Anmelden",
+    "logout": "Abmelden"
   },
   "login-form-funcs": {
     "anmelden_caption": "Anmelden"
+  },
+  "routes": {
+    "settings": "Einstellungen"
   }
 }

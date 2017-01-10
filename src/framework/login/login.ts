@@ -30,7 +30,7 @@ export class Login {
     this.router.registerRoutes([
       {
         moduleId: "framework/login/views/login/login-form",
-        title: "Login",
+        caption: "base.login",
         route: "login"
       }
     ], "login");

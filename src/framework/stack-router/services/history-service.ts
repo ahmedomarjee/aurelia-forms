@@ -98,7 +98,7 @@ export class HistoryService {
 				id: navigationArgs.routeInfo.id,
 				url: navigationArgs.url
 			},
-			navigationArgs.routeInfo.route.title)
+			navigationArgs.routeInfo.route.caption)
 		}
 	}
 	private assignUrl(url: string) {

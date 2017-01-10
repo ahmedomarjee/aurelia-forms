@@ -9,6 +9,8 @@ export class LoginForm extends fwx.FormBase {
         formBaseImport: fwx.FormBaseImport,
         private $f: LoginFuncs) {
         super(formBaseImport);
+        this.title = this.translate("login-form.form_title");
+        this.id = "login-form";
         this.addModel({
             "id": "$m_login",
             "filters": []
@@ -71,6 +73,4 @@ export class LoginForm extends fwx.FormBase {
         });
         super.onConstructionFinished();
     }
-    title = "Anmeldedaten";
-    id = "login-form";
 }

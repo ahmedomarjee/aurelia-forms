@@ -1,5 +1,5 @@
 export interface IRoute {
-  title: string;
+  caption: string;
   route?: string | string[];
   moduleId?: string;
   navigation?: any;

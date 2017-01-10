@@ -1,4 +1,4 @@
-<form id="authgroup-edit" caption="Berechtigungsgruppe">
+<form id="authgroup-edit" caption="Berechtigungsgruppe" nav-route="security/authgroup/:id">
   <models>
     <model id="$m_A" web-api-action="base/Security/Authgroup" key="$id" post-on-save="true" />
   </models>

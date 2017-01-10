@@ -33,7 +33,9 @@ import {
   WidgetCreatorService
 } from "../widget-services/widget-creator-service";
 import {
-  CustomEvent
+  CustomEvent,
+  GlobalizationService,
+  LocalizationService
 } from "../../base/export";
 import {
   IFormAttachedEventArgs,
@@ -60,6 +62,8 @@ export class FormBase {
     this.functions = formBaseImport.functions;
     this.expressions = formBaseImport.expressions;
     this.commands = formBaseImport.commands;
+    this.globalization = formBaseImport.globalization;
+    this.localization = formBaseImport.localization;
     this.commandServerData = formBaseImport.commandServerData;
     this.onFormAttached = formBaseImport.onFormAttached;
     this.onFormReady = formBaseImport.onFormReady;
@@ -73,6 +77,7 @@ export class FormBase {
   }
 
   toolbarOptions: DevExpress.ui.dxToolbarOptions;
+  id: string;
   title: string;
 
   widgetCreator: WidgetCreatorService;
@@ -84,6 +89,8 @@ export class FormBase {
   functions: Functions;
   commands: Commands;
   expressions: Expressions;
+  globalization: GlobalizationService;
+  localization: LocalizationService;
   commandServerData: CommandServerData;
   onFormAttached: CustomEvent<IFormAttachedEventArgs>;
   onFormReady: CustomEvent<IFormReadyEventArgs>;
@@ -138,6 +145,9 @@ export class FormBase {
       .catch(r => {
         this.formBaseImport.error.showAndLogError(r);
       });
+  }
+  translate(key: string): string {
+    return this.localization.translate(this.expressions, key);
   }
 
   protected addModel(model: Interfaces.IModel): void {

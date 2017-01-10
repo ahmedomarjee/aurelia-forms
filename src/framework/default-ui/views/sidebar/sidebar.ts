@@ -47,6 +47,10 @@ export class Sidebar {
       this.routeExpanded = null;
     }
 
+    if (route.children.length === 0) {
+      return;
+    }
+
     this.routeExpanded = route;
     this.routeExpanded[this.sidebarExpandedProp] = true;
   }
