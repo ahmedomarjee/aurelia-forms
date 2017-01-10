@@ -24,9 +24,7 @@
     "source": "src/**/*.html"
   },
   "textProcessor": {
-    "id": "none",
-    "displayName": "None",
-    "fileExtension": ".json",
+    "displayName": "Text",
     "source": "src/localization-neutral.json"
   },
   "cssProcessor": {
@@ -69,8 +67,7 @@
           "name": "text",
           "extensions": [
             ".html",
-            ".css",
-            ".json"
+            ".css"
           ],
           "stub": false
         }
@@ -85,7 +82,12 @@
         "name": "app-bundle.js",
         "source": [
           "[**/*.js]",
-          "**/*.{css,html}",
+          "**/*.{css,html}"
+        ]
+      },
+      {
+        "name": "json-bundle.js",
+        "source": [
           "**/*.json"
         ]
       },
