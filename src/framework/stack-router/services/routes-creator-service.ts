@@ -41,6 +41,9 @@ export class RoutesCreatorService {
         if (routeForm.category) {
           route.navigation.category = routeForm.category;
         }
+        if (routeForm.icon) {
+          route.navigation.icon = routeForm.icon;
+        }
       }
       
       if (routeForm.idParent) {

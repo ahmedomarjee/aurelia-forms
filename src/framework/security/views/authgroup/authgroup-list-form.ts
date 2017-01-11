@@ -5,8 +5,8 @@ export class AuthgroupListForm extends fwx.FormBase {
     constructor(
         formBaseImport: fwx.FormBaseImport) {
         super(formBaseImport);
-        this.title = this.translate("authgroup-list.form_title");
         this.id = "authgroup-list";
+        this.title = this.translate("authgroup-list.authgroup-list_caption");
         this.addModel({
             "id": "$m_A",
             "webApiAction": "base/Security/Authgroup",

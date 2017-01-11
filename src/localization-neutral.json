@@ -1,13 +1,13 @@
 {
   "login-form": {
-    "form_title": "Anmeldedaten",
+    "login-form_caption": "Anmeldedaten",
     "enter_user_password_text": "Geben Sie hier Ihren Benutzernamen und Passwort ein und klicken Sie auf \"Anmelden\".",
     "username_caption": "Benutzername",
     "password_caption": "Passwort",
     "stayloggodon_caption": "Angemeldet bleiben"
   },
   "authgroup-edit": {
-    "form_title": "Berechtigungsgruppe",
+    "authgroup-edit_caption": "Berechtigungsgruppe",
     "info_text": {
       "text": "Hallo {0}",
       "parameters": [
@@ -18,7 +18,7 @@
     "mandator_caption": "Mandant"
   },
   "authgroup-list": {
-    "form_title": "Berechtigungsgruppen",
+    "authgroup-list_caption": "Berechtigungsgruppen",
     "name_caption": "Bezeichnung",
     "mandantor_caption": "Mandant"
   },
