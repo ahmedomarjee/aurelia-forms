@@ -96,6 +96,9 @@ define('framework/stack-router/services/router-service',["require", "exports", "
             else if (navigationArgs.clearStack) {
                 this.viewStack.splice(0, this.viewStack.length);
             }
+            else if (this.viewStack.length > 0 && navigationArgs.replace) {
+                this.viewStack.splice(this.viewStack.length - 1, 1);
+            }
             this.addViewItem(new view_item_1.ViewItem(routeInfo));
         };
         RouterService.prototype.registerRoutes = function (routes, fallbackRoute) {
@@ -373,6 +376,22 @@ define('framework/stack-router/services/history-service',["require", "exports", 
                 });
             });
         };
+        HistoryService.prototype.navigateByLocation = function (locationGoTo) {
+            var replace = false;
+            if (this.router.viewStack.length > 1
+                && this.router.viewStack[this.router.viewStack.length - 2].controller["currentViewModel"] === locationGoTo.currentViewModel) {
+                replace = true;
+            }
+            var args = {
+                url: this.getUrl(locationGoTo.url),
+                replace: replace
+            };
+            if (!(args.routeInfo && args.routeInfo.isFallback)) {
+                this.assignUrl(args.url, args.replace);
+            }
+            this.navigate(args);
+            locationGoTo.isHandled = true;
+        };
         HistoryService.prototype.setUrlWithoutNavigation = function (url) {
             var _this = this;
             this.guardedNavigate(function () {
@@ -398,16 +417,9 @@ define('framework/stack-router/services/history-service',["require", "exports", 
                 });
             });
             this.location.onLocationGoTo.register(function (a) {
-                var replace = false;
-                if (_this.router.viewStack.length > 1
-                    && _this.router.viewStack[_this.router.viewStack.length - 2].controller["currentViewModel"] === a.currentViewModel) {
-                    replace = true;
-                }
-                _this.navigate({
-                    url: _this.getUrl(a.url),
-                    replace: replace
+                _this.guardedNavigate(function () {
+                    _this.navigateByLocation(a);
                 });
-                a.isHandled = true;
                 return Promise.resolve();
             });
         };

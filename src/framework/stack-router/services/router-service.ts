@@ -40,6 +40,8 @@ export class RouterService {
       return;
     } else if (navigationArgs.clearStack) {
       this.viewStack.splice(0, this.viewStack.length);
+    } else if (this.viewStack.length > 0 && navigationArgs.replace) {
+      this.viewStack.splice(this.viewStack.length - 1, 1);
     }
 
     this.addViewItem(new ViewItem(routeInfo));

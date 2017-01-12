@@ -9,6 +9,9 @@ import {
 	LocationService
 } from "../../base/services/export";
 import {
+	ILocationGoToEventArgs
+} from "../../base/event-args/export"
+import {
 	RouterService
 } from "./router-service";
 import * as Interfaces from "../interfaces/export";
@@ -64,13 +67,34 @@ export class HistoryService {
 			});
 		});
 	}
+	navigateByLocation(locationGoTo: ILocationGoToEventArgs) {
+		let replace = false;
+
+		if (this.router.viewStack.length > 1
+			&& this.router.viewStack[this.router.viewStack.length - 2].controller["currentViewModel"] === locationGoTo.currentViewModel) {
+			replace = true;
+		}
+
+		const args: Interfaces.INavigationArgs = {
+			url: this.getUrl(locationGoTo.url),
+			replace: replace
+		};
+
+		if (!(args.routeInfo && args.routeInfo.isFallback)) {
+			this.assignUrl(args.url, args.replace);
+		}
+
+		this.navigate(args);
+
+		locationGoTo.isHandled = true;
+	}
 	setUrlWithoutNavigation(url: string) {
 		this.guardedNavigate(() => {
 			this.assignUrl(url, false);
 		});
 	}
 
-	private guardedNavigate(action: {(): void}) {
+	private guardedNavigate(action: { (): void }) {
 		if (this.isActive) {
 			return;
 		}
@@ -90,19 +114,10 @@ export class HistoryService {
 		});
 
 		this.location.onLocationGoTo.register(a => {
-			let replace = false;
-
-			if (this.router.viewStack.length > 1
-				&& this.router.viewStack[this.router.viewStack.length - 2].controller["currentViewModel"] === a.currentViewModel) {
-					replace = true;
-				}
-
-			this.navigate({
-				url: this.getUrl(a.url),
-				replace: replace
+			this.guardedNavigate(() => {
+				this.navigateByLocation(a);
 			});
 
-			a.isHandled = true;
 			return Promise.resolve();
 		});
 	}
@@ -118,8 +133,7 @@ export class HistoryService {
 			history.replaceState(<Interfaces.IHistoryState>{
 				id: navigationArgs.routeInfo.id,
 				url: navigationArgs.url
-			},
-			navigationArgs.routeInfo.route.caption)
+			}, navigationArgs.routeInfo.route.caption);
 		}
 	}
 	private assignUrl(url: string, replace: boolean) {
