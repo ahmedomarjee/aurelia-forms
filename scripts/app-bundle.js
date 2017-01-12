@@ -221,10 +221,11 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-define('framework/base/services/rest-service',["require", "exports", "aurelia-framework", "aurelia-fetch-client", "../classes/custom-event", "../../../config"], function (require, exports, aurelia_framework_1, aurelia_fetch_client_1, custom_event_1, config_1) {
+define('framework/base/services/rest-service',["require", "exports", "aurelia-framework", "aurelia-fetch-client", "../classes/custom-event", "./json-service", "../../../config"], function (require, exports, aurelia_framework_1, aurelia_fetch_client_1, custom_event_1, json_service_1, config_1) {
     "use strict";
     var RestService = (function () {
-        function RestService(onUnauthorizated) {
+        function RestService(json, onUnauthorizated) {
+            this.json = json;
             this.onUnauthorizated = onUnauthorizated;
             this.loadingCount = 0;
         }
@@ -251,7 +252,7 @@ define('framework/base/services/rest-service',["require", "exports", "aurelia-fr
                     body = options.data;
                 }
                 else {
-                    body = JSON.stringify(options.data);
+                    body = this.json.stringify(options.data);
                 }
             }
             return this.execute("POST", options.url, this.createHeaders(options), options.increaseLoadingCount, body);
@@ -263,7 +264,7 @@ define('framework/base/services/rest-service',["require", "exports", "aurelia-fr
                     body = options.data;
                 }
                 else {
-                    body = JSON.stringify(options.data);
+                    body = this.json.stringify(options.data);
                 }
             }
             return this.execute("PUT", options.url, this.createHeaders(options), options.increaseLoadingCount, body);
@@ -283,7 +284,7 @@ define('framework/base/services/rest-service',["require", "exports", "aurelia-fr
         RestService.prototype.createHeaders = function (options) {
             var headers = {};
             if (options.getOptions) {
-                headers["X-GET-OPTIONS"] = JSON.stringify(options.getOptions);
+                headers["X-GET-OPTIONS"] = this.json.stringify(options.getOptions);
             }
             headers["Content-Type"] = "application/json";
             headers["Accept"] = "application/json";
@@ -307,7 +308,7 @@ define('framework/base/services/rest-service',["require", "exports", "aurelia-fr
                 })
                     .then(function (r) {
                     if (r.ok) {
-                        return r.json();
+                        return r.text();
                     }
                     if (r.status == 401) {
                         _this.onUnauthorizated.fire({
@@ -318,6 +319,7 @@ define('framework/base/services/rest-service',["require", "exports", "aurelia-fr
                     DevExpress.ui.notify(r.statusText, "error", 3000);
                     error(r);
                 })
+                    .then(function (r) { return _this.json.parse(r); })
                     .then(function (r) { return success(r); })
                     .catch(function (r) {
                     error(r);
@@ -338,7 +340,8 @@ define('framework/base/services/rest-service',["require", "exports", "aurelia-fr
     ], RestService.prototype, "isLoading", null);
     RestService = __decorate([
         aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [custom_event_1.CustomEvent])
+        __metadata("design:paramtypes", [json_service_1.JsonService,
+            custom_event_1.CustomEvent])
     ], RestService);
     exports.RestService = RestService;
 });
@@ -851,7 +854,7 @@ define('framework/base/services/location-service',["require", "exports", "aureli
     exports.LocationService = LocationService;
 });
 
-define('framework/base/services/export',["require", "exports", "./authorization-service", "./deep-observer-service", "./error-service", "./globalization-service", "./localization-service", "./location-service", "./object-info-service", "./rest-service"], function (require, exports, authorization_service_1, deep_observer_service_1, error_service_1, globalization_service_1, localization_service_1, location_service_1, object_info_service_1, rest_service_1) {
+define('framework/base/services/export',["require", "exports", "./authorization-service", "./deep-observer-service", "./error-service", "./globalization-service", "./localization-service", "./location-service", "./json-service", "./object-info-service", "./rest-service"], function (require, exports, authorization_service_1, deep_observer_service_1, error_service_1, globalization_service_1, localization_service_1, location_service_1, json_service_1, object_info_service_1, rest_service_1) {
     "use strict";
     exports.AuthorizationService = authorization_service_1.AuthorizationService;
     exports.DeepObserverService = deep_observer_service_1.DeepObserverService;
@@ -859,6 +862,7 @@ define('framework/base/services/export',["require", "exports", "./authorization-
     exports.GlobalizationService = globalization_service_1.GlobalizationService;
     exports.LocalizationService = localization_service_1.LocalizationService;
     exports.LocationService = location_service_1.LocationService;
+    exports.JsonService = json_service_1.JsonService;
     exports.ObjectInfoService = object_info_service_1.ObjectInfoService;
     exports.RestService = rest_service_1.RestService;
 });
@@ -4405,6 +4409,52 @@ define('framework/stack-router/views/stack-router/stack-router',["require", "exp
             aurelia_event_aggregator_1.EventAggregator])
     ], StackRouter);
     exports.StackRouter = StackRouter;
+});
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+define('framework/base/services/json-service',["require", "exports", "aurelia-framework"], function (require, exports, aurelia_framework_1) {
+    "use strict";
+    var JsonService = (function () {
+        function JsonService() {
+            this.regexDateISO = /(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+)|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d)|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d)/;
+        }
+        JsonService.prototype.parse = function (json) {
+            var _this = this;
+            if (!json) {
+                return json;
+            }
+            if (!(typeof json === "string")) {
+                json = JSON.stringify(json);
+            }
+            return JSON.parse(json, function (key, value) {
+                if (typeof value === "string" && value.indexOf("{") < 0) {
+                    var a = _this.regexDateISO.exec(value);
+                    if (a) {
+                        return new Date(value);
+                    }
+                    return value;
+                }
+                return value;
+            });
+        };
+        JsonService.prototype.stringify = function (obj) {
+            return JSON.stringify(obj);
+        };
+        return JsonService;
+    }());
+    JsonService = __decorate([
+        aurelia_framework_1.autoinject,
+        __metadata("design:paramtypes", [])
+    ], JsonService);
+    exports.JsonService = JsonService;
 });
 
 define('text!app.html', ['module'], function(module) { module.exports = "<template>\r\n  <require from=\"./framework/default-ui/views/container/container\"></require>\r\n  <container></container>\r\n</template>\r\n"; });

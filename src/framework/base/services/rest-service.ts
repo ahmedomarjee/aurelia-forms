@@ -11,12 +11,16 @@ import {
 import {
   IUnauthorizatedEventArgs
 } from "../event-args/export";
+import {
+  JsonService
+} from "./json-service";
 import * as Interfaces from "../interfaces/export";
 import Config from "../../../config";
 
 @autoinject
 export class RestService {
   constructor(
+    private json: JsonService,
     public onUnauthorizated: CustomEvent<IUnauthorizatedEventArgs>
   ) { }
 
@@ -44,7 +48,7 @@ export class RestService {
       if (typeof options.data === "string") {
         body = options.data;
       } else {
-        body = JSON.stringify(options.data);
+        body = this.json.stringify(options.data);
       }
     }
 
@@ -56,7 +60,7 @@ export class RestService {
       if (typeof options.data === "string") {
         body = options.data;
       } else {
-        body = JSON.stringify(options.data);
+        body = this.json.stringify(options.data);
       }
     }
 
@@ -80,7 +84,7 @@ export class RestService {
     const headers: any = {};
 
     if (options.getOptions) {
-      headers["X-GET-OPTIONS"] = JSON.stringify(options.getOptions);
+      headers["X-GET-OPTIONS"] = this.json.stringify(options.getOptions);
     }
 
     headers["Content-Type"] = "application/json";
@@ -109,7 +113,7 @@ export class RestService {
         .then(r => {
           if (r.ok) {
             //TODO - Datums konvertieren
-            return r.json();
+            return r.text();
           }
           if (r.status == 401) {
             this.onUnauthorizated.fire({
@@ -121,6 +125,7 @@ export class RestService {
           DevExpress.ui.notify(r.statusText, "error", 3000);
           error(r);
         })
+        .then(r => this.json.parse(r))
         .then(r => success(r))
         .catch(r => {
           error(r);
