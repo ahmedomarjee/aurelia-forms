@@ -1,576 +1,3 @@
-define('framework/stack-router/interfaces/history-state',["require", "exports"], function (require, exports) {
-    "use strict";
-});
-
-define('framework/stack-router/interfaces/route',["require", "exports"], function (require, exports) {
-    "use strict";
-});
-
-define('framework/stack-router/interfaces/route-info',["require", "exports"], function (require, exports) {
-    "use strict";
-});
-
-define('framework/stack-router/interfaces/navigation-args',["require", "exports"], function (require, exports) {
-    "use strict";
-});
-
-define('framework/stack-router/interfaces/navigation-route',["require", "exports"], function (require, exports) {
-    "use strict";
-});
-
-define('framework/stack-router/interfaces/export',["require", "exports"], function (require, exports) {
-    "use strict";
-});
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/stack-router/classes/view-item',["require", "exports", "aurelia-framework"], function (require, exports, aurelia_framework_1) {
-    "use strict";
-    var ViewItem = (function () {
-        function ViewItem(routeInfo) {
-            this.routeInfo = routeInfo;
-            this.title = routeInfo.route.caption;
-            this.moduleId = routeInfo.route.moduleId;
-            this.model = routeInfo;
-            this.isCurrent = true;
-        }
-        Object.defineProperty(ViewItem.prototype, "className", {
-            get: function () {
-                return this.isCurrent
-                    ? "t--view-current"
-                    : "t--view-history";
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return ViewItem;
-    }());
-    __decorate([
-        aurelia_framework_1.computedFrom("isCurrent"),
-        __metadata("design:type", String),
-        __metadata("design:paramtypes", [])
-    ], ViewItem.prototype, "className", null);
-    exports.ViewItem = ViewItem;
-});
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/stack-router/services/router-service',["require", "exports", "aurelia-framework", "../classes/view-item"], function (require, exports, aurelia_framework_1, view_item_1) {
-    "use strict";
-    var RouterService = (function () {
-        function RouterService() {
-            this.routes = [];
-            this.routeInfoId = 0;
-            this.viewStack = [];
-        }
-        RouterService.prototype.deactivate = function () {
-        };
-        RouterService.prototype.navigate = function (navigationArgs) {
-            var routeInfo = this.getRoute(navigationArgs.url);
-            if (routeInfo == void (0)) {
-                return;
-            }
-            Object.assign(routeInfo.parameters, this.getParameters(navigationArgs.url));
-            if (navigationArgs.historyState) {
-                routeInfo.id = navigationArgs.historyState.id;
-            }
-            navigationArgs.routeInfo = routeInfo;
-            if (this.viewStack.length > 1 && this.viewStack[this.viewStack.length - 2].routeInfo.id === routeInfo.id) {
-                this.removeLastViewItem();
-                return;
-            }
-            else if (navigationArgs.clearStack) {
-                this.viewStack.splice(0, this.viewStack.length);
-            }
-            else if (this.viewStack.length > 0 && navigationArgs.replace) {
-                this.viewStack.splice(this.viewStack.length - 1, 1);
-            }
-            this.addViewItem(new view_item_1.ViewItem(routeInfo));
-        };
-        RouterService.prototype.registerRoutes = function (routes, fallbackRoute) {
-            routes = routes || [];
-            this.routes = this.validateRoutes(routes);
-            this.fallbackRoute = fallbackRoute;
-            this.navigationRoutes = this.getNavigationRoutes(routes);
-        };
-        RouterService.prototype.reset = function () {
-            this.viewStack.splice(0, this.viewStack.length);
-            this.navigationRoutes = [];
-        };
-        RouterService.prototype.removeViewModel = function (viewModel) {
-            var view = this.viewStack.find(function (i) { return i.controller["currentViewModel"] == viewModel; });
-            if (!view) {
-                return;
-            }
-            this.viewStack.splice(this.viewStack.indexOf(view), 1);
-        };
-        RouterService.prototype.addViewItem = function (viewItem) {
-            this.viewStack.push(viewItem);
-            this.setCurrentViewItem();
-        };
-        RouterService.prototype.removeLastViewItem = function () {
-            this.viewStack.pop();
-            this.setCurrentViewItem();
-            if (this.currentViewItem) {
-                var currentViewModel = this.currentViewItem.controller["currentViewModel"];
-                if (currentViewModel && typeof currentViewModel.reactivate === "function") {
-                    currentViewModel.reactivate();
-                }
-            }
-        };
-        RouterService.prototype.getFallbackRoute = function () {
-            var _this = this;
-            if (!this.fallbackRoute) {
-                return null;
-            }
-            var getRoute = function (routes) {
-                for (var _i = 0, routes_1 = routes; _i < routes_1.length; _i++) {
-                    var route = routes_1[_i];
-                    if (route.route.some(function (r) { return r === _this.fallbackRoute; })) {
-                        return route;
-                    }
-                    var childRoute = getRoute(route.children);
-                    if (childRoute) {
-                        return childRoute;
-                    }
-                }
-            };
-            var fallbackRoute = getRoute(this.routes);
-            if (!fallbackRoute) {
-                throw new Error("Fallback route not found");
-            }
-            return fallbackRoute;
-        };
-        RouterService.prototype.getNavigationRoutes = function (routes) {
-            var result = [];
-            for (var _i = 0, routes_2 = routes; _i < routes_2.length; _i++) {
-                var route = routes_2[_i];
-                if (!route.navigation) {
-                    continue;
-                }
-                if (!route.canActivate()) {
-                    continue;
-                }
-                var navigationRoute = {
-                    caption: route.caption,
-                    route: route.route[0],
-                    navigation: route.navigation,
-                    children: this.getNavigationRoutes(route.children)
-                };
-                result.push(navigationRoute);
-            }
-            return result;
-        };
-        RouterService.prototype.getParameters = function (url) {
-            var result = {};
-            var indexQuestionMark = url.indexOf("?");
-            if (indexQuestionMark < 0) {
-                return result;
-            }
-            var parameterString = url.substr(indexQuestionMark + 1);
-            var parameters = parameterString.split("&");
-            for (var _i = 0, parameters_1 = parameters; _i < parameters_1.length; _i++) {
-                var parameter = parameters_1[_i];
-                var parts = parameter.split("=");
-                if (parts.length == 1) {
-                    result[parts[0]] = true;
-                }
-                else {
-                    result[parts[0]] = parts[1];
-                }
-            }
-            return result;
-        };
-        RouterService.prototype.getRoute = function (url) {
-            var _this = this;
-            var indexQuestionMark = url.indexOf("?");
-            if (indexQuestionMark >= 0) {
-                url = url.substr(0, indexQuestionMark);
-            }
-            var searchRouteInfo = function (routes) {
-                for (var _i = 0, routes_3 = routes; _i < routes_3.length; _i++) {
-                    var route = routes_3[_i];
-                    var routeInfo_1 = _this.isRoute(route, url)
-                        || searchRouteInfo(route.children);
-                    if (routeInfo_1 == void (0)) {
-                        continue;
-                    }
-                    return routeInfo_1;
-                }
-                return null;
-            };
-            var routeInfo = searchRouteInfo(this.routes);
-            if (routeInfo != void (0)) {
-                return routeInfo;
-            }
-            return {
-                id: this.routeInfoId++,
-                route: this.getFallbackRoute(),
-                parameters: {},
-                isFallback: true
-            };
-        };
-        RouterService.prototype.isRoute = function (route, url) {
-            if (route.route == void (0)) {
-                return null;
-            }
-            if (Array.isArray(route.route)) {
-                for (var _i = 0, _a = route.route; _i < _a.length; _i++) {
-                    var part = _a[_i];
-                    var result = this.isRoutePattern(part, url);
-                    if (result == void (0)) {
-                        continue;
-                    }
-                    else if (!route.canActivate()) {
-                        continue;
-                    }
-                    else {
-                        return {
-                            id: this.routeInfoId++,
-                            route: route,
-                            parameters: result
-                        };
-                    }
-                }
-                return null;
-            }
-            else {
-                throw new Error();
-            }
-        };
-        RouterService.prototype.isRoutePattern = function (route, url) {
-            var routeParts = route.split("/");
-            var urlParts = url.split("/");
-            var parameters = {};
-            if (routeParts.length !== urlParts.length) {
-                return null;
-            }
-            for (var i = 0; i < urlParts.length; i++) {
-                if (routeParts[i].startsWith(":")) {
-                    var routePart = routeParts[i];
-                    var indexOfBracket = routePart.indexOf("{");
-                    var lastIndexOfBrack = routePart.lastIndexOf("}");
-                    if (indexOfBracket >= 0 && lastIndexOfBrack >= 0) {
-                        var r = routePart.substring(indexOfBracket + 1, lastIndexOfBrack);
-                        routePart = routePart.substr(0, indexOfBracket);
-                        if (!new RegExp("^" + r + "$").test(urlParts[i])) {
-                            return null;
-                        }
-                    }
-                    parameters[routePart.substr(1)] = urlParts[i];
-                }
-                else if (urlParts[i] !== routeParts[i]) {
-                    return null;
-                }
-            }
-            return parameters;
-        };
-        RouterService.prototype.validateRoutes = function (routes) {
-            for (var _i = 0, routes_4 = routes; _i < routes_4.length; _i++) {
-                var route = routes_4[_i];
-                if (route.route == void (0)) {
-                    route.route = "";
-                }
-                if (typeof route.route === "string") {
-                    route.route = [route.route];
-                }
-                if (route.canActivate == void (0)) {
-                    route.canActivate = this.returnTrue;
-                }
-                route.children = route.children || [];
-                this.validateRoutes(route.children);
-            }
-            return routes;
-        };
-        RouterService.prototype.returnTrue = function () {
-            return true;
-        };
-        RouterService.prototype.setCurrentViewItem = function () {
-            if (this.viewStack.length === 0) {
-                this.currentViewItem = null;
-            }
-            else {
-                this.currentViewItem = this.viewStack[this.viewStack.length - 1];
-                this.currentViewItem.isCurrent = true;
-                if (this.viewStack.length > 1) {
-                    this.viewStack[this.viewStack.length - 2].isCurrent = false;
-                }
-            }
-        };
-        return RouterService;
-    }());
-    RouterService = __decorate([
-        aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [])
-    ], RouterService);
-    exports.RouterService = RouterService;
-});
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/stack-router/services/history-service',["require", "exports", "aurelia-framework", "aurelia-event-aggregator", "../../base/services/export", "./router-service"], function (require, exports, aurelia_framework_1, aurelia_event_aggregator_1, export_1, router_service_1) {
-    "use strict";
-    var HistoryService = (function () {
-        function HistoryService(eventAggregator, taskQueue, router, location) {
-            this.eventAggregator = eventAggregator;
-            this.taskQueue = taskQueue;
-            this.router = router;
-            this.location = location;
-            this.isActive = false;
-            this.register();
-        }
-        HistoryService.prototype.getUrl = function (url) {
-            var hash = url || location.hash;
-            if (!hash) {
-                return "";
-            }
-            if (hash.substr(0, 1) === "#") {
-                return hash.substr(1);
-            }
-            else {
-                return hash;
-            }
-        };
-        HistoryService.prototype.navigateCurrentOrInPipeline = function () {
-            var _this = this;
-            if (this.pipelineUrl) {
-                this.navigateByCode(this.pipelineUrl, true);
-                this.pipelineUrl = null;
-            }
-            else {
-                this.guardedNavigate(function () {
-                    _this.navigate({
-                        url: _this.getUrl()
-                    });
-                });
-            }
-        };
-        HistoryService.prototype.navigateByCode = function (url, clearStack) {
-            var _this = this;
-            this.guardedNavigate(function () {
-                _this.assignUrl(url, false);
-                _this.navigate({
-                    url: _this.getUrl(url),
-                    clearStack: clearStack
-                });
-            });
-        };
-        HistoryService.prototype.navigateByLocation = function (locationGoTo) {
-            var replace = false;
-            if (this.router.viewStack.length > 1
-                && this.router.viewStack[this.router.viewStack.length - 2].controller["currentViewModel"] === locationGoTo.currentViewModel) {
-                replace = true;
-            }
-            var args = {
-                url: this.getUrl(locationGoTo.url),
-                replace: replace
-            };
-            if (!(args.routeInfo && args.routeInfo.isFallback)) {
-                this.assignUrl(args.url, args.replace);
-            }
-            this.navigate(args);
-            locationGoTo.isHandled = true;
-        };
-        HistoryService.prototype.setUrlWithoutNavigation = function (url) {
-            var _this = this;
-            this.guardedNavigate(function () {
-                _this.assignUrl(url, false);
-            });
-        };
-        HistoryService.prototype.guardedNavigate = function (action) {
-            if (this.isActive) {
-                return;
-            }
-            this.isActive = true;
-            action();
-            this.isActive = false;
-        };
-        HistoryService.prototype.register = function () {
-            var _this = this;
-            window.addEventListener("popstate", function (e) {
-                _this.guardedNavigate(function () {
-                    _this.navigate({
-                        historyState: e.state,
-                        url: _this.getUrl()
-                    });
-                });
-            });
-            this.location.onLocationGoTo.register(function (a) {
-                _this.guardedNavigate(function () {
-                    _this.navigateByLocation(a);
-                });
-                return Promise.resolve();
-            });
-        };
-        HistoryService.prototype.navigate = function (navigationArgs) {
-            this.lastRequestUrl = navigationArgs.url;
-            this.router.navigate(navigationArgs);
-            if (navigationArgs.routeInfo && navigationArgs.routeInfo.isFallback) {
-                this.assignUrl(navigationArgs.routeInfo.route.route[0], navigationArgs.replace);
-            }
-            if (!navigationArgs.historyState && navigationArgs.routeInfo) {
-                history.replaceState({
-                    id: navigationArgs.routeInfo.id,
-                    url: navigationArgs.url
-                }, navigationArgs.routeInfo.route.caption);
-            }
-        };
-        HistoryService.prototype.assignUrl = function (url, replace) {
-            if (!url) {
-                throw new Error("No Url defined");
-            }
-            if (url.substr(0, 1) !== "#") {
-                url = "#" + url;
-            }
-            if (replace) {
-                location.replace(url);
-            }
-            else {
-                location.assign(url);
-            }
-        };
-        return HistoryService;
-    }());
-    HistoryService = __decorate([
-        aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [aurelia_event_aggregator_1.EventAggregator,
-            aurelia_framework_1.TaskQueue,
-            router_service_1.RouterService,
-            export_1.LocationService])
-    ], HistoryService);
-    exports.HistoryService = HistoryService;
-});
-
-define('framework/stack-router/services/routes-creator-service',["require", "exports"], function (require, exports) {
-    "use strict";
-    var RoutesCreatorService = (function () {
-        function RoutesCreatorService() {
-        }
-        RoutesCreatorService.prototype.createRoutes = function (structure, routeForms) {
-            var routes = [];
-            var parentDic = {};
-            structure.forEach(function (s) {
-                var route = {
-                    caption: s.caption,
-                    navigation: {
-                        icon: s.icon
-                    },
-                    children: []
-                };
-                routes.push(route);
-                parentDic[s.id] = route;
-            });
-            for (var routeFormKey in routeForms) {
-                var routeForm = routeForms[routeFormKey];
-                var route = {
-                    caption: routeForm.caption,
-                    route: routeForm.route,
-                    moduleId: routeForm.moduleId
-                };
-                if (routeForm.isEnabled) {
-                    route.navigation = {};
-                    if (routeForm.category) {
-                        route.navigation.category = routeForm.category;
-                    }
-                    if (routeForm.icon) {
-                        route.navigation.icon = routeForm.icon;
-                    }
-                }
-                if (routeForm.idParent) {
-                    parentDic[routeForm.idParent].children.push(route);
-                }
-                else {
-                    routes.push(route);
-                }
-            }
-            return routes;
-        };
-        return RoutesCreatorService;
-    }());
-    exports.RoutesCreatorService = RoutesCreatorService;
-});
-
-define('framework/stack-router/services/export',["require", "exports", "./history-service", "./router-service", "./routes-creator-service"], function (require, exports, history_service_1, router_service_1, routes_creator_service_1) {
-    "use strict";
-    exports.HistoryService = history_service_1.HistoryService;
-    exports.RouterService = router_service_1.RouterService;
-    exports.RoutesCreatorService = routes_creator_service_1.RoutesCreatorService;
-});
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('app',["require", "exports", "aurelia-framework", "./framework/stack-router/services/export", "text!./routes/forms.json", "text!./routes/structure.json"], function (require, exports, aurelia_framework_1, export_1, routesForm, routesStructure) {
-    "use strict";
-    var App = (function () {
-        function App(router, routesCreator) {
-            this.router = router;
-            this.routesCreator = routesCreator;
-            this.routes = [];
-            this.routes = routesCreator.createRoutes(JSON.parse(routesStructure), JSON.parse(routesForm));
-        }
-        App.prototype.attached = function () {
-            this.router.registerRoutes(this.routes, "security/authgroup");
-        };
-        return App;
-    }());
-    App = __decorate([
-        aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [export_1.RouterService,
-            export_1.RoutesCreatorService])
-    ], App);
-    exports.App = App;
-});
-
-define('config',["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.default = {
-        baseUrl: "http://10.20.50.53/TIP.Aurelia",
-        apiUrl: "http://10.20.50.53/TIP.Aurelia/api",
-        webApiUrl: "http://10.20.50.53/TIP.Aurelia/api/data",
-        appUrl: "http://localhost:9000",
-        loginApp: "framework/login/login",
-        mainApp: "app"
-    };
-});
-
-define('environment',["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.default = {
-        debug: true,
-        testing: true
-    };
-});
-
 define('framework/base/event-args/custom-event-args',["require", "exports"], function (require, exports) {
     "use strict";
 });
@@ -736,6 +163,10 @@ define('framework/base/event-args/unauthorized',["require", "exports"], function
     "use strict";
 });
 
+define('framework/base/event-args/location-go-to',["require", "exports"], function (require, exports) {
+    "use strict";
+});
+
 define('framework/base/event-args/export',["require", "exports"], function (require, exports) {
     "use strict";
 });
@@ -766,6 +197,19 @@ define('framework/base/interfaces/rest-post-options',["require", "exports"], fun
 
 define('framework/base/interfaces/export',["require", "exports"], function (require, exports) {
     "use strict";
+});
+
+define('config',["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = {
+        baseUrl: "http://10.20.50.53/TIP.Aurelia",
+        apiUrl: "http://10.20.50.53/TIP.Aurelia/api",
+        webApiUrl: "http://10.20.50.53/TIP.Aurelia/api/data",
+        appUrl: "http://localhost:9000",
+        loginApp: "framework/login/login",
+        mainApp: "app"
+    };
 });
 
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -988,43 +432,6 @@ define('framework/base/services/authorization-service',["require", "exports", "a
             aurelia_framework_1.BindingEngine])
     ], AuthorizationService);
     exports.AuthorizationService = AuthorizationService;
-});
-
-define('main',["require", "exports", "./environment", "./framework/base/services/authorization-service"], function (require, exports, environment_1, authorization_service_1) {
-    "use strict";
-    Promise.config({
-        longStackTraces: environment_1.default.debug,
-        warnings: {
-            wForgottenReturn: false
-        }
-    });
-    function configure(aurelia) {
-        aurelia.use
-            .basicConfiguration()
-            .plugin("aurelia-animator-css")
-            .feature("framework/base")
-            .feature("framework/dx")
-            .feature("framework/forms")
-            .feature("framework/default-ui")
-            .feature("framework/stack-router")
-            .feature("framework/security");
-        if (environment_1.default.debug) {
-            aurelia.use.developmentLogging();
-        }
-        if (environment_1.default.testing) {
-            aurelia.use.plugin("aurelia-testing");
-        }
-        aurelia.start().then(function () {
-            var authorization = aurelia.container.get(authorization_service_1.AuthorizationService);
-            authorization.openApp();
-        });
-    }
-    exports.configure = configure;
-});
-
-define('framework/base/classes/export',["require", "exports", "./custom-event"], function (require, exports, custom_event_1) {
-    "use strict";
-    exports.CustomEvent = custom_event_1.CustomEvent;
 });
 
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -1406,6 +813,44 @@ define('framework/base/services/localization-service',["require", "exports", "au
     exports.LocalizationService = LocalizationService;
 });
 
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+define('framework/base/services/location-service',["require", "exports", "aurelia-framework", "../classes/custom-event"], function (require, exports, aurelia_framework_1, custom_event_1) {
+    "use strict";
+    var LocationService = (function () {
+        function LocationService(onLocationGoTo) {
+            this.onLocationGoTo = onLocationGoTo;
+        }
+        LocationService.prototype.goTo = function (url, currentViewModel) {
+            var args = {
+                url: url,
+                currentViewModel: currentViewModel,
+                isHandled: false
+            };
+            this.onLocationGoTo
+                .fire(args)
+                .then(function () {
+                if (!args.isHandled) {
+                    location.assign(url);
+                }
+            });
+        };
+        return LocationService;
+    }());
+    LocationService = __decorate([
+        aurelia_framework_1.autoinject,
+        __metadata("design:paramtypes", [custom_event_1.CustomEvent])
+    ], LocationService);
+    exports.LocationService = LocationService;
+});
+
 define('framework/base/services/export',["require", "exports", "./authorization-service", "./deep-observer-service", "./error-service", "./globalization-service", "./localization-service", "./location-service", "./object-info-service", "./rest-service"], function (require, exports, authorization_service_1, deep_observer_service_1, error_service_1, globalization_service_1, localization_service_1, location_service_1, object_info_service_1, rest_service_1) {
     "use strict";
     exports.AuthorizationService = authorization_service_1.AuthorizationService;
@@ -1416,6 +861,605 @@ define('framework/base/services/export',["require", "exports", "./authorization-
     exports.LocationService = location_service_1.LocationService;
     exports.ObjectInfoService = object_info_service_1.ObjectInfoService;
     exports.RestService = rest_service_1.RestService;
+});
+
+define('framework/stack-router/interfaces/history-state',["require", "exports"], function (require, exports) {
+    "use strict";
+});
+
+define('framework/stack-router/interfaces/route',["require", "exports"], function (require, exports) {
+    "use strict";
+});
+
+define('framework/stack-router/interfaces/route-info',["require", "exports"], function (require, exports) {
+    "use strict";
+});
+
+define('framework/stack-router/interfaces/navigation-args',["require", "exports"], function (require, exports) {
+    "use strict";
+});
+
+define('framework/stack-router/interfaces/navigation-route',["require", "exports"], function (require, exports) {
+    "use strict";
+});
+
+define('framework/stack-router/interfaces/export',["require", "exports"], function (require, exports) {
+    "use strict";
+});
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+define('framework/stack-router/classes/view-item',["require", "exports", "aurelia-framework"], function (require, exports, aurelia_framework_1) {
+    "use strict";
+    var ViewItem = (function () {
+        function ViewItem(routeInfo) {
+            this.routeInfo = routeInfo;
+            this.title = routeInfo.route.caption;
+            this.moduleId = routeInfo.route.moduleId;
+            this.model = routeInfo;
+            this.isCurrent = true;
+        }
+        Object.defineProperty(ViewItem.prototype, "className", {
+            get: function () {
+                return this.isCurrent
+                    ? "t--view-current"
+                    : "t--view-history";
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return ViewItem;
+    }());
+    __decorate([
+        aurelia_framework_1.computedFrom("isCurrent"),
+        __metadata("design:type", String),
+        __metadata("design:paramtypes", [])
+    ], ViewItem.prototype, "className", null);
+    exports.ViewItem = ViewItem;
+});
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+define('framework/stack-router/services/router-service',["require", "exports", "aurelia-framework", "../classes/view-item", "../../base/services/export"], function (require, exports, aurelia_framework_1, view_item_1, export_1) {
+    "use strict";
+    var RouterService = (function () {
+        function RouterService(localization) {
+            this.localization = localization;
+            this.routes = [];
+            this.routeInfoId = 0;
+            this.viewStack = [];
+        }
+        RouterService.prototype.deactivate = function () {
+        };
+        RouterService.prototype.navigate = function (navigationArgs) {
+            var routeInfo = this.getRoute(navigationArgs.url);
+            if (routeInfo == void (0)) {
+                return;
+            }
+            Object.assign(routeInfo.parameters, this.getParameters(navigationArgs.url));
+            if (navigationArgs.historyState) {
+                routeInfo.id = navigationArgs.historyState.id;
+            }
+            navigationArgs.routeInfo = routeInfo;
+            if (this.viewStack.length > 1 && this.viewStack[this.viewStack.length - 2].routeInfo.id === routeInfo.id) {
+                this.removeLastViewItem();
+                return;
+            }
+            else if (navigationArgs.clearStack) {
+                this.viewStack.splice(0, this.viewStack.length);
+            }
+            else if (this.viewStack.length > 0 && navigationArgs.replace) {
+                this.viewStack.splice(this.viewStack.length - 1, 1);
+            }
+            this.addViewItem(new view_item_1.ViewItem(routeInfo));
+        };
+        RouterService.prototype.registerRoutes = function (routes, fallbackRoute) {
+            routes = routes || [];
+            this.routes = this.validateRoutes(routes);
+            this.fallbackRoute = fallbackRoute;
+            this.navigationRoutes = this.getNavigationRoutes(routes);
+        };
+        RouterService.prototype.reset = function () {
+            this.viewStack.splice(0, this.viewStack.length);
+            this.navigationRoutes = [];
+        };
+        RouterService.prototype.removeViewModel = function (viewModel) {
+            var view = this.viewStack.find(function (i) { return i.controller["currentViewModel"] == viewModel; });
+            if (!view) {
+                return;
+            }
+            this.viewStack.splice(this.viewStack.indexOf(view), 1);
+        };
+        RouterService.prototype.addViewItem = function (viewItem) {
+            this.viewStack.push(viewItem);
+            this.setCurrentViewItem();
+        };
+        RouterService.prototype.removeLastViewItem = function () {
+            this.viewStack.pop();
+            this.setCurrentViewItem();
+            if (this.currentViewItem) {
+                var currentViewModel = this.currentViewItem.controller["currentViewModel"];
+                if (currentViewModel && typeof currentViewModel.reactivate === "function") {
+                    currentViewModel.reactivate();
+                }
+            }
+        };
+        RouterService.prototype.getFallbackRoute = function () {
+            var _this = this;
+            if (!this.fallbackRoute) {
+                return null;
+            }
+            var getRoute = function (routes) {
+                for (var _i = 0, routes_1 = routes; _i < routes_1.length; _i++) {
+                    var route = routes_1[_i];
+                    if (route.route.some(function (r) { return r === _this.fallbackRoute; })) {
+                        return route;
+                    }
+                    var childRoute = getRoute(route.children);
+                    if (childRoute) {
+                        return childRoute;
+                    }
+                }
+            };
+            var fallbackRoute = getRoute(this.routes);
+            if (!fallbackRoute) {
+                throw new Error("Fallback route not found");
+            }
+            return fallbackRoute;
+        };
+        RouterService.prototype.getNavigationRoutes = function (routes) {
+            var result = [];
+            for (var _i = 0, routes_2 = routes; _i < routes_2.length; _i++) {
+                var route = routes_2[_i];
+                if (!route.navigation) {
+                    continue;
+                }
+                if (!route.canActivate()) {
+                    continue;
+                }
+                var navigationRoute = {
+                    caption: route.caption,
+                    route: route.route[0],
+                    navigation: route.navigation,
+                    children: this.getNavigationRoutes(route.children)
+                };
+                result.push(navigationRoute);
+            }
+            return result;
+        };
+        RouterService.prototype.getParameters = function (url) {
+            var result = {};
+            var indexQuestionMark = url.indexOf("?");
+            if (indexQuestionMark < 0) {
+                return result;
+            }
+            var parameterString = url.substr(indexQuestionMark + 1);
+            var parameters = parameterString.split("&");
+            for (var _i = 0, parameters_1 = parameters; _i < parameters_1.length; _i++) {
+                var parameter = parameters_1[_i];
+                var parts = parameter.split("=");
+                if (parts.length == 1) {
+                    result[parts[0]] = true;
+                }
+                else {
+                    result[parts[0]] = parts[1];
+                }
+            }
+            return result;
+        };
+        RouterService.prototype.getRoute = function (url) {
+            var _this = this;
+            var indexQuestionMark = url.indexOf("?");
+            if (indexQuestionMark >= 0) {
+                url = url.substr(0, indexQuestionMark);
+            }
+            var searchRouteInfo = function (routes) {
+                for (var _i = 0, routes_3 = routes; _i < routes_3.length; _i++) {
+                    var route = routes_3[_i];
+                    var routeInfo_1 = _this.isRoute(route, url)
+                        || searchRouteInfo(route.children);
+                    if (routeInfo_1 == void (0)) {
+                        continue;
+                    }
+                    return routeInfo_1;
+                }
+                return null;
+            };
+            var routeInfo = searchRouteInfo(this.routes);
+            if (routeInfo != void (0)) {
+                return routeInfo;
+            }
+            return {
+                id: this.routeInfoId++,
+                route: this.getFallbackRoute(),
+                parameters: {},
+                isFallback: true
+            };
+        };
+        RouterService.prototype.isRoute = function (route, url) {
+            if (route.route == void (0)) {
+                return null;
+            }
+            if (Array.isArray(route.route)) {
+                for (var _i = 0, _a = route.route; _i < _a.length; _i++) {
+                    var part = _a[_i];
+                    var result = this.isRoutePattern(part, url);
+                    if (result == void (0)) {
+                        continue;
+                    }
+                    else if (!route.canActivate()) {
+                        continue;
+                    }
+                    else {
+                        return {
+                            id: this.routeInfoId++,
+                            route: route,
+                            parameters: result
+                        };
+                    }
+                }
+                return null;
+            }
+            else {
+                throw new Error();
+            }
+        };
+        RouterService.prototype.isRoutePattern = function (route, url) {
+            var routeParts = route.split("/");
+            var urlParts = url.split("/");
+            var parameters = {};
+            if (routeParts.length !== urlParts.length) {
+                return null;
+            }
+            for (var i = 0; i < urlParts.length; i++) {
+                if (routeParts[i].startsWith(":")) {
+                    var routePart = routeParts[i];
+                    var indexOfBracket = routePart.indexOf("{");
+                    var lastIndexOfBrack = routePart.lastIndexOf("}");
+                    if (indexOfBracket >= 0 && lastIndexOfBrack >= 0) {
+                        var r = routePart.substring(indexOfBracket + 1, lastIndexOfBrack);
+                        routePart = routePart.substr(0, indexOfBracket);
+                        if (!new RegExp("^" + r + "$").test(urlParts[i])) {
+                            return null;
+                        }
+                    }
+                    parameters[routePart.substr(1)] = urlParts[i];
+                }
+                else if (urlParts[i] !== routeParts[i]) {
+                    return null;
+                }
+            }
+            return parameters;
+        };
+        RouterService.prototype.validateRoutes = function (routes) {
+            for (var _i = 0, routes_4 = routes; _i < routes_4.length; _i++) {
+                var route = routes_4[_i];
+                if (route.route == void (0)) {
+                    route.route = "";
+                }
+                if (typeof route.route === "string") {
+                    route.route = [route.route];
+                }
+                if (route.canActivate == void (0)) {
+                    route.canActivate = this.returnTrue;
+                }
+                route.children = route.children || [];
+                this.validateRoutes(route.children);
+            }
+            return routes;
+        };
+        RouterService.prototype.returnTrue = function () {
+            return true;
+        };
+        RouterService.prototype.setCurrentViewItem = function () {
+            if (this.viewStack.length === 0) {
+                this.currentViewItem = null;
+            }
+            else {
+                this.currentViewItem = this.viewStack[this.viewStack.length - 1];
+                this.currentViewItem.isCurrent = true;
+                if (this.viewStack.length > 1) {
+                    this.viewStack[this.viewStack.length - 2].isCurrent = false;
+                }
+                $("html title").html(this.localization.translate(null, this.currentViewItem.title));
+            }
+        };
+        return RouterService;
+    }());
+    RouterService = __decorate([
+        aurelia_framework_1.autoinject,
+        __metadata("design:paramtypes", [export_1.LocalizationService])
+    ], RouterService);
+    exports.RouterService = RouterService;
+});
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+define('framework/stack-router/services/history-service',["require", "exports", "aurelia-framework", "aurelia-event-aggregator", "../../base/services/export", "./router-service"], function (require, exports, aurelia_framework_1, aurelia_event_aggregator_1, export_1, router_service_1) {
+    "use strict";
+    var HistoryService = (function () {
+        function HistoryService(eventAggregator, taskQueue, router, location) {
+            this.eventAggregator = eventAggregator;
+            this.taskQueue = taskQueue;
+            this.router = router;
+            this.location = location;
+            this.isActive = false;
+            this.register();
+        }
+        HistoryService.prototype.getUrl = function (url) {
+            var hash = url || location.hash;
+            if (!hash) {
+                return "";
+            }
+            if (hash.substr(0, 1) === "#") {
+                return hash.substr(1);
+            }
+            else {
+                return hash;
+            }
+        };
+        HistoryService.prototype.navigateCurrentOrInPipeline = function () {
+            var _this = this;
+            if (this.pipelineUrl) {
+                this.navigateByCode(this.pipelineUrl, true);
+                this.pipelineUrl = null;
+            }
+            else {
+                this.guardedNavigate(function () {
+                    _this.navigate({
+                        url: _this.getUrl()
+                    });
+                });
+            }
+        };
+        HistoryService.prototype.navigateByCode = function (url, clearStack) {
+            var _this = this;
+            this.guardedNavigate(function () {
+                _this.assignUrl(url, false);
+                _this.navigate({
+                    url: _this.getUrl(url),
+                    clearStack: clearStack
+                });
+            });
+        };
+        HistoryService.prototype.navigateByLocation = function (locationGoTo) {
+            var replace = false;
+            if (this.router.viewStack.length > 1
+                && this.router.viewStack[this.router.viewStack.length - 2].controller["currentViewModel"] === locationGoTo.currentViewModel) {
+                replace = true;
+            }
+            var args = {
+                url: this.getUrl(locationGoTo.url),
+                replace: replace
+            };
+            if (!(args.routeInfo && args.routeInfo.isFallback)) {
+                this.assignUrl(args.url, args.replace);
+            }
+            this.navigate(args);
+            locationGoTo.isHandled = true;
+        };
+        HistoryService.prototype.setUrlWithoutNavigation = function (url) {
+            var _this = this;
+            this.guardedNavigate(function () {
+                _this.assignUrl(url, false);
+            });
+        };
+        HistoryService.prototype.guardedNavigate = function (action) {
+            if (this.isActive) {
+                return;
+            }
+            this.isActive = true;
+            action();
+            this.isActive = false;
+        };
+        HistoryService.prototype.register = function () {
+            var _this = this;
+            window.addEventListener("popstate", function (e) {
+                _this.guardedNavigate(function () {
+                    _this.navigate({
+                        historyState: e.state,
+                        url: _this.getUrl()
+                    });
+                });
+            });
+            this.location.onLocationGoTo.register(function (a) {
+                _this.guardedNavigate(function () {
+                    _this.navigateByLocation(a);
+                });
+                return Promise.resolve();
+            });
+        };
+        HistoryService.prototype.navigate = function (navigationArgs) {
+            this.lastRequestUrl = navigationArgs.url;
+            this.router.navigate(navigationArgs);
+            if (navigationArgs.routeInfo && navigationArgs.routeInfo.isFallback) {
+                this.assignUrl(navigationArgs.routeInfo.route.route[0], navigationArgs.replace);
+            }
+            if (!navigationArgs.historyState && navigationArgs.routeInfo) {
+                history.replaceState({
+                    id: navigationArgs.routeInfo.id,
+                    url: navigationArgs.url
+                }, navigationArgs.routeInfo.route.caption);
+            }
+        };
+        HistoryService.prototype.assignUrl = function (url, replace) {
+            if (!url) {
+                throw new Error("No Url defined");
+            }
+            if (url.substr(0, 1) !== "#") {
+                url = "#" + url;
+            }
+            if (replace) {
+                location.replace(url);
+            }
+            else {
+                location.assign(url);
+            }
+        };
+        return HistoryService;
+    }());
+    HistoryService = __decorate([
+        aurelia_framework_1.autoinject,
+        __metadata("design:paramtypes", [aurelia_event_aggregator_1.EventAggregator,
+            aurelia_framework_1.TaskQueue,
+            router_service_1.RouterService,
+            export_1.LocationService])
+    ], HistoryService);
+    exports.HistoryService = HistoryService;
+});
+
+define('framework/stack-router/services/routes-creator-service',["require", "exports"], function (require, exports) {
+    "use strict";
+    var RoutesCreatorService = (function () {
+        function RoutesCreatorService() {
+        }
+        RoutesCreatorService.prototype.createRoutes = function (structure, routeForms) {
+            var routes = [];
+            var parentDic = {};
+            structure.forEach(function (s) {
+                var route = {
+                    caption: s.caption,
+                    navigation: {
+                        icon: s.icon
+                    },
+                    children: []
+                };
+                routes.push(route);
+                parentDic[s.id] = route;
+            });
+            for (var routeFormKey in routeForms) {
+                var routeForm = routeForms[routeFormKey];
+                var route = {
+                    caption: routeForm.caption,
+                    route: routeForm.route,
+                    moduleId: routeForm.moduleId
+                };
+                if (routeForm.isEnabled) {
+                    route.navigation = {};
+                    if (routeForm.category) {
+                        route.navigation.category = routeForm.category;
+                    }
+                    if (routeForm.icon) {
+                        route.navigation.icon = routeForm.icon;
+                    }
+                }
+                if (routeForm.idParent) {
+                    parentDic[routeForm.idParent].children.push(route);
+                }
+                else {
+                    routes.push(route);
+                }
+            }
+            return routes;
+        };
+        return RoutesCreatorService;
+    }());
+    exports.RoutesCreatorService = RoutesCreatorService;
+});
+
+define('framework/stack-router/services/export',["require", "exports", "./history-service", "./router-service", "./routes-creator-service"], function (require, exports, history_service_1, router_service_1, routes_creator_service_1) {
+    "use strict";
+    exports.HistoryService = history_service_1.HistoryService;
+    exports.RouterService = router_service_1.RouterService;
+    exports.RoutesCreatorService = routes_creator_service_1.RoutesCreatorService;
+});
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+define('app',["require", "exports", "aurelia-framework", "./framework/stack-router/services/export", "text!./routes/forms.json", "text!./routes/structure.json"], function (require, exports, aurelia_framework_1, export_1, routesForm, routesStructure) {
+    "use strict";
+    var App = (function () {
+        function App(router, routesCreator) {
+            this.router = router;
+            this.routesCreator = routesCreator;
+            this.routes = [];
+            this.routes = routesCreator.createRoutes(JSON.parse(routesStructure), JSON.parse(routesForm));
+        }
+        App.prototype.attached = function () {
+            this.router.registerRoutes(this.routes, "security/authgroup");
+        };
+        return App;
+    }());
+    App = __decorate([
+        aurelia_framework_1.autoinject,
+        __metadata("design:paramtypes", [export_1.RouterService,
+            export_1.RoutesCreatorService])
+    ], App);
+    exports.App = App;
+});
+
+define('environment',["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = {
+        debug: true,
+        testing: true
+    };
+});
+
+define('main',["require", "exports", "./environment", "./framework/base/services/authorization-service"], function (require, exports, environment_1, authorization_service_1) {
+    "use strict";
+    Promise.config({
+        longStackTraces: environment_1.default.debug,
+        warnings: {
+            wForgottenReturn: false
+        }
+    });
+    function configure(aurelia) {
+        aurelia.use
+            .basicConfiguration()
+            .plugin("aurelia-animator-css")
+            .feature("framework/base")
+            .feature("framework/dx")
+            .feature("framework/forms")
+            .feature("framework/default-ui")
+            .feature("framework/stack-router")
+            .feature("framework/security");
+        if (environment_1.default.debug) {
+            aurelia.use.developmentLogging();
+        }
+        if (environment_1.default.testing) {
+            aurelia.use.plugin("aurelia-testing");
+        }
+        aurelia.start().then(function () {
+            var authorization = aurelia.container.get(authorization_service_1.AuthorizationService);
+            authorization.openApp();
+        });
+    }
+    exports.configure = configure;
+});
+
+define('framework/base/classes/export',["require", "exports", "./custom-event"], function (require, exports, custom_event_1) {
+    "use strict";
+    exports.CustomEvent = custom_event_1.CustomEvent;
 });
 
 define('framework/base/export',["require", "exports", "./classes/export", "./services/export"], function (require, exports, export_1, export_2) {
@@ -1466,16 +1510,6 @@ define('framework/default-ui/index',["require", "exports"], function (require, e
     function configure(config) {
         config
             .globalResources("./styles/styles.css");
-    }
-    exports.configure = configure;
-});
-
-define('framework/dx/index',["require", "exports"], function (require, exports) {
-    "use strict";
-    function configure(config) {
-        config
-            .globalResources("devextreme")
-            .globalResources("./elements/dx-widget");
     }
     exports.configure = configure;
 });
@@ -3315,6 +3349,23 @@ define('framework/forms/index',["require", "exports"], function (require, export
     exports.configure = configure;
 });
 
+define('framework/dx/index',["require", "exports"], function (require, exports) {
+    "use strict";
+    function configure(config) {
+        config
+            .globalResources("devextreme")
+            .globalResources("./elements/dx-widget");
+    }
+    exports.configure = configure;
+});
+
+define('framework/security/index',["require", "exports"], function (require, exports) {
+    "use strict";
+    function configure(config) {
+    }
+    exports.configure = configure;
+});
+
 define('framework/stack-router/classes/export',["require", "exports", "./view-item"], function (require, exports, view_item_1) {
     "use strict";
     exports.ViewItem = view_item_1.ViewItem;
@@ -3379,13 +3430,6 @@ define('framework/login/login',["require", "exports", "aurelia-framework", "../s
         __metadata("design:paramtypes", [export_1.RouterService])
     ], Login);
     exports.Login = Login;
-});
-
-define('framework/security/index',["require", "exports"], function (require, exports) {
-    "use strict";
-    function configure(config) {
-    }
-    exports.configure = configure;
 });
 
 define('framework/stack-router/index',["require", "exports"], function (require, exports) {
@@ -3743,6 +3787,30 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+define('framework/default-ui/views/loading/loading',["require", "exports", "aurelia-framework", "../../../base/services/rest-service"], function (require, exports, aurelia_framework_1, rest_service_1) {
+    "use strict";
+    var Loading = (function () {
+        function Loading(rest) {
+            this.rest = rest;
+        }
+        return Loading;
+    }());
+    Loading = __decorate([
+        aurelia_framework_1.autoinject,
+        __metadata("design:paramtypes", [rest_service_1.RestService])
+    ], Loading);
+    exports.Loading = Loading;
+});
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
 define('framework/default-ui/views/loading-spinner/loading-spinner',["require", "exports", "aurelia-framework"], function (require, exports, aurelia_framework_1) {
     "use strict";
     var LoadingSpinner = (function () {
@@ -3765,30 +3833,6 @@ define('framework/default-ui/views/loading-spinner/loading-spinner',["require", 
         __metadata("design:paramtypes", [Element])
     ], LoadingSpinner);
     exports.LoadingSpinner = LoadingSpinner;
-});
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/default-ui/views/loading/loading',["require", "exports", "aurelia-framework", "../../../base/services/rest-service"], function (require, exports, aurelia_framework_1, rest_service_1) {
-    "use strict";
-    var Loading = (function () {
-        function Loading(rest) {
-            this.rest = rest;
-        }
-        return Loading;
-    }());
-    Loading = __decorate([
-        aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [rest_service_1.RestService])
-    ], Loading);
-    exports.Loading = Loading;
 });
 
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -3891,200 +3935,6 @@ define('framework/default-ui/views/sidebar-sub/sidebar-sub',["require", "exports
         __metadata("design:paramtypes", [])
     ], SidebarSub);
     exports.SidebarSub = SidebarSub;
-});
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/stack-router/attributes/stack-router-link/stack-router-link',["require", "exports", "aurelia-framework", "../../services/history-service"], function (require, exports, aurelia_framework_1, history_service_1) {
-    "use strict";
-    var StackRouterLinkCustomAttribute = (function () {
-        function StackRouterLinkCustomAttribute(element, history) {
-            this.element = element;
-            this.history = history;
-        }
-        StackRouterLinkCustomAttribute.prototype.bind = function () {
-            var _this = this;
-            this.element.addEventListener("click", function (e) {
-                var event = window.event;
-                if (!event.ctrlKey
-                    && !event.altKey
-                    && !event.shiftKey
-                    && !event.metaKey) {
-                    var href = _this.element.getAttribute("href");
-                    if (href) {
-                        _this.history.navigateByCode(_this.element.getAttribute("href"), _this.clearStack);
-                    }
-                    e.preventDefault();
-                }
-            });
-        };
-        return StackRouterLinkCustomAttribute;
-    }());
-    __decorate([
-        aurelia_framework_1.bindable,
-        __metadata("design:type", Boolean)
-    ], StackRouterLinkCustomAttribute.prototype, "clearStack", void 0);
-    StackRouterLinkCustomAttribute = __decorate([
-        aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [Element,
-            history_service_1.HistoryService])
-    ], StackRouterLinkCustomAttribute);
-    exports.StackRouterLinkCustomAttribute = StackRouterLinkCustomAttribute;
-});
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/login/views/login/login-form-funcs',["require", "exports", "aurelia-framework", "../../../base/export", "../../../stack-router/export"], function (require, exports, aurelia_framework_1, export_1, export_2) {
-    "use strict";
-    var LoginFuncs = (function () {
-        function LoginFuncs(authorization, history) {
-            var _this = this;
-            this.authorization = authorization;
-            this.history = history;
-            this.loginCommand = {
-                id: "$login",
-                title: "login-form-funcs.anmelden_caption",
-                execute: function () {
-                    _this.authorization
-                        .login(_this.form.models.data.$m_login)
-                        .then(function (r) {
-                        if (r && _this.goToUrlAfterLogin) {
-                            _this.history.pipelineUrl = _this.goToUrlAfterLogin;
-                        }
-                    });
-                }
-            };
-        }
-        LoginFuncs.prototype.bind = function (form) {
-            var _this = this;
-            this.form = form;
-            this.goToUrlAfterLogin = this.history.lastRequestUrl;
-            this.form.onFormReady.register(function (r) {
-                var username = _this.form["username"].instance;
-                username.focus();
-                return Promise.resolve();
-            });
-            form.models.data.$m_login = {
-                StayLoggedOn: false
-            };
-        };
-        return LoginFuncs;
-    }());
-    LoginFuncs = __decorate([
-        aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [export_1.AuthorizationService,
-            export_2.HistoryService])
-    ], LoginFuncs);
-    exports.LoginFuncs = LoginFuncs;
-});
-
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/login/views/login/login-form',["require", "exports", "../../../forms/form-export", "./login-form-funcs"], function (require, exports, fwx, login_form_funcs_1) {
-    "use strict";
-    var LoginForm = (function (_super) {
-        __extends(LoginForm, _super);
-        function LoginForm(formBaseImport, $f) {
-            var _this = _super.call(this, formBaseImport) || this;
-            _this.$f = $f;
-            _this.id = "login-form";
-            _this.title = _this.translate("login-form.login-form_caption");
-            _this.addModel({
-                "id": "$m_login",
-                "filters": []
-            });
-            _this.addFunction("$f", $f, "functions.$f");
-            _this.widgetCreator.addTextBox(_this, {
-                "caption": "login-form.username_caption",
-                "binding": {
-                    "dataContext": "$m_login",
-                    "bindTo": "Username",
-                    "bindToFQ": "models.data.$m_login.Username"
-                },
-                "validationRules": [],
-                "id": "username",
-                "options": {
-                    "optionsName": "usernameOptions",
-                    "optionsNameFQ": "usernameOptions"
-                }
-            });
-            _this.widgetCreator.addTextBox(_this, {
-                "mode": "password",
-                "caption": "login-form.password_caption",
-                "binding": {
-                    "dataContext": "$m_login",
-                    "bindTo": "Password",
-                    "bindToFQ": "models.data.$m_login.Password"
-                },
-                "validationRules": [],
-                "id": "password",
-                "options": {
-                    "optionsName": "passwordOptions",
-                    "optionsNameFQ": "passwordOptions"
-                }
-            });
-            _this.widgetCreator.addCheckBox(_this, {
-                "caption": "login-form.stayloggodon_caption",
-                "binding": {
-                    "dataContext": "$m_login",
-                    "bindTo": "StayLoggedOn",
-                    "bindToFQ": "models.data.$m_login.StayLoggedOn"
-                },
-                "validationRules": [],
-                "id": "stayLoggodOn",
-                "options": {
-                    "optionsName": "stayLoggodOnOptions",
-                    "optionsNameFQ": "stayLoggodOnOptions"
-                }
-            });
-            _this.widgetCreator.addCommand(_this, {
-                "id": "wd1",
-                "options": {
-                    "optionsName": "wd1Options",
-                    "optionsNameFQ": "wd1Options"
-                },
-                "binding": {
-                    "bindTo": "$f.loginCommand",
-                    "bindToFQ": "functions.$f.loginCommand",
-                    "propertyPrefix": "$f"
-                }
-            });
-            _super.prototype.onConstructionFinished.call(_this);
-            return _this;
-        }
-        return LoginForm;
-    }(fwx.FormBase));
-    LoginForm = __decorate([
-        fwx.autoinject,
-        __metadata("design:paramtypes", [fwx.FormBaseImport, login_form_funcs_1.LoginFuncs])
-    ], LoginForm);
-    exports.LoginForm = LoginForm;
 });
 
 var __extends = (this && this.__extends) || function (d, b) {
@@ -4252,38 +4102,189 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-define('framework/stack-router/views/stack-router/stack-router',["require", "exports", "aurelia-framework", "aurelia-event-aggregator", "../../services/router-service", "../../services/history-service"], function (require, exports, aurelia_framework_1, aurelia_event_aggregator_1, router_service_1, history_service_1) {
+define('framework/login/views/login/login-form-funcs',["require", "exports", "aurelia-framework", "../../../base/export", "../../../stack-router/export"], function (require, exports, aurelia_framework_1, export_1, export_2) {
     "use strict";
-    var StackRouter = (function () {
-        function StackRouter(history, router, eventAggregator) {
+    var LoginFuncs = (function () {
+        function LoginFuncs(authorization, history) {
+            var _this = this;
+            this.authorization = authorization;
             this.history = history;
-            this.router = router;
-            this.eventAggregator = eventAggregator;
-            this.createToolbar = true;
+            this.loginCommand = {
+                id: "$login",
+                title: "login-form-funcs.anmelden_caption",
+                execute: function () {
+                    _this.authorization
+                        .login(_this.form.models.data.$m_login)
+                        .then(function (r) {
+                        if (r && _this.goToUrlAfterLogin) {
+                            _this.history.pipelineUrl = _this.goToUrlAfterLogin;
+                        }
+                    });
+                }
+            };
         }
-        StackRouter.prototype.created = function (owningView) {
-            this.owningView = owningView;
+        LoginFuncs.prototype.bind = function (form) {
+            var _this = this;
+            this.form = form;
+            this.goToUrlAfterLogin = this.history.lastRequestUrl;
+            this.form.onFormReady.register(function (r) {
+                var username = _this.form["username"].instance;
+                username.focus();
+                return Promise.resolve();
+            });
+            form.models.data.$m_login = {
+                StayLoggedOn: false
+            };
         };
-        StackRouter.prototype.bind = function (bindingContext, overrideContext) {
-            this.bindingContext = bindingContext;
-            this.overrideContext = overrideContext;
+        return LoginFuncs;
+    }());
+    LoginFuncs = __decorate([
+        aurelia_framework_1.autoinject,
+        __metadata("design:paramtypes", [export_1.AuthorizationService,
+            export_2.HistoryService])
+    ], LoginFuncs);
+    exports.LoginFuncs = LoginFuncs;
+});
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+define('framework/login/views/login/login-form',["require", "exports", "../../../forms/form-export", "./login-form-funcs"], function (require, exports, fwx, login_form_funcs_1) {
+    "use strict";
+    var LoginForm = (function (_super) {
+        __extends(LoginForm, _super);
+        function LoginForm(formBaseImport, $f) {
+            var _this = _super.call(this, formBaseImport) || this;
+            _this.$f = $f;
+            _this.id = "login-form";
+            _this.title = _this.translate("login-form.login-form_caption");
+            _this.addModel({
+                "id": "$m_login",
+                "filters": []
+            });
+            _this.addFunction("$f", $f, "functions.$f");
+            _this.widgetCreator.addTextBox(_this, {
+                "caption": "login-form.username_caption",
+                "binding": {
+                    "dataContext": "$m_login",
+                    "bindTo": "Username",
+                    "bindToFQ": "models.data.$m_login.Username"
+                },
+                "validationRules": [],
+                "id": "username",
+                "options": {
+                    "optionsName": "usernameOptions",
+                    "optionsNameFQ": "usernameOptions"
+                }
+            });
+            _this.widgetCreator.addTextBox(_this, {
+                "mode": "password",
+                "caption": "login-form.password_caption",
+                "binding": {
+                    "dataContext": "$m_login",
+                    "bindTo": "Password",
+                    "bindToFQ": "models.data.$m_login.Password"
+                },
+                "validationRules": [],
+                "id": "password",
+                "options": {
+                    "optionsName": "passwordOptions",
+                    "optionsNameFQ": "passwordOptions"
+                }
+            });
+            _this.widgetCreator.addCheckBox(_this, {
+                "caption": "login-form.stayloggodon_caption",
+                "binding": {
+                    "dataContext": "$m_login",
+                    "bindTo": "StayLoggedOn",
+                    "bindToFQ": "models.data.$m_login.StayLoggedOn"
+                },
+                "validationRules": [],
+                "id": "stayLoggodOn",
+                "options": {
+                    "optionsName": "stayLoggodOnOptions",
+                    "optionsNameFQ": "stayLoggodOnOptions"
+                }
+            });
+            _this.widgetCreator.addCommand(_this, {
+                "id": "wd1",
+                "options": {
+                    "optionsName": "wd1Options",
+                    "optionsNameFQ": "wd1Options"
+                },
+                "binding": {
+                    "bindTo": "$f.loginCommand",
+                    "bindToFQ": "functions.$f.loginCommand",
+                    "propertyPrefix": "$f"
+                }
+            });
+            _super.prototype.onConstructionFinished.call(_this);
+            return _this;
+        }
+        return LoginForm;
+    }(fwx.FormBase));
+    LoginForm = __decorate([
+        fwx.autoinject,
+        __metadata("design:paramtypes", [fwx.FormBaseImport, login_form_funcs_1.LoginFuncs])
+    ], LoginForm);
+    exports.LoginForm = LoginForm;
+});
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+define('framework/stack-router/attributes/stack-router-link/stack-router-link',["require", "exports", "aurelia-framework", "../../services/history-service"], function (require, exports, aurelia_framework_1, history_service_1) {
+    "use strict";
+    var StackRouterLinkCustomAttribute = (function () {
+        function StackRouterLinkCustomAttribute(element, history) {
+            this.element = element;
+            this.history = history;
+        }
+        StackRouterLinkCustomAttribute.prototype.bind = function () {
+            var _this = this;
+            this.element.addEventListener("click", function (e) {
+                var event = window.event;
+                if (!event.ctrlKey
+                    && !event.altKey
+                    && !event.shiftKey
+                    && !event.metaKey) {
+                    var href = _this.element.getAttribute("href");
+                    if (href) {
+                        _this.history.navigateByCode(_this.element.getAttribute("href"), _this.clearStack);
+                    }
+                    e.preventDefault();
+                }
+            });
         };
-        StackRouter.prototype.attached = function () {
-            this.history.navigateCurrentOrInPipeline();
-        };
-        return StackRouter;
+        return StackRouterLinkCustomAttribute;
     }());
     __decorate([
         aurelia_framework_1.bindable,
         __metadata("design:type", Boolean)
-    ], StackRouter.prototype, "createToolbar", void 0);
-    StackRouter = __decorate([
+    ], StackRouterLinkCustomAttribute.prototype, "clearStack", void 0);
+    StackRouterLinkCustomAttribute = __decorate([
         aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [history_service_1.HistoryService,
-            router_service_1.RouterService,
-            aurelia_event_aggregator_1.EventAggregator])
-    ], StackRouter);
-    exports.StackRouter = StackRouter;
+        __metadata("design:paramtypes", [Element,
+            history_service_1.HistoryService])
+    ], StackRouterLinkCustomAttribute);
+    exports.StackRouterLinkCustomAttribute = StackRouterLinkCustomAttribute;
 });
 
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -4372,64 +4373,65 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-define('framework/base/services/location-service',["require", "exports", "aurelia-framework", "../classes/custom-event"], function (require, exports, aurelia_framework_1, custom_event_1) {
+define('framework/stack-router/views/stack-router/stack-router',["require", "exports", "aurelia-framework", "aurelia-event-aggregator", "../../services/router-service", "../../services/history-service"], function (require, exports, aurelia_framework_1, aurelia_event_aggregator_1, router_service_1, history_service_1) {
     "use strict";
-    var LocationService = (function () {
-        function LocationService(onLocationGoTo) {
-            this.onLocationGoTo = onLocationGoTo;
+    var StackRouter = (function () {
+        function StackRouter(history, router, eventAggregator) {
+            this.history = history;
+            this.router = router;
+            this.eventAggregator = eventAggregator;
+            this.createToolbar = true;
         }
-        LocationService.prototype.goTo = function (url, currentViewModel) {
-            var args = {
-                url: url,
-                currentViewModel: currentViewModel,
-                isHandled: false
-            };
-            this.onLocationGoTo
-                .fire(args)
-                .then(function () {
-                if (!args.isHandled) {
-                    location.assign(url);
-                }
-            });
+        StackRouter.prototype.created = function (owningView) {
+            this.owningView = owningView;
         };
-        return LocationService;
+        StackRouter.prototype.bind = function (bindingContext, overrideContext) {
+            this.bindingContext = bindingContext;
+            this.overrideContext = overrideContext;
+        };
+        StackRouter.prototype.attached = function () {
+            this.history.navigateCurrentOrInPipeline();
+        };
+        return StackRouter;
     }());
-    LocationService = __decorate([
+    __decorate([
+        aurelia_framework_1.bindable,
+        __metadata("design:type", Boolean)
+    ], StackRouter.prototype, "createToolbar", void 0);
+    StackRouter = __decorate([
         aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [custom_event_1.CustomEvent])
-    ], LocationService);
-    exports.LocationService = LocationService;
-});
-
-define('framework/base/event-args/location-go-to',["require", "exports"], function (require, exports) {
-    "use strict";
+        __metadata("design:paramtypes", [history_service_1.HistoryService,
+            router_service_1.RouterService,
+            aurelia_event_aggregator_1.EventAggregator])
+    ], StackRouter);
+    exports.StackRouter = StackRouter;
 });
 
 define('text!app.html', ['module'], function(module) { module.exports = "<template>\r\n  <require from=\"./framework/default-ui/views/container/container\"></require>\r\n  <container></container>\r\n</template>\r\n"; });
 define('text!framework/login/login.html', ['module'], function(module) { module.exports = "<template>\r\n  <require from=\"../stack-router/views/stack-router/stack-router\"></require>\r\n  <require from=\"../../framework/default-ui/views/loading/loading\"></require>\r\n  <require from=\"./login.css\"></require>\r\n\r\n  <loading></loading>\r\n  <div class=\"t--login-container\">\r\n    <div class=\"t--login-image\">\r\n      <div class=\"t--login-banner\">\r\n        ${title}\r\n      </div>\r\n    </div>  \r\n    <div class=\"t--login-data\">\r\n      <stack-router create-toolbar.bind=\"false\"></stack-router>\r\n    </div>\r\n  </div>\r\n</template>"; });
 define('text!framework/dx/elements/dx-widget.html', ['module'], function(module) { module.exports = "<template class=\"dx-widget\">\r\n</template>"; });
-define('text!framework/login/login.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--login-container {\n  display: flex;\n  height: 100vh;\n  width: 100vw;\n}\n.t--login-image {\n  position: relative;\n  flex-grow: 1;\n  background-image: url('http://www.aesthetic-lounge.de/wp-content/uploads/2015/02/Mann-_nr_2.jpg');\n  background-position: center center;\n  background-size: cover;\n  border-right: 1px solid lightgray;\n}\n.t--login-banner {\n  position: absolute;\n  padding: 12px 36px;\n  bottom: 30vh;\n  font-size: 60px;\n  font-weight: 100;\n  color: white;\n  background-color: rgba(0, 0, 0, 0.3);\n}\n.t--login-data {\n  display: flex;\n  width: 350px;\n  align-items: center;\n  background-color: #f7f7f7;\n}\n.t--login-data .t--view-content {\n  display: flex;\n  margin-top: 4vh;\n  flex-direction: column;\n  justify-content: center;\n}\n.t--login-logo {\n  margin-bottom: 40px;\n  text-align: center;\n}\n.t--login-logo img {\n  max-width: 200px;\n}\n"; });
 define('text!framework/default-ui/views/content/content.html', ['module'], function(module) { module.exports = "<template class=\"t--content\">\r\n  <require from=\"./content.css\"></require>\r\n\r\n  <stack-router></stack-router>\r\n</template>\r\n"; });
+define('text!framework/login/login.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--login-container {\n  display: flex;\n  height: 100vh;\n  width: 100vw;\n}\n.t--login-image {\n  position: relative;\n  flex-grow: 1;\n  background-image: url('http://www.aesthetic-lounge.de/wp-content/uploads/2015/02/Mann-_nr_2.jpg');\n  background-position: center center;\n  background-size: cover;\n  border-right: 1px solid lightgray;\n}\n.t--login-banner {\n  position: absolute;\n  padding: 12px 36px;\n  bottom: 30vh;\n  font-size: 60px;\n  font-weight: 100;\n  color: white;\n  background-color: rgba(0, 0, 0, 0.3);\n}\n.t--login-data {\n  display: flex;\n  width: 350px;\n  align-items: center;\n  background-color: #f7f7f7;\n}\n.t--login-data .t--view-content {\n  display: flex;\n  margin-top: 4vh;\n  flex-direction: column;\n  justify-content: center;\n}\n.t--login-logo {\n  margin-bottom: 40px;\n  text-align: center;\n}\n.t--login-logo img {\n  max-width: 200px;\n}\n"; });
+define('text!framework/default-ui/views/header/header.html', ['module'], function(module) { module.exports = "<template class=\"t--header\">\r\n  <require from=\"./header.css\"></require>\r\n\r\n  <div class=\"t--header-flex\">\r\n    <div class=\"t--header-title\" tr=\"key.bind: router.currentViewItem.title\">\r\n    </div>\r\n    <div class=\"t--header-options\">\r\n      <a href=\"#\" click.delegate=\"logout()\" tr=\"key: base.logout\"></a>\r\n    </div>\r\n  </div>\r\n</template>"; });
 define('text!framework/default-ui/views/container/container.html', ['module'], function(module) { module.exports = "<template class=\"t--container\" class.bind=\"className\">\r\n  <require from=\"./container.css\"></require>\r\n  \r\n  <require from=\"../loading/loading\"></require>\r\n  <require from=\"../sidebar/sidebar\"></require>\r\n  <require from=\"../header/header\"></require>\r\n  <require from=\"../content/content\"></require>\r\n\r\n  <loading></loading>\r\n  <sidebar></sidebar>\r\n  <header></header>\r\n  <content></content>\r\n</template>\r\n"; });
 define('text!framework/base/styles/styles.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\nbody {\n  margin: 0;\n  padding: 0;\n  font-family: \"Helvetica Neue\", \"Segoe UI\", Helvetica, Verdana, sans-serif;\n  font-size: 12px;\n}\n.t--margin-top {\n  margin-top: 12px;\n}\n.t--editor-caption {\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n.t--cursor-pointer {\n  cursor: pointer;\n}\n.t--invisible-submit {\n  height: 0;\n  width: 0;\n  margin: 0;\n  padding: 0;\n  border: 0;\n}\n"; });
-define('text!framework/default-ui/views/header/header.html', ['module'], function(module) { module.exports = "<template class=\"t--header\">\r\n  <require from=\"./header.css\"></require>\r\n\r\n  <div class=\"t--header-flex\">\r\n    <div class=\"t--header-title\" tr=\"key.bind: router.currentViewItem.title\">\r\n    </div>\r\n    <div class=\"t--header-options\">\r\n      <a href=\"#\" click.delegate=\"logout()\" tr=\"key: base.logout\"></a>\r\n    </div>\r\n  </div>\r\n</template>"; });
-define('text!framework/base/styles/variables.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n"; });
-define('text!framework/default-ui/views/loading-spinner/loading-spinner.html', ['module'], function(module) { module.exports = "<template class=\"t--loading\">\r\n  <require from=\"./loading-spinner.css\"></require>\r\n  \r\n  <div class=\"t--loading-spinner\">\r\n    <div class=\"t--loading-rect1\"></div>\r\n    <div class=\"t--loading-rect2\"></div>\r\n    <div class=\"t--loading-rect3\"></div>\r\n    <div class=\"t--loading-rect4\"></div>\r\n    <div class=\"t--loading-rect5\"></div>\r\n  </div>\r\n</template>"; });
-define('text!framework/default-ui/views/sidebar/sidebar.html', ['module'], function(module) { module.exports = "<template class=\"t--sidebar\">\r\n  <require from=\"../sidebar-sub/sidebar-sub\"></require>\r\n  <require from=\"./sidebar.css\"></require>\r\n\r\n  <div class=\"t--sidebar-header\" click.delegate=\"onHeaderClicked()\">\r\n    <div class=\"t--sidebar-header-title\">\r\n      Navigation\r\n    </div>\r\n    <div class=\"t--sidebar-header-icon\">\r\n      <i class=\"fa fa-${headerIcon}\"></i>\r\n    </div>\r\n  </div>\r\n\r\n  <ul>\r\n    <li\r\n      repeat.for=\"route of router.navigationRoutes\">\r\n      <sidebar-sub route.bind=\"route\" if.bind=\"route.sidebarExpanded\"></sidebar-sub>\r\n      <a \r\n        href.bind=\"route.route ? '#' + route.route : ''\" \r\n        class=\"t--sidebar-item\"\r\n        click.delegate=\"onRouteClicked(route)\"\r\n        stack-router-link=\"clear-stack.bind: true\">\r\n        <span class=\"t--sidebar-item-title\" tr=\"key.bind: route.caption\">\r\n        </span>\r\n        <span class=\"t--sidebar-item-icon\" if.bind=\"route.navigation.icon\">\r\n          <i class=\"fa fa-${route.navigation.icon}\"></i>\r\n        </span>\r\n      </a>\r\n    </li>\r\n  </ul>\r\n</template>\r\n"; });
-define('text!framework/default-ui/styles/styles.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--view-content {\n  opacity: 0;\n  transform: translateX(10px);\n  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n  transition-property: all;\n}\n.t--view-content.t--view-content-attached {\n  opacity: 1;\n  transform: translateX(0);\n}\n"; });
 define('text!framework/default-ui/views/loading/loading.html', ['module'], function(module) { module.exports = "<template>\r\n  <require from=\"../loading-spinner/loading-spinner\"></require>\r\n\r\n  <loading-spinner if.bind=\"rest.isLoading\"></loading-spinner>\r\n</template>"; });
+define('text!framework/base/styles/variables.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n"; });
+define('text!framework/default-ui/views/sidebar/sidebar.html', ['module'], function(module) { module.exports = "<template class=\"t--sidebar\">\r\n  <require from=\"../sidebar-sub/sidebar-sub\"></require>\r\n  <require from=\"./sidebar.css\"></require>\r\n\r\n  <div class=\"t--sidebar-header\" click.delegate=\"onHeaderClicked()\">\r\n    <div class=\"t--sidebar-header-title\">\r\n      Navigation\r\n    </div>\r\n    <div class=\"t--sidebar-header-icon\">\r\n      <i class=\"fa fa-${headerIcon}\"></i>\r\n    </div>\r\n  </div>\r\n\r\n  <ul>\r\n    <li\r\n      repeat.for=\"route of router.navigationRoutes\">\r\n      <sidebar-sub route.bind=\"route\" if.bind=\"route.sidebarExpanded\"></sidebar-sub>\r\n      <a \r\n        href.bind=\"route.route ? '#' + route.route : ''\" \r\n        class=\"t--sidebar-item\"\r\n        click.delegate=\"onRouteClicked(route)\"\r\n        stack-router-link=\"clear-stack.bind: true\">\r\n        <span class=\"t--sidebar-item-title\" tr=\"key.bind: route.caption\">\r\n        </span>\r\n        <span class=\"t--sidebar-item-icon\" if.bind=\"route.navigation.icon\">\r\n          <i class=\"fa fa-${route.navigation.icon}\"></i>\r\n        </span>\r\n      </a>\r\n    </li>\r\n  </ul>\r\n</template>\r\n"; });
+define('text!framework/default-ui/views/loading-spinner/loading-spinner.html', ['module'], function(module) { module.exports = "<template class=\"t--loading\">\r\n  <require from=\"./loading-spinner.css\"></require>\r\n  \r\n  <div class=\"t--loading-spinner\">\r\n    <div class=\"t--loading-rect1\"></div>\r\n    <div class=\"t--loading-rect2\"></div>\r\n    <div class=\"t--loading-rect3\"></div>\r\n    <div class=\"t--loading-rect4\"></div>\r\n    <div class=\"t--loading-rect5\"></div>\r\n  </div>\r\n</template>"; });
+define('text!framework/default-ui/styles/styles.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--view-content {\n  opacity: 0;\n  transform: translateX(10px);\n  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n  transition-property: all;\n}\n.t--view-content.t--view-content-attached {\n  opacity: 1;\n  transform: translateX(0);\n}\n"; });
 define('text!framework/default-ui/views/sidebar-sub/sidebar-sub.html', ['module'], function(module) { module.exports = "<template class=\"t--sidebar-sub au-animate\">\r\n  <ul>\r\n    <li repeat.for=\"child of route.children\">\r\n      <a \r\n        href.bind=\"child.route ? '#' + child.route : ''\" \r\n        class=\"t--sidebar-sub-item\"\r\n        stack-router-link=\"clear-stack.bind: true\">\r\n        <span class=\"t--sidebar-sub-item-title\" tr=\"key.bind: route.caption\">\r\n        </span>\r\n      </a>\r\n    </li>\r\n  </ul>\r\n</template>"; });
-define('text!framework/forms/styles/styles.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--form-element-flex-box {\n  display: flex;\n}\n.t--form-element-flex-box-with-padding > *:not(:first-child) {\n  margin-left: 12px;\n}\n.t--form-element-image-inline {\n  background-size: contain;\n  background-position: center center;\n  background-repeat: no-repeat;\n}\n.t--form-element-image {\n  max-width: 100%;\n}\n"; });
 define('text!framework/login/views/login/login-form.html', ['module'], function(module) { module.exports = "<template>\n    <div class=\"t--margin-top col-xs-12 t--login-logo\">\n        <img class=\"t--form-element-image\" src=\"http://2014.erp-future.com/sites/2014.erp-future.com/files/1_business/Logo_U_TIP.png\"></img>\n    </div>\n    <form submit.delegate=\"submitForm('functions.$f.loginCommand')\">\n        <button class=\"t--invisible-submit\" type=\"submit\"></button>\n        <div class=\"col-xs-12\">\n            <div tr=\"key: login-form.enter_user_password_text; markdown: true; mode: html\"></div>\n        </div>\n        <div class=\"t--margin-top col-xs-12\">\n            <div class=\"t--editor-caption\" tr=\"key: login-form.username_caption\"></div>\n            <dx-widget name=\"dxTextBox\" options.bind=\"usernameOptions\" view-model.ref=\"username\"></dx-widget>\n        </div>\n        <div class=\"t--margin-top col-xs-12\">\n            <div class=\"t--editor-caption\" tr=\"key: login-form.password_caption\"></div>\n            <dx-widget name=\"dxTextBox\" options.bind=\"passwordOptions\" view-model.ref=\"password\"></dx-widget>\n        </div>\n        <div class=\"t--margin-top col-xs-12\">\n            <div class=\"t--editor-caption\">&nbsp;</div>\n            <dx-widget name=\"dxCheckBox\" options.bind=\"stayLoggodOnOptions\" view-model.ref=\"stayLoggodOn\"></dx-widget>\n        </div>\n        <div class=\"t--margin-top col-xs-12\">\n            <div class=\"t--editor-caption\">&nbsp;</div>\n            <dx-widget name=\"dxButton\" options.bind=\"wd1Options\"></dx-widget>\n        </div>\n    </form>\n</template>"; });
+define('text!framework/forms/styles/styles.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--form-element-flex-box {\n  display: flex;\n}\n.t--form-element-flex-box-with-padding > *:not(:first-child) {\n  margin-left: 12px;\n}\n.t--form-element-image-inline {\n  background-size: contain;\n  background-position: center center;\n  background-repeat: no-repeat;\n}\n.t--form-element-image {\n  max-width: 100%;\n}\n"; });
 define('text!framework/security/views/authgroup/authgroup-edit-form.html', ['module'], function(module) { module.exports = "<template>\n    <div class=\"t--margin-top col-xs-12\">\n        <div tr=\"key: authgroup-edit.info_text; markdown: true; mode: html\"></div>\n    </div>\n    <div class=\"t--margin-top col-xs-12 col-md-6\">\n        <div class=\"t--editor-caption\" tr=\"key: authgroup-edit.name_caption\"></div>\n        <dx-widget name=\"dxTextBox\" options.bind=\"nameOptions\" view-model.ref=\"name\"></dx-widget>\n    </div>\n    <div class=\"t--margin-top col-xs-12 col-md-6\">\n        <div class=\"t--editor-caption\" tr=\"key: authgroup-edit.mandator_caption\"></div>\n        <dx-widget name=\"dxSelectBox\" options.bind=\"mandatorOptions\" view-model.ref=\"mandator\"></dx-widget>\n    </div>\n</template>"; });
-define('text!framework/default-ui/views/content/content.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--content {\n  display: block;\n  margin-left: 280px;\n  height: calc(100% - 60px);\n  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n  transition-property: margin-left;\n}\n.t--sidebar-collapsed .t--content {\n  margin-left: 60px;\n}\n.t--view-current {\n  display: block;\n}\n.t--view-history {\n  display: none;\n}\n.t--view-toolbar-item {\n  display: flex;\n  height: 60px;\n  padding: 0 12px;\n  justify-content: center;\n  align-items: center;\n  text-align: center;\n  color: white;\n  text-decoration: none;\n  cursor: pointer;\n  -webkit-user-select: none;\n}\n.t--view-toolbar-item i {\n  font-size: 16px;\n}\n.t--view-toolbar-item:hover {\n  background-color: #4F4F4F;\n}\n.dx-state-disabled .t--view-toolbar-item {\n  cursor: default;\n  color: lightgray;\n}\n.dx-state-disabled .t--view-toolbar-item:hover {\n  background-color: inherit;\n}\n"; });
 define('text!framework/security/views/authgroup/authgroup-list-form.html', ['module'], function(module) { module.exports = "<template>\n    <div class=\"t--margin-top col-xs-12\">\n        <dx-widget name=\"dxDataGrid\" options.bind=\"authgroupsOptions\" view-model.ref=\"authgroups\"></dx-widget>\n    </div>\n</template>"; });
+define('text!framework/default-ui/views/content/content.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--content {\n  display: block;\n  margin-left: 280px;\n  height: calc(100% - 60px);\n  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n  transition-property: margin-left;\n}\n.t--sidebar-collapsed .t--content {\n  margin-left: 60px;\n}\n.t--view-current {\n  display: block;\n}\n.t--view-history {\n  display: none;\n}\n.t--view-toolbar-item {\n  display: flex;\n  height: 60px;\n  padding: 0 12px;\n  justify-content: center;\n  align-items: center;\n  text-align: center;\n  color: white;\n  text-decoration: none;\n  cursor: pointer;\n  -webkit-user-select: none;\n}\n.t--view-toolbar-item i {\n  font-size: 16px;\n}\n.t--view-toolbar-item:hover {\n  background-color: #4F4F4F;\n}\n.dx-state-disabled .t--view-toolbar-item {\n  cursor: default;\n  color: lightgray;\n}\n.dx-state-disabled .t--view-toolbar-item:hover {\n  background-color: inherit;\n}\n"; });
 define('text!framework/stack-router/views/stack-router/stack-router.html', ['module'], function(module) { module.exports = "<template class=\"t--stack-router\">\r\n  <require from=\"./stack-router.css\"></require>\r\n  <require from=\"../view/view\"></require>\r\n\r\n  <div \r\n    class=\"t--stack-router-item\" \r\n    class.bind=\"item.className\"\r\n    repeat.for=\"item of router.viewStack\">\r\n    <view view.bind=\"item\" create-toolbar.bind=\"$parent.createToolbar\"></view>\r\n  </div>\r\n</template>"; });
-define('text!framework/default-ui/views/container/container.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--container {\n  display: block;\n  width: 100vw;\n  height: 100vh;\n}\n.t--container .dx-toolbar {\n  height: 60px;\n}\n.t--container .dx-toolbar .dx-toolbar-items-container {\n  height: 60px;\n}\n.t--toolbar-title {\n  min-width: 220px;\n  padding: 0 12px;\n  font-size: 20px;\n  font-weight: 100;\n  color: white;\n}\n"; });
 define('text!framework/stack-router/views/view/view.html', ['module'], function(module) { module.exports = "<template class=\"t--view\" class.bind=\"className\">\r\n  <require from=\"./view.css\"></require>\r\n\r\n  <div class=\"t--view-toolbar\" if.bind=\"createToolbar\">\r\n    <dx-widget if.bind=\"toolbarOptions\" name=\"dxToolbar\" options.bind=\"toolbarOptions\">\r\n      <dx-template name=\"itemTemplate\">\r\n        <a class=\"t--view-toolbar-item\" click.delegate=\"data.guardedExecute()\">\r\n          <div if.bind=\"data.command.badgeText\" class=\"t--view-toolbar-item-badge\">\r\n            ${data.command.badgeText}\r\n          </div>\r\n          <div class=\"t--view-toolbar-item-content\">\r\n            <div if.bind=\"data.command.icon\" class=\"t--view-toolbar-item-icon\">\r\n              <i class=\"fa fa-fw fa-${data.command.icon}\"></i>\r\n            </div>\r\n            <div if.bind=\"data.command.title\" class=\"t--view-toolbar-item-title\">\r\n              ${data.command.title}\r\n            </div>\r\n          </div>\r\n        </a>\r\n      </dx-template>\r\n    </dx-widget>\r\n  </div>\r\n  <div class=\"t--view-content-wrapper\">\r\n    <div class=\"container-fluid\">\r\n      <div class=\"row\">\r\n        <compose\r\n          view-model.ref=\"view.controller\" \r\n          view-model.bind=\"view.moduleId\" \r\n          model.bind=\"view.model\" \r\n          class=\"t--view-content\"></compose>\r\n      </div>\r\n    </div>\r\n  </div>\r\n</template>"; });
 define('text!framework/default-ui/views/header/header.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--header {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  margin-left: 280px;\n  padding: 0 12px;\n  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n  transition-property: margin-left;\n}\n.t--sidebar-collapsed .t--header {\n  margin-left: 60px;\n}\n.t--header-flex {\n  display: flex;\n  width: 100%;\n}\n.t--header-title {\n  flex-grow: 1;\n}\n"; });
-define('text!framework/default-ui/views/loading-spinner/loading-spinner.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--loading {\n  position: fixed;\n  top: 0;\n  bottom: 0;\n  left: 0;\n  right: 0;\n  font-family: \"Helvetica Neue\", \"Segoe UI\", Helvetica, Verdana, sans-serif;\n  font-size: 60px;\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n  align-items: center;\n  background-color: rgba(255, 255, 255, 0.8);\n  z-index: 9999;\n  opacity: 0;\n  transition-delay: 500ms;\n  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n  transition-property: opacity;\n}\n.t--loading.t--loading-active {\n  opacity: 1;\n}\n.t--loading-spinner {\n  margin: 100px auto;\n  width: 50px;\n  height: 40px;\n  text-align: center;\n  font-size: 10px;\n}\n.t--loading-spinner > div {\n  background-color: #333;\n  height: 100%;\n  width: 6px;\n  display: inline-block;\n  -webkit-animation: animationLoadingSpinner 1.2s infinite ease-in-out;\n  animation: animationLoadingSpinner 1.2s infinite ease-in-out;\n}\n.t--loading-spinner > .t--loading-rect2 {\n  -webkit-animation-delay: -1.1s;\n  animation-delay: -1.1s;\n}\n.t--loading-spinner > .t--loading-rect3 {\n  -webkit-animation-delay: -1s;\n  animation-delay: -1s;\n}\n.t--loading-spinner > .t--loading-rect4 {\n  -webkit-animation-delay: -0.9s;\n  animation-delay: -0.9s;\n}\n.t--loading-spinner > .t--loading-rect5 {\n  -webkit-animation-delay: -0.8s;\n  animation-delay: -0.8s;\n}\n@-webkit-keyframes animationLoading {\n  0% {\n    opacity: 0;\n  }\n  100% {\n    opacity: 1;\n  }\n}\n@keyframes animationLoading {\n  0% {\n    opacity: 0;\n  }\n  100% {\n    opacity: 1;\n  }\n}\n@-webkit-keyframes animationLoadingSpinner {\n  0%,\n  40%,\n  100% {\n    -webkit-transform: scaleY(0.4);\n  }\n  20% {\n    -webkit-transform: scaleY(1);\n  }\n}\n@keyframes animationLoadingSpinner {\n  0%,\n  40%,\n  100% {\n    transform: scaleY(0.4);\n    -webkit-transform: scaleY(0.4);\n  }\n  20% {\n    transform: scaleY(1);\n    -webkit-transform: scaleY(1);\n  }\n}\n"; });
+define('text!framework/default-ui/views/container/container.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--container {\n  display: block;\n  width: 100vw;\n  height: 100vh;\n}\n.t--container .dx-toolbar {\n  height: 60px;\n}\n.t--container .dx-toolbar .dx-toolbar-items-container {\n  height: 60px;\n}\n.t--toolbar-title {\n  min-width: 220px;\n  padding: 0 12px;\n  font-size: 20px;\n  font-weight: 100;\n  color: white;\n}\n"; });
 define('text!framework/default-ui/views/sidebar/sidebar.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--sidebar {\n  display: block;\n  position: fixed;\n  top: 0;\n  bottom: 0;\n  left: 0;\n  z-index: 10;\n  width: 280px;\n  background-color: #2a2e35;\n  font-size: 14px;\n  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n  transition-property: left;\n}\n.t--sidebar ul {\n  padding: 0;\n  margin: 0;\n  list-style: none;\n}\n.t--sidebar-collapsed .t--sidebar {\n  left: -220px;\n}\n.t--sidebar-header {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  background-color: #262930;\n  color: white;\n  cursor: pointer;\n}\n.t--sidebar-header-title {\n  flex-grow: 1;\n  font-size: 26px;\n  font-weight: 100;\n  padding: 12px;\n}\n.t--sidebar-header-icon {\n  display: flex;\n  width: 60px;\n  align-items: center;\n  justify-content: center;\n}\n.t--sidebar-item {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  color: lightgray;\n  text-decoration: none;\n}\n.t--sidebar-item:hover {\n  background-color: #17C4BB;\n  color: white;\n}\n.t--sidebar-item-title {\n  flex-grow: 1;\n  padding: 12px;\n}\n.t--sidebar-item-icon {\n  display: flex;\n  width: 60px;\n  align-items: center;\n  justify-content: center;\n}\n.t--sidebar-sub {\n  position: fixed;\n  z-index: -9;\n  left: 280px;\n  min-width: 280px;\n  background-color: #2a2e35;\n  padding: 12px;\n}\n.t--sidebar-sub.au-enter-active {\n  animation: leftFadeIn 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n}\n.t--sidebar-sub-item {\n  color: lightgray;\n  text-decoration: none;\n}\n.t--sidebar-sub-item:hover {\n  color: white;\n}\n"; });
+define('text!framework/default-ui/views/loading-spinner/loading-spinner.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--loading {\n  position: fixed;\n  top: 0;\n  bottom: 0;\n  left: 0;\n  right: 0;\n  font-family: \"Helvetica Neue\", \"Segoe UI\", Helvetica, Verdana, sans-serif;\n  font-size: 60px;\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n  align-items: center;\n  background-color: rgba(255, 255, 255, 0.8);\n  z-index: 9999;\n  opacity: 0;\n  transition-delay: 500ms;\n  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n  transition-property: opacity;\n}\n.t--loading.t--loading-active {\n  opacity: 1;\n}\n.t--loading-spinner {\n  margin: 100px auto;\n  width: 50px;\n  height: 40px;\n  text-align: center;\n  font-size: 10px;\n}\n.t--loading-spinner > div {\n  background-color: #333;\n  height: 100%;\n  width: 6px;\n  display: inline-block;\n  -webkit-animation: animationLoadingSpinner 1.2s infinite ease-in-out;\n  animation: animationLoadingSpinner 1.2s infinite ease-in-out;\n}\n.t--loading-spinner > .t--loading-rect2 {\n  -webkit-animation-delay: -1.1s;\n  animation-delay: -1.1s;\n}\n.t--loading-spinner > .t--loading-rect3 {\n  -webkit-animation-delay: -1s;\n  animation-delay: -1s;\n}\n.t--loading-spinner > .t--loading-rect4 {\n  -webkit-animation-delay: -0.9s;\n  animation-delay: -0.9s;\n}\n.t--loading-spinner > .t--loading-rect5 {\n  -webkit-animation-delay: -0.8s;\n  animation-delay: -0.8s;\n}\n@-webkit-keyframes animationLoading {\n  0% {\n    opacity: 0;\n  }\n  100% {\n    opacity: 1;\n  }\n}\n@keyframes animationLoading {\n  0% {\n    opacity: 0;\n  }\n  100% {\n    opacity: 1;\n  }\n}\n@-webkit-keyframes animationLoadingSpinner {\n  0%,\n  40%,\n  100% {\n    -webkit-transform: scaleY(0.4);\n  }\n  20% {\n    -webkit-transform: scaleY(1);\n  }\n}\n@keyframes animationLoadingSpinner {\n  0%,\n  40%,\n  100% {\n    transform: scaleY(0.4);\n    -webkit-transform: scaleY(0.4);\n  }\n  20% {\n    transform: scaleY(1);\n    -webkit-transform: scaleY(1);\n  }\n}\n"; });
 define('text!framework/stack-router/views/stack-router/stack-router.css', ['module'], function(module) { module.exports = ".t--stack-router,\n.t--stack-router-item {\n  display: block;\n  height: 100%;\n}\n"; });
 define('text!framework/stack-router/views/view/view.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--view {\n  display: block;\n  position: relative;\n  height: 100%;\n  overflow-x: hidden;\n}\n.t--view-toolbar {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  background-color: #808080;\n  color: white;\n}\n.t--view-toolbar .dx-toolbar {\n  background-color: transparent;\n}\n.t--view-toolbar-title {\n  font-size: 26px;\n  font-weight: 100;\n  color: white;\n  padding: 0 12px;\n}\n.t--view-content-wrapper {\n  display: block;\n  height: 100%;\n  overflow-x: hidden;\n  overflow-y: auto;\n}\n.t--view-content {\n  display: table;\n  width: 100%;\n  margin-bottom: 12px;\n  -webkit-overflow-scrolling: touch;\n}\n.t--view-with-toolbar .t--view-content-wrapper {\n  height: calc(100% - 60px);\n}\n"; });
 //# sourceMappingURL=app-bundle.js.map

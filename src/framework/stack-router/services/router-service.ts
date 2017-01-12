@@ -4,6 +4,9 @@ import {
 import {
   ViewItem
 } from "../classes/view-item";
+import {
+  LocalizationService
+} from "../../base/services/export";
 import * as Interfaces from "../interfaces/export";
 
 @autoinject
@@ -12,8 +15,9 @@ export class RouterService {
   private fallbackRoute: string;
   private routeInfoId = 0;
 
-  constructor()
-  { }
+  constructor(
+    private localization: LocalizationService
+  ) { }
 
   navigationRoutes: Interfaces.INavigationRoute[];
   viewStack: ViewItem[] = [];
@@ -278,6 +282,8 @@ export class RouterService {
       if (this.viewStack.length > 1) {
         this.viewStack[this.viewStack.length - 2].isCurrent = false;
       }
+
+      $("html title").html(this.localization.translate(null, this.currentViewItem.title));
     }
   }
 }
