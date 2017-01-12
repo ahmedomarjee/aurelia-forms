@@ -1,0 +1,1 @@
+export {DxTemplateService} from "./dx-template-service";

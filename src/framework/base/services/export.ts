@@ -3,7 +3,6 @@ export {DataSourceService} from "./data-source-service";
 export {DeepObserverService} from "./deep-observer-service";
 export {ErrorService} from "./error-service";
 export {GlobalizationService} from "./globalization-service";
-export {GlobalTemplateService} from "./global-template-service";
 export {LocalizationService} from "./localization-service";
 export {LocationService} from "./location-service";
 export {JsonService} from "./json-service";

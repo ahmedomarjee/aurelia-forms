@@ -138,7 +138,9 @@ export class SimpleWidgetCreatorService {
   addPopover(form: FormBase, options: WidgetOptions.IPopoverOptions): DevExpress.ui.dxPopoverOptions {
     const widgetOptions: DevExpress.ui.dxPopoverOptions = this.baseWidgetCreator.createWidgetOptions(form, options);
 
-    //TODO - caption
+    if (options.caption) {
+      widgetOptions.title = this.localization.translate(null, options.caption);
+    }
 
     return widgetOptions;
   }
