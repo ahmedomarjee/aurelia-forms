@@ -9,7 +9,8 @@ import {
 } from "./base-widget-creator-service";
 import {
   GlobalizationService,
-  LocalizationService
+  LocalizationService,
+  LocationService
 } from "../../base/services/export";
 import {
   SelectionModeEnum
@@ -25,7 +26,8 @@ export class DataGridWidgetCreatorService {
     private baseWidgetCreator: BaseWidgetCreatorService,
     private dataSource: DataSourceService,
     private globalization: GlobalizationService,
-    private localization: LocalizationService
+    private localization: LocalizationService,
+    private location: LocationService
   ) { }
 
   addDataGrid(form: FormBase, options: WidgetOptions.IDataGridOptions): DevExpress.ui.dxDataGridOptions {
@@ -104,7 +106,7 @@ export class DataGridWidgetCreatorService {
 
       if (model) {
         clickActions.push(e => {
-          location.assign(`#${options.editUrl}/${e.data[model.keyProperty]}`);
+          this.location.goTo(`#${options.editUrl}/${e.data[model.keyProperty]}`, form);
         });
       }
     }

@@ -326,13 +326,14 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-define('framework/stack-router/services/history-service',["require", "exports", "aurelia-framework", "aurelia-event-aggregator", "./router-service"], function (require, exports, aurelia_framework_1, aurelia_event_aggregator_1, router_service_1) {
+define('framework/stack-router/services/history-service',["require", "exports", "aurelia-framework", "aurelia-event-aggregator", "../../base/services/export", "./router-service"], function (require, exports, aurelia_framework_1, aurelia_event_aggregator_1, export_1, router_service_1) {
     "use strict";
     var HistoryService = (function () {
-        function HistoryService(eventAggregator, taskQueue, router) {
+        function HistoryService(eventAggregator, taskQueue, router, location) {
             this.eventAggregator = eventAggregator;
             this.taskQueue = taskQueue;
             this.router = router;
+            this.location = location;
             this.isActive = false;
             this.register();
         }
@@ -365,7 +366,7 @@ define('framework/stack-router/services/history-service',["require", "exports", 
         HistoryService.prototype.navigateByCode = function (url, clearStack) {
             var _this = this;
             this.guardedNavigate(function () {
-                _this.assignUrl(url);
+                _this.assignUrl(url, false);
                 _this.navigate({
                     url: _this.getUrl(url),
                     clearStack: clearStack
@@ -375,7 +376,7 @@ define('framework/stack-router/services/history-service',["require", "exports", 
         HistoryService.prototype.setUrlWithoutNavigation = function (url) {
             var _this = this;
             this.guardedNavigate(function () {
-                _this.assignUrl(url);
+                _this.assignUrl(url, false);
             });
         };
         HistoryService.prototype.guardedNavigate = function (action) {
@@ -396,12 +397,25 @@ define('framework/stack-router/services/history-service',["require", "exports", 
                     });
                 });
             });
+            this.location.onLocationGoTo.register(function (a) {
+                var replace = false;
+                if (_this.router.viewStack.length > 1
+                    && _this.router.viewStack[_this.router.viewStack.length - 2].controller["currentViewModel"] === a.currentViewModel) {
+                    replace = true;
+                }
+                _this.navigate({
+                    url: _this.getUrl(a.url),
+                    replace: replace
+                });
+                a.isHandled = true;
+                return Promise.resolve();
+            });
         };
         HistoryService.prototype.navigate = function (navigationArgs) {
             this.lastRequestUrl = navigationArgs.url;
             this.router.navigate(navigationArgs);
             if (navigationArgs.routeInfo && navigationArgs.routeInfo.isFallback) {
-                this.assignUrl(navigationArgs.routeInfo.route.route[0]);
+                this.assignUrl(navigationArgs.routeInfo.route.route[0], navigationArgs.replace);
             }
             if (!navigationArgs.historyState && navigationArgs.routeInfo) {
                 history.replaceState({
@@ -410,14 +424,19 @@ define('framework/stack-router/services/history-service',["require", "exports", 
                 }, navigationArgs.routeInfo.route.caption);
             }
         };
-        HistoryService.prototype.assignUrl = function (url) {
+        HistoryService.prototype.assignUrl = function (url, replace) {
             if (!url) {
                 throw new Error("No Url defined");
             }
             if (url.substr(0, 1) !== "#") {
                 url = "#" + url;
             }
-            location.assign(url);
+            if (replace) {
+                location.replace(url);
+            }
+            else {
+                location.assign(url);
+            }
         };
         return HistoryService;
     }());
@@ -425,7 +444,8 @@ define('framework/stack-router/services/history-service',["require", "exports", 
         aurelia_framework_1.autoinject,
         __metadata("design:paramtypes", [aurelia_event_aggregator_1.EventAggregator,
             aurelia_framework_1.TaskQueue,
-            router_service_1.RouterService])
+            router_service_1.RouterService,
+            export_1.LocationService])
     ], HistoryService);
     exports.HistoryService = HistoryService;
 });
@@ -1374,13 +1394,14 @@ define('framework/base/services/localization-service',["require", "exports", "au
     exports.LocalizationService = LocalizationService;
 });
 
-define('framework/base/services/export',["require", "exports", "./authorization-service", "./deep-observer-service", "./error-service", "./globalization-service", "./localization-service", "./object-info-service", "./rest-service"], function (require, exports, authorization_service_1, deep_observer_service_1, error_service_1, globalization_service_1, localization_service_1, object_info_service_1, rest_service_1) {
+define('framework/base/services/export',["require", "exports", "./authorization-service", "./deep-observer-service", "./error-service", "./globalization-service", "./localization-service", "./location-service", "./object-info-service", "./rest-service"], function (require, exports, authorization_service_1, deep_observer_service_1, error_service_1, globalization_service_1, localization_service_1, location_service_1, object_info_service_1, rest_service_1) {
     "use strict";
     exports.AuthorizationService = authorization_service_1.AuthorizationService;
     exports.DeepObserverService = deep_observer_service_1.DeepObserverService;
     exports.ErrorService = error_service_1.ErrorService;
     exports.GlobalizationService = globalization_service_1.GlobalizationService;
     exports.LocalizationService = localization_service_1.LocalizationService;
+    exports.LocationService = location_service_1.LocationService;
     exports.ObjectInfoService = object_info_service_1.ObjectInfoService;
     exports.RestService = rest_service_1.RestService;
 });
@@ -2796,11 +2817,12 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 define('framework/forms/widget-services/data-grid-widget-creator-service',["require", "exports", "aurelia-framework", "./base-widget-creator-service", "../../base/services/export", "../enums/selection-mode-enum", "../../base/services/data-source-service"], function (require, exports, aurelia_framework_1, base_widget_creator_service_1, export_1, selection_mode_enum_1, data_source_service_1) {
     "use strict";
     var DataGridWidgetCreatorService = (function () {
-        function DataGridWidgetCreatorService(baseWidgetCreator, dataSource, globalization, localization) {
+        function DataGridWidgetCreatorService(baseWidgetCreator, dataSource, globalization, localization, location) {
             this.baseWidgetCreator = baseWidgetCreator;
             this.dataSource = dataSource;
             this.globalization = globalization;
             this.localization = localization;
+            this.location = location;
         }
         DataGridWidgetCreatorService.prototype.addDataGrid = function (form, options) {
             var _this = this;
@@ -2867,7 +2889,7 @@ define('framework/forms/widget-services/data-grid-widget-creator-service',["requ
                 var model_1 = form.models.getInfo(options.dataModel);
                 if (model_1) {
                     clickActions.push(function (e) {
-                        location.assign("#" + options.editUrl + "/" + e.data[model_1.keyProperty]);
+                        _this.location.goTo("#" + options.editUrl + "/" + e.data[model_1.keyProperty], form);
                     });
                 }
             }
@@ -2914,7 +2936,8 @@ define('framework/forms/widget-services/data-grid-widget-creator-service',["requ
         __metadata("design:paramtypes", [base_widget_creator_service_1.BaseWidgetCreatorService,
             data_source_service_1.DataSourceService,
             export_1.GlobalizationService,
-            export_1.LocalizationService])
+            export_1.LocalizationService,
+            export_1.LocationService])
     ], DataGridWidgetCreatorService);
     exports.DataGridWidgetCreatorService = DataGridWidgetCreatorService;
 });
@@ -4326,6 +4349,48 @@ define('framework/stack-router/views/view/view',["require", "exports", "aurelia-
             aurelia_framework_1.TaskQueue])
     ], View);
     exports.View = View;
+});
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+define('framework/base/services/location-service',["require", "exports", "aurelia-framework", "../classes/custom-event"], function (require, exports, aurelia_framework_1, custom_event_1) {
+    "use strict";
+    var LocationService = (function () {
+        function LocationService(onLocationGoTo) {
+            this.onLocationGoTo = onLocationGoTo;
+        }
+        LocationService.prototype.goTo = function (url, currentViewModel) {
+            var args = {
+                url: url,
+                currentViewModel: currentViewModel,
+                isHandled: false
+            };
+            this.onLocationGoTo
+                .fire(args)
+                .then(function () {
+                if (!args.isHandled) {
+                    location.assign(url);
+                }
+            });
+        };
+        return LocationService;
+    }());
+    LocationService = __decorate([
+        aurelia_framework_1.autoinject,
+        __metadata("design:paramtypes", [custom_event_1.CustomEvent])
+    ], LocationService);
+    exports.LocationService = LocationService;
+});
+
+define('framework/base/event-args/location-go-to',["require", "exports"], function (require, exports) {
+    "use strict";
 });
 
 define('text!app.html', ['module'], function(module) { module.exports = "<template>\r\n  <require from=\"./framework/default-ui/views/container/container\"></require>\r\n  <container></container>\r\n</template>\r\n"; });

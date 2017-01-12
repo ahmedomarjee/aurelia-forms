@@ -8,6 +8,7 @@ import {
 export interface INavigationArgs {
   url: string;
   clearStack?: boolean;
+  replace?: boolean;
   historyState?: IHistoryState;
   routeInfo?: IRouteInfo
 }

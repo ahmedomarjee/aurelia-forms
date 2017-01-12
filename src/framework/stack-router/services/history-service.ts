@@ -6,6 +6,9 @@ import {
 	EventAggregator
 } from "aurelia-event-aggregator";
 import {
+	LocationService
+} from "../../base/services/export";
+import {
 	RouterService
 } from "./router-service";
 import * as Interfaces from "../interfaces/export";
@@ -17,7 +20,8 @@ export class HistoryService {
 	constructor(
 		private eventAggregator: EventAggregator,
 		private taskQueue: TaskQueue,
-		private router: RouterService
+		private router: RouterService,
+		private location: LocationService
 	) {
 		this.register();
 	}
@@ -52,7 +56,7 @@ export class HistoryService {
 	}
 	navigateByCode(url: string, clearStack: boolean) {
 		this.guardedNavigate(() => {
-			this.assignUrl(url);
+			this.assignUrl(url, false);
 
 			this.navigate({
 				url: this.getUrl(url),
@@ -62,7 +66,7 @@ export class HistoryService {
 	}
 	setUrlWithoutNavigation(url: string) {
 		this.guardedNavigate(() => {
-			this.assignUrl(url);
+			this.assignUrl(url, false);
 		});
 	}
 
@@ -84,13 +88,30 @@ export class HistoryService {
 				});
 			});
 		});
+
+		this.location.onLocationGoTo.register(a => {
+			let replace = false;
+
+			if (this.router.viewStack.length > 1
+				&& this.router.viewStack[this.router.viewStack.length - 2].controller["currentViewModel"] === a.currentViewModel) {
+					replace = true;
+				}
+
+			this.navigate({
+				url: this.getUrl(a.url),
+				replace: replace
+			});
+
+			a.isHandled = true;
+			return Promise.resolve();
+		});
 	}
 	private navigate(navigationArgs: Interfaces.INavigationArgs) {
 		this.lastRequestUrl = navigationArgs.url;
 		this.router.navigate(navigationArgs);
 
 		if (navigationArgs.routeInfo && navigationArgs.routeInfo.isFallback) {
-			this.assignUrl(navigationArgs.routeInfo.route.route[0]);
+			this.assignUrl(navigationArgs.routeInfo.route.route[0], navigationArgs.replace);
 		}
 
 		if (!navigationArgs.historyState && navigationArgs.routeInfo) {
@@ -101,7 +122,7 @@ export class HistoryService {
 			navigationArgs.routeInfo.route.caption)
 		}
 	}
-	private assignUrl(url: string) {
+	private assignUrl(url: string, replace: boolean) {
 		if (!url) {
 			throw new Error("No Url defined");
 		}
@@ -110,6 +131,10 @@ export class HistoryService {
 			url = `#${url}`;
 		}
 
-		location.assign(url);
+		if (replace) {
+			location.replace(url);
+		} else {
+			location.assign(url);
+		}
 	}
 }
