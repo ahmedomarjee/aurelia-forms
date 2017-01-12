@@ -5,6 +5,10 @@ import {
   FormBase
 } from "../classes/form-base";
 import {
+  ToolbarService
+} from "../services/toolbar-service";
+import {
+  DataSourceService,
   GlobalizationService,
   LocalizationService
 } from "../../base/services/export";
@@ -14,9 +18,6 @@ import {
 import {
   ICommandData
 } from "../interfaces/command-data";
-import {
-  DataSourceService
-} from "../../base/services/data-source-service";
 import * as WidgetOptions from "../widget-options/export";
 
 @autoinject
@@ -25,7 +26,8 @@ export class SimpleWidgetCreatorService {
     private baseWidgetCreator: BaseWidgetCreatorService,
     private dataSource: DataSourceService,
     private globalization: GlobalizationService,
-    private localization: LocalizationService
+    private localization: LocalizationService,
+    private toolbar: ToolbarService
   ) { }
 
   addAccordion(form: FormBase, options: WidgetOptions.IAccordionOptions): DevExpress.ui.dxAccordionOptions {
@@ -150,7 +152,7 @@ export class SimpleWidgetCreatorService {
       widgetOptions.maxWidth = options.maxWidth;
     }
 
-    //TODO - caption
+    widgetOptions.toolbarItems = this.toolbar.createToolbarOptions(form, options.caption, []).items;
 
     return widgetOptions;
   }

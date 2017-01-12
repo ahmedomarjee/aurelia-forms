@@ -5,6 +5,9 @@ import {
   FormBase
 } from "../classes/form-base";
 import {
+  LocalizationService
+} from "../../base/services/export";
+import {
   DefaultCommandsService
 } from "../services/default-commands-service";
 import {
@@ -14,40 +17,63 @@ import * as Interfaces from "../interfaces/export";
 
 @autoinject
 export class ToolbarService {
+  private titleItemTemplate = "TITEL_ITEM_TEMPLATE";
+
   constructor(
     private defaultCommands: DefaultCommandsService,
-    private command: CommandService
+    private command: CommandService,
+    private localization: LocalizationService
   ) { }
 
-  createToolbarOptions(form: FormBase): DevExpress.ui.dxToolbarOptions {
+  createFormToolbarOptions(form: FormBase): DevExpress.ui.dxToolbarOptions {
+    let component: DevExpress.ui.dxToolbar;
+
+    const options = this.createToolbarOptions(form, form.title, this.collectItems(form), (c) => {
+      component = c;
+    });
+
+    form.expressions.createObserver("title", (newValue) => {
+      const title = this.createTitleHtml(newValue);
+      const titleItem = options.items.find(item => item[this.titleItemTemplate] === this.titleItemTemplate);
+
+      if (titleItem) {
+        const indexOfTitleItem = options.items.indexOf(titleItem);
+        
+        if (component) {
+          component.option(`items[${indexOfTitleItem}].html`, title);
+        }
+
+        titleItem.html = title;
+      }
+    });
+
+    return options;
+  }
+  createToolbarOptions(form: FormBase, title: string, commands: Interfaces.ICommandData[], componentCreatedCallback?: {(component: DevExpress.ui.dxToolbar)}): DevExpress.ui.dxToolbarOptions {
     let component: DevExpress.ui.dxToolbar
 
     const options: DevExpress.ui.dxToolbarOptions = {
       onInitialized: (e) => {
         component = e.component;
+
+        if (componentCreatedCallback) {
+          componentCreatedCallback(component);
+        }
       }
     };
 
-    const items = this
-      .collectItems(form)
+    const items = commands
       .map(i => this.convertToToolbarItem(form, () => component, i));
 
     const titleItem: DevExpress.ui.dxPopupToolbarItemOptions = {
-      html: this.createTitleHtml(form.title),
+      html: this.createTitleHtml(title),
       location: "before"
     };
+
+    titleItem[this.titleItemTemplate] = this.titleItemTemplate;
+
     items.splice(0, 0, titleItem);
     options.items = items;
-
-    form.expressions.createObserver("title", (newValue) => {
-      const title = this.createTitleHtml(newValue);
-
-      if (component) {
-        component.option("items[0].text", title);
-      }
-
-      titleItem.text = this.createTitleHtml(title);
-    });
 
     return options;
   }
@@ -70,7 +96,7 @@ export class ToolbarService {
 
     this.setEnabled(form, getToolbar, command, item);
     this.setVisible(form, getToolbar, command, item);
-    item.template = "itemTemplate";
+    item.template = "global:toolbar-button-template";
     item.location = command.location || "before";
     (<any>item).locateInMenu = command.locateInMenu;
     (<any>item).command = command;
@@ -86,7 +112,7 @@ export class ToolbarService {
       return null;
     }
 
-    return `<div class="t--toolbar-title">${title}</div>`;
+    return `<div class="t--toolbar-title">${this.localization.translate(null, title)}</div>`;
   }
 
   private setEnabled(form: FormBase, getToolbar: {(): DevExpress.ui.dxToolbar}, command: Interfaces.ICommandData, item: DevExpress.ui.dxPopupToolbarItemOptions) {

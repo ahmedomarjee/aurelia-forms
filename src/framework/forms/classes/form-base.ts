@@ -183,6 +183,6 @@ export class FormBase {
     this.command.execute(this.expressions, command);
   }
   protected onConstructionFinished(): void {
-    this.toolbarOptions = this.toolbar.createToolbarOptions(this);
+    this.toolbarOptions = this.toolbar.createFormToolbarOptions(this);
   }
 }

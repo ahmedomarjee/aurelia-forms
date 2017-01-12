@@ -112,7 +112,6 @@ export class RestService {
         })
         .then(r => {
           if (r.ok) {
-            //TODO - Datums konvertieren
             return r.text();
           }
           if (r.status == 401) {

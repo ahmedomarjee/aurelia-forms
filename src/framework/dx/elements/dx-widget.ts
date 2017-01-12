@@ -7,7 +7,8 @@ import {
   OverrideContext
 } from "aurelia-framework";
 import {
-  DeepObserverService
+  DeepObserverService,
+  GlobalTemplateService
 } from "../../base/export";
 import * as $ from "jquery";
 
@@ -26,7 +27,8 @@ export class DxWidget {
     private element: Element,
     private templatingEngine: TemplatingEngine,
     private bindingEngine: BindingEngine,
-    private deepObserver: DeepObserverService) {
+    private deepObserver: DeepObserverService,
+    private globalTemplate: GlobalTemplateService) {
   }
 
   created(owningView: any, myView: any) {
@@ -83,7 +85,7 @@ export class DxWidget {
 
         this.templates[name] = {
           render: (renderData) => {
-            var newItem = item.cloneNode(true)
+            const newItem = item.cloneNode(true)
             const newElement = $(newItem).appendTo(renderData.container);
 
             let model: any = null;
@@ -104,6 +106,8 @@ export class DxWidget {
         };
         $(item).remove();
       });
+
+      Object.assign(this.templates, this.globalTemplate.getTemplates(this.bindingContext));
   }
   private registerBindings(): void {
     if (!this.options.bindingOptions) {

@@ -23,7 +23,7 @@ export class DefaultCommandsService {
     return {
       id: "$cmdSave",
       icon: "floppy-o",
-      title: this.localization.translate(form.expressions, "base.save"),
+      title: "base.save",
       isVisible: this.canSave(form),
       isEnabled: true,
       execute() {
@@ -35,7 +35,7 @@ export class DefaultCommandsService {
     const cmd = {
       id: "$cmdDelete",
       icon: "times",
-      title: this.localization.translate(form.expressions, "base.delete"),
+      title: "base.delete",
       isVisible: this.canSave(form),
       isEnabled: this.canDelete(form),
       execute: () => {

@@ -171,6 +171,52 @@ define('framework/base/event-args/export',["require", "exports"], function (requ
     "use strict";
 });
 
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+define('framework/base/services/json-service',["require", "exports", "aurelia-framework"], function (require, exports, aurelia_framework_1) {
+    "use strict";
+    var JsonService = (function () {
+        function JsonService() {
+            this.regexDateISO = /(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+)|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d)|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d)/;
+        }
+        JsonService.prototype.parse = function (json) {
+            var _this = this;
+            if (!json) {
+                return json;
+            }
+            if (!(typeof json === "string")) {
+                json = JSON.stringify(json);
+            }
+            return JSON.parse(json, function (key, value) {
+                if (typeof value === "string" && value.indexOf("{") < 0) {
+                    var a = _this.regexDateISO.exec(value);
+                    if (a) {
+                        return new Date(value);
+                    }
+                    return value;
+                }
+                return value;
+            });
+        };
+        JsonService.prototype.stringify = function (obj) {
+            return JSON.stringify(obj);
+        };
+        return JsonService;
+    }());
+    JsonService = __decorate([
+        aurelia_framework_1.autoinject,
+        __metadata("design:paramtypes", [])
+    ], JsonService);
+    exports.JsonService = JsonService;
+});
+
 define('framework/base/interfaces/data-source-option-filter',["require", "exports"], function (require, exports) {
     "use strict";
 });
@@ -435,6 +481,245 @@ define('framework/base/services/authorization-service',["require", "exports", "a
             aurelia_framework_1.BindingEngine])
     ], AuthorizationService);
     exports.AuthorizationService = AuthorizationService;
+});
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+define('framework/base/services/data-source-service',["require", "exports", "aurelia-framework", "./rest-service"], function (require, exports, aurelia_framework_1, rest_service_1) {
+    "use strict";
+    var DataSourceService = (function () {
+        function DataSourceService(rest) {
+            this.rest = rest;
+        }
+        DataSourceService.prototype.createDataSource = function (expressionProvider, options, loadRequiredAction) {
+            var _this = this;
+            var dataSource = new DevExpress.data.DataSource(new DevExpress.data.CustomStore({
+                key: options.keyProperty,
+                byKey: function (key) {
+                    var getOptions = _this.createGetOptions(expressionProvider, options);
+                    return _this.rest.get({
+                        url: _this.rest.getWebApiUrl(options.webApiAction + "/" + key),
+                        getOptions: getOptions
+                    });
+                },
+                load: function (loadOptions) {
+                    var getOptions = _this.createGetOptions(expressionProvider, options);
+                    if (getOptions == null) {
+                        if (loadOptions.requireTotalCount) {
+                            return Promise.resolve({
+                                data: [],
+                                totalCount: 0
+                            });
+                        }
+                        else {
+                            return Promise.resolve([]);
+                        }
+                    }
+                    if (loadOptions.filter) {
+                        if (getOptions.where) {
+                            getOptions.where = [getOptions.where, loadOptions.filter];
+                        }
+                        else {
+                            getOptions.where = loadOptions.filter;
+                        }
+                    }
+                    getOptions.skip = loadOptions.skip;
+                    getOptions.take = loadOptions.take;
+                    getOptions.requireTotalCount = loadOptions.requireTotalCount;
+                    if (loadOptions.sort) {
+                        getOptions.orderBy = loadOptions.sort.map(function (data) {
+                            return {
+                                columnName: data.selector,
+                                sortOrder: (data.desc === true ? 1 : 0)
+                            };
+                        });
+                    }
+                    return _this.rest.get({
+                        url: _this.rest.getWebApiUrl(options.webApiAction),
+                        getOptions: getOptions
+                    }).then(function (r) {
+                        if (loadOptions.requireTotalCount) {
+                            return {
+                                data: r.rows,
+                                totalCount: r.count
+                            };
+                        }
+                        else {
+                            return r;
+                        }
+                    });
+                }
+            }));
+            var timeout = null;
+            this.addObservers(expressionProvider, options, function () {
+                if (timeout) {
+                    clearTimeout(timeout);
+                    timeout = null;
+                }
+                timeout = setTimeout(function () {
+                    if (dataSource.pageIndex() === 0) {
+                        dataSource.reload();
+                    }
+                    else {
+                        dataSource.pageIndex(0);
+                    }
+                    if (loadRequiredAction) {
+                        loadRequiredAction();
+                    }
+                }, 10);
+            });
+            return dataSource;
+        };
+        DataSourceService.prototype.createGetOptions = function (expressionProvider, options) {
+            var getOptions = {};
+            getOptions.columns = options.webApiColumns;
+            getOptions.expand = options.webApiExpand;
+            getOptions.orderBy = options.webApiOrderBy;
+            if (options.webApiWhere) {
+                var where = [];
+                if (!this.constructWhere(expressionProvider, options.webApiWhere, where)) {
+                    return null;
+                }
+                if (where.length > 0) {
+                    getOptions.where = where;
+                }
+            }
+            if (options.filters) {
+                var customs = [];
+                var where = [];
+                if (!this.constructFilters(expressionProvider, options, customs, where)) {
+                    return null;
+                }
+                if (customs.length > 0) {
+                    getOptions.customs = customs;
+                }
+                if (where.length > 0) {
+                    if (getOptions.where) {
+                        getOptions.where = [getOptions.where, where];
+                    }
+                    else {
+                        getOptions.where = where;
+                    }
+                }
+            }
+            if (options.webApiMaxRecords > 0) {
+                getOptions.maxRecords = options.webApiMaxRecords;
+            }
+            return getOptions;
+        };
+        DataSourceService.prototype.addObservers = function (expressionProvider, options, action) {
+            this.addObserversWhere(expressionProvider, options.webApiWhere, action);
+            if (options.filters) {
+                for (var _i = 0, _a = options.filters; _i < _a.length; _i++) {
+                    var item = _a[_i];
+                    this.addObserversDetail(expressionProvider, item.if, action);
+                    this.addObserversDetail(expressionProvider, item.webApiCustomValue, action);
+                    this.addObserversWhere(expressionProvider, item.webApiWhere, action);
+                }
+            }
+        };
+        DataSourceService.prototype.addObserversDetail = function (expressionProvider, expression, action) {
+            if (expression == void (0)) {
+                return;
+            }
+            expressionProvider.createObserver(expression, action);
+        };
+        DataSourceService.prototype.addObserversWhere = function (expressionProvider, data, action) {
+            var _this = this;
+            if (data == void (0)) {
+                return;
+            }
+            if (Array.isArray(data)) {
+                data.forEach(function (item) { return _this.addObserversWhere(expressionProvider, item, action); });
+            }
+            else if (typeof data === "object") {
+                if (data.isBound === true && data.expression != void (0)) {
+                    this.addObserversDetail(expressionProvider, data.expression, action);
+                }
+                else {
+                    for (var property in data) {
+                        this.addObserversWhere(expressionProvider, data[property], action);
+                    }
+                }
+            }
+        };
+        DataSourceService.prototype.constructWhere = function (expressionProvider, data, where) {
+            var _this = this;
+            if (data == void (0)) {
+                return true;
+            }
+            if (Array.isArray(data)) {
+                var newArr_1 = [];
+                where.push(newArr_1);
+                var cancel_1 = false;
+                data.forEach(function (item) {
+                    if (!_this.constructWhere(expressionProvider, item, newArr_1)) {
+                        cancel_1 = true;
+                    }
+                });
+                if (cancel_1) {
+                    return false;
+                }
+            }
+            else if (typeof data === "object") {
+                if (data.isBound === true && data.expression != void (0)) {
+                    var val = expressionProvider.evaluateExpression(data.expression);
+                    if (val == void (0)) {
+                        return false;
+                    }
+                    where.push(val);
+                }
+                else {
+                    for (var property in data) {
+                        if (!this.constructWhere(expressionProvider, data[property], where)) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            else {
+                where.push(data);
+            }
+            return true;
+        };
+        DataSourceService.prototype.constructFilters = function (expressionProvider, options, customs, where) {
+            for (var _i = 0, _a = options.filters; _i < _a.length; _i++) {
+                var item = _a[_i];
+                if (item.if) {
+                    if (!expressionProvider.evaluateExpression(item.if)) {
+                        continue;
+                    }
+                }
+                if (item.webApiCustomKey && item.webApiCustomValue) {
+                    customs.push({
+                        key: item.webApiCustomKey,
+                        value: expressionProvider.evaluateExpression(item.webApiCustomValue)
+                    });
+                }
+                else if (item.webApiWhere) {
+                    var w = [];
+                    if (!this.constructWhere(expressionProvider, item.webApiWhere, w)) {
+                        return false;
+                    }
+                    where.push(w);
+                }
+            }
+            return true;
+        };
+        return DataSourceService;
+    }());
+    DataSourceService = __decorate([
+        aurelia_framework_1.autoinject,
+        __metadata("design:paramtypes", [rest_service_1.RestService])
+    ], DataSourceService);
+    exports.DataSourceService = DataSourceService;
 });
 
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -747,6 +1032,72 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+define('framework/base/services/global-template-service',["require", "exports", "aurelia-framework"], function (require, exports, aurelia_framework_1) {
+    "use strict";
+    var GlobalTemplateService = (function () {
+        function GlobalTemplateService(templatingEngine) {
+            this.templatingEngine = templatingEngine;
+            this.isInitialized = false;
+            this.templates = {};
+        }
+        GlobalTemplateService.prototype.getTemplates = function (bindingContext) {
+            var _this = this;
+            if (!this.isInitialized) {
+                this.initialize();
+            }
+            var result = {};
+            var _loop_1 = function (templateKey) {
+                result[templateKey] = {
+                    render: function (renderData) {
+                        var newItem = document.createElement("div");
+                        newItem.innerHTML = _this.templates[templateKey];
+                        var newElement = $(newItem).appendTo(renderData.container);
+                        var model = null;
+                        if (renderData.model) {
+                            model = {};
+                            model["data"] = renderData.model;
+                        }
+                        var result = _this.templatingEngine.enhance({
+                            element: newElement.get(0),
+                            bindingContext: bindingContext,
+                            overrideContext: model
+                        });
+                        result.attached();
+                        return $(newElement);
+                    }
+                };
+            };
+            for (var templateKey in this.templates) {
+                _loop_1(templateKey);
+            }
+            return result;
+        };
+        GlobalTemplateService.prototype.initialize = function () {
+            var _this = this;
+            this.isInitialized = true;
+            $("script[type='text/global-template']")
+                .each(function (index, item) {
+                _this.templates[$(item).attr("id")] = item.firstChild.textContent;
+            });
+        };
+        return GlobalTemplateService;
+    }());
+    GlobalTemplateService = __decorate([
+        aurelia_framework_1.autoinject,
+        __metadata("design:paramtypes", [aurelia_framework_1.TemplatingEngine])
+    ], GlobalTemplateService);
+    exports.GlobalTemplateService = GlobalTemplateService;
+});
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
 define('framework/base/services/localization-service',["require", "exports", "aurelia-framework", "./rest-service", "text!../../../localization-neutral.json"], function (require, exports, aurelia_framework_1, rest_service_1, localizationNeutral) {
     "use strict";
     var LocalizationService = (function () {
@@ -854,12 +1205,14 @@ define('framework/base/services/location-service',["require", "exports", "aureli
     exports.LocationService = LocationService;
 });
 
-define('framework/base/services/export',["require", "exports", "./authorization-service", "./deep-observer-service", "./error-service", "./globalization-service", "./localization-service", "./location-service", "./json-service", "./object-info-service", "./rest-service"], function (require, exports, authorization_service_1, deep_observer_service_1, error_service_1, globalization_service_1, localization_service_1, location_service_1, json_service_1, object_info_service_1, rest_service_1) {
+define('framework/base/services/export',["require", "exports", "./authorization-service", "./data-source-service", "./deep-observer-service", "./error-service", "./globalization-service", "./global-template-service", "./localization-service", "./location-service", "./json-service", "./object-info-service", "./rest-service"], function (require, exports, authorization_service_1, data_source_service_1, deep_observer_service_1, error_service_1, globalization_service_1, global_template_service_1, localization_service_1, location_service_1, json_service_1, object_info_service_1, rest_service_1) {
     "use strict";
     exports.AuthorizationService = authorization_service_1.AuthorizationService;
+    exports.DataSourceService = data_source_service_1.DataSourceService;
     exports.DeepObserverService = deep_observer_service_1.DeepObserverService;
     exports.ErrorService = error_service_1.ErrorService;
     exports.GlobalizationService = globalization_service_1.GlobalizationService;
+    exports.GlobalTemplateService = global_template_service_1.GlobalTemplateService;
     exports.LocalizationService = localization_service_1.LocalizationService;
     exports.LocationService = location_service_1.LocationService;
     exports.JsonService = json_service_1.JsonService;
@@ -1479,6 +1832,7 @@ define('framework/base/index',["require", "exports"], function (require, exports
     "use strict";
     function configure(config) {
         config
+            .globalResources("./attributes/icon/fa-icon-attribute")
             .globalResources("./attributes/translation/translation-attribute")
             .globalResources("./styles/styles.css");
     }
@@ -1607,245 +1961,6 @@ define('framework/forms/event-args/form-ready',["require", "exports"], function 
 
 define('framework/forms/event-args/export',["require", "exports"], function (require, exports) {
     "use strict";
-});
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/base/services/data-source-service',["require", "exports", "aurelia-framework", "./rest-service"], function (require, exports, aurelia_framework_1, rest_service_1) {
-    "use strict";
-    var DataSourceService = (function () {
-        function DataSourceService(rest) {
-            this.rest = rest;
-        }
-        DataSourceService.prototype.createDataSource = function (expressionProvider, options, loadRequiredAction) {
-            var _this = this;
-            var dataSource = new DevExpress.data.DataSource(new DevExpress.data.CustomStore({
-                key: options.keyProperty,
-                byKey: function (key) {
-                    var getOptions = _this.createGetOptions(expressionProvider, options);
-                    return _this.rest.get({
-                        url: _this.rest.getWebApiUrl(options.webApiAction + "/" + key),
-                        getOptions: getOptions
-                    });
-                },
-                load: function (loadOptions) {
-                    var getOptions = _this.createGetOptions(expressionProvider, options);
-                    if (getOptions == null) {
-                        if (loadOptions.requireTotalCount) {
-                            return Promise.resolve({
-                                data: [],
-                                totalCount: 0
-                            });
-                        }
-                        else {
-                            return Promise.resolve([]);
-                        }
-                    }
-                    if (loadOptions.filter) {
-                        if (getOptions.where) {
-                            getOptions.where = [getOptions.where, loadOptions.filter];
-                        }
-                        else {
-                            getOptions.where = loadOptions.filter;
-                        }
-                    }
-                    getOptions.skip = loadOptions.skip;
-                    getOptions.take = loadOptions.take;
-                    getOptions.requireTotalCount = loadOptions.requireTotalCount;
-                    if (loadOptions.sort) {
-                        getOptions.orderBy = loadOptions.sort.map(function (data) {
-                            return {
-                                columnName: data.selector,
-                                sortOrder: (data.desc === true ? 1 : 0)
-                            };
-                        });
-                    }
-                    return _this.rest.get({
-                        url: _this.rest.getWebApiUrl(options.webApiAction),
-                        getOptions: getOptions
-                    }).then(function (r) {
-                        if (loadOptions.requireTotalCount) {
-                            return {
-                                data: r.rows,
-                                totalCount: r.count
-                            };
-                        }
-                        else {
-                            return r;
-                        }
-                    });
-                }
-            }));
-            var timeout = null;
-            this.addObservers(expressionProvider, options, function () {
-                if (timeout) {
-                    clearTimeout(timeout);
-                    timeout = null;
-                }
-                timeout = setTimeout(function () {
-                    if (dataSource.pageIndex() === 0) {
-                        dataSource.reload();
-                    }
-                    else {
-                        dataSource.pageIndex(0);
-                    }
-                    if (loadRequiredAction) {
-                        loadRequiredAction();
-                    }
-                }, 10);
-            });
-            return dataSource;
-        };
-        DataSourceService.prototype.createGetOptions = function (expressionProvider, options) {
-            var getOptions = {};
-            getOptions.columns = options.webApiColumns;
-            getOptions.expand = options.webApiExpand;
-            getOptions.orderBy = options.webApiOrderBy;
-            if (options.webApiWhere) {
-                var where = [];
-                if (!this.constructWhere(expressionProvider, options.webApiWhere, where)) {
-                    return null;
-                }
-                if (where.length > 0) {
-                    getOptions.where = where;
-                }
-            }
-            if (options.filters) {
-                var customs = [];
-                var where = [];
-                if (!this.constructFilters(expressionProvider, options, customs, where)) {
-                    return null;
-                }
-                if (customs.length > 0) {
-                    getOptions.customs = customs;
-                }
-                if (where.length > 0) {
-                    if (getOptions.where) {
-                        getOptions.where = [getOptions.where, where];
-                    }
-                    else {
-                        getOptions.where = where;
-                    }
-                }
-            }
-            if (options.webApiMaxRecords > 0) {
-                getOptions.maxRecords = options.webApiMaxRecords;
-            }
-            return getOptions;
-        };
-        DataSourceService.prototype.addObservers = function (expressionProvider, options, action) {
-            this.addObserversWhere(expressionProvider, options.webApiWhere, action);
-            if (options.filters) {
-                for (var _i = 0, _a = options.filters; _i < _a.length; _i++) {
-                    var item = _a[_i];
-                    this.addObserversDetail(expressionProvider, item.if, action);
-                    this.addObserversDetail(expressionProvider, item.webApiCustomValue, action);
-                    this.addObserversWhere(expressionProvider, item.webApiWhere, action);
-                }
-            }
-        };
-        DataSourceService.prototype.addObserversDetail = function (expressionProvider, expression, action) {
-            if (expression == void (0)) {
-                return;
-            }
-            expressionProvider.createObserver(expression, action);
-        };
-        DataSourceService.prototype.addObserversWhere = function (expressionProvider, data, action) {
-            var _this = this;
-            if (data == void (0)) {
-                return;
-            }
-            if (Array.isArray(data)) {
-                data.forEach(function (item) { return _this.addObserversWhere(expressionProvider, item, action); });
-            }
-            else if (typeof data === "object") {
-                if (data.isBound === true && data.expression != void (0)) {
-                    this.addObserversDetail(expressionProvider, data.expression, action);
-                }
-                else {
-                    for (var property in data) {
-                        this.addObserversWhere(expressionProvider, data[property], action);
-                    }
-                }
-            }
-        };
-        DataSourceService.prototype.constructWhere = function (expressionProvider, data, where) {
-            var _this = this;
-            if (data == void (0)) {
-                return true;
-            }
-            if (Array.isArray(data)) {
-                var newArr_1 = [];
-                where.push(newArr_1);
-                var cancel_1 = false;
-                data.forEach(function (item) {
-                    if (!_this.constructWhere(expressionProvider, item, newArr_1)) {
-                        cancel_1 = true;
-                    }
-                });
-                if (cancel_1) {
-                    return false;
-                }
-            }
-            else if (typeof data === "object") {
-                if (data.isBound === true && data.expression != void (0)) {
-                    var val = expressionProvider.evaluateExpression(data.expression);
-                    if (val == void (0)) {
-                        return false;
-                    }
-                    where.push(val);
-                }
-                else {
-                    for (var property in data) {
-                        if (!this.constructWhere(expressionProvider, data[property], where)) {
-                            return false;
-                        }
-                    }
-                }
-            }
-            else {
-                where.push(data);
-            }
-            return true;
-        };
-        DataSourceService.prototype.constructFilters = function (expressionProvider, options, customs, where) {
-            for (var _i = 0, _a = options.filters; _i < _a.length; _i++) {
-                var item = _a[_i];
-                if (item.if) {
-                    if (!expressionProvider.evaluateExpression(item.if)) {
-                        continue;
-                    }
-                }
-                if (item.webApiCustomKey && item.webApiCustomValue) {
-                    customs.push({
-                        key: item.webApiCustomKey,
-                        value: expressionProvider.evaluateExpression(item.webApiCustomValue)
-                    });
-                }
-                else if (item.webApiWhere) {
-                    var w = [];
-                    if (!this.constructWhere(expressionProvider, item.webApiWhere, w)) {
-                        return false;
-                    }
-                    where.push(w);
-                }
-            }
-            return true;
-        };
-        return DataSourceService;
-    }());
-    DataSourceService = __decorate([
-        aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [rest_service_1.RestService])
-    ], DataSourceService);
-    exports.DataSourceService = DataSourceService;
 });
 
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -2178,7 +2293,7 @@ define('framework/forms/services/default-commands-service',["require", "exports"
             return {
                 id: "$cmdSave",
                 icon: "floppy-o",
-                title: this.localization.translate(form.expressions, "base.save"),
+                title: "base.save",
                 isVisible: this.canSave(form),
                 isEnabled: true,
                 execute: function () {
@@ -2191,7 +2306,7 @@ define('framework/forms/services/default-commands-service',["require", "exports"
             var cmd = {
                 id: "$cmdDelete",
                 icon: "times",
-                title: this.localization.translate(form.expressions, "base.delete"),
+                title: "base.delete",
                 isVisible: this.canSave(form),
                 isEnabled: this.canDelete(form),
                 execute: function () {
@@ -2315,37 +2430,54 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-define('framework/forms/services/toolbar-service',["require", "exports", "aurelia-framework", "../services/default-commands-service", "../services/command-service"], function (require, exports, aurelia_framework_1, default_commands_service_1, command_service_1) {
+define('framework/forms/services/toolbar-service',["require", "exports", "aurelia-framework", "../../base/services/export", "../services/default-commands-service", "../services/command-service"], function (require, exports, aurelia_framework_1, export_1, default_commands_service_1, command_service_1) {
     "use strict";
     var ToolbarService = (function () {
-        function ToolbarService(defaultCommands, command) {
+        function ToolbarService(defaultCommands, command, localization) {
             this.defaultCommands = defaultCommands;
             this.command = command;
+            this.localization = localization;
+            this.titleItemTemplate = "TITEL_ITEM_TEMPLATE";
         }
-        ToolbarService.prototype.createToolbarOptions = function (form) {
+        ToolbarService.prototype.createFormToolbarOptions = function (form) {
+            var _this = this;
+            var component;
+            var options = this.createToolbarOptions(form, form.title, this.collectItems(form), function (c) {
+                component = c;
+            });
+            form.expressions.createObserver("title", function (newValue) {
+                var title = _this.createTitleHtml(newValue);
+                var titleItem = options.items.find(function (item) { return item[_this.titleItemTemplate] === _this.titleItemTemplate; });
+                if (titleItem) {
+                    var indexOfTitleItem = options.items.indexOf(titleItem);
+                    if (component) {
+                        component.option("items[" + indexOfTitleItem + "].html", title);
+                    }
+                    titleItem.html = title;
+                }
+            });
+            return options;
+        };
+        ToolbarService.prototype.createToolbarOptions = function (form, title, commands, componentCreatedCallback) {
             var _this = this;
             var component;
             var options = {
                 onInitialized: function (e) {
                     component = e.component;
+                    if (componentCreatedCallback) {
+                        componentCreatedCallback(component);
+                    }
                 }
             };
-            var items = this
-                .collectItems(form)
+            var items = commands
                 .map(function (i) { return _this.convertToToolbarItem(form, function () { return component; }, i); });
             var titleItem = {
-                html: this.createTitleHtml(form.title),
+                html: this.createTitleHtml(title),
                 location: "before"
             };
+            titleItem[this.titleItemTemplate] = this.titleItemTemplate;
             items.splice(0, 0, titleItem);
             options.items = items;
-            form.expressions.createObserver("title", function (newValue) {
-                var title = _this.createTitleHtml(newValue);
-                if (component) {
-                    component.option("items[0].text", title);
-                }
-                titleItem.text = _this.createTitleHtml(title);
-            });
             return options;
         };
         ToolbarService.prototype.collectItems = function (form) {
@@ -2364,7 +2496,7 @@ define('framework/forms/services/toolbar-service',["require", "exports", "aureli
             var item = {};
             this.setEnabled(form, getToolbar, command, item);
             this.setVisible(form, getToolbar, command, item);
-            item.template = "itemTemplate";
+            item.template = "global:toolbar-button-template";
             item.location = command.location || "before";
             item.locateInMenu = command.locateInMenu;
             item.command = command;
@@ -2377,7 +2509,7 @@ define('framework/forms/services/toolbar-service',["require", "exports", "aureli
             if (!title) {
                 return null;
             }
-            return "<div class=\"t--toolbar-title\">" + title + "</div>";
+            return "<div class=\"t--toolbar-title\">" + this.localization.translate(null, title) + "</div>";
         };
         ToolbarService.prototype.setEnabled = function (form, getToolbar, command, item) {
             var _this = this;
@@ -2434,7 +2566,8 @@ define('framework/forms/services/toolbar-service',["require", "exports", "aureli
     ToolbarService = __decorate([
         aurelia_framework_1.autoinject,
         __metadata("design:paramtypes", [default_commands_service_1.DefaultCommandsService,
-            command_service_1.CommandService])
+            command_service_1.CommandService,
+            export_1.LocalizationService])
     ], ToolbarService);
     exports.ToolbarService = ToolbarService;
 });
@@ -2617,14 +2750,15 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-define('framework/forms/widget-services/simple-widget-creator-service',["require", "exports", "aurelia-framework", "../../base/services/export", "./base-widget-creator-service", "../../base/services/data-source-service"], function (require, exports, aurelia_framework_1, export_1, base_widget_creator_service_1, data_source_service_1) {
+define('framework/forms/widget-services/simple-widget-creator-service',["require", "exports", "aurelia-framework", "../services/toolbar-service", "../../base/services/export", "./base-widget-creator-service"], function (require, exports, aurelia_framework_1, toolbar_service_1, export_1, base_widget_creator_service_1) {
     "use strict";
     var SimpleWidgetCreatorService = (function () {
-        function SimpleWidgetCreatorService(baseWidgetCreator, dataSource, globalization, localization) {
+        function SimpleWidgetCreatorService(baseWidgetCreator, dataSource, globalization, localization, toolbar) {
             this.baseWidgetCreator = baseWidgetCreator;
             this.dataSource = dataSource;
             this.globalization = globalization;
             this.localization = localization;
+            this.toolbar = toolbar;
         }
         SimpleWidgetCreatorService.prototype.addAccordion = function (form, options) {
             return this.baseWidgetCreator.createWidgetOptions(form, options);
@@ -2733,6 +2867,7 @@ define('framework/forms/widget-services/simple-widget-creator-service',["require
             if (options.maxWidth) {
                 widgetOptions.maxWidth = options.maxWidth;
             }
+            widgetOptions.toolbarItems = this.toolbar.createToolbarOptions(form, options.caption, []).items;
             return widgetOptions;
         };
         SimpleWidgetCreatorService.prototype.addRadioGroup = function (form, options, selectContainerOptions) {
@@ -2848,9 +2983,10 @@ define('framework/forms/widget-services/simple-widget-creator-service',["require
     SimpleWidgetCreatorService = __decorate([
         aurelia_framework_1.autoinject,
         __metadata("design:paramtypes", [base_widget_creator_service_1.BaseWidgetCreatorService,
-            data_source_service_1.DataSourceService,
+            export_1.DataSourceService,
             export_1.GlobalizationService,
-            export_1.LocalizationService])
+            export_1.LocalizationService,
+            toolbar_service_1.ToolbarService])
     ], SimpleWidgetCreatorService);
     exports.SimpleWidgetCreatorService = SimpleWidgetCreatorService;
 });
@@ -3248,7 +3384,7 @@ define('framework/forms/classes/form-base',["require", "exports"], function (req
             this.command.execute(this.expressions, command);
         };
         FormBase.prototype.onConstructionFinished = function () {
-            this.toolbarOptions = this.toolbar.createToolbarOptions(this);
+            this.toolbarOptions = this.toolbar.createFormToolbarOptions(this);
         };
         return FormBase;
     }());
@@ -3363,13 +3499,6 @@ define('framework/dx/index',["require", "exports"], function (require, exports) 
     exports.configure = configure;
 });
 
-define('framework/security/index',["require", "exports"], function (require, exports) {
-    "use strict";
-    function configure(config) {
-    }
-    exports.configure = configure;
-});
-
 define('framework/stack-router/classes/export',["require", "exports", "./view-item"], function (require, exports, view_item_1) {
     "use strict";
     exports.ViewItem = view_item_1.ViewItem;
@@ -3446,6 +3575,13 @@ define('framework/stack-router/index',["require", "exports"], function (require,
     exports.configure = configure;
 });
 
+define('framework/security/index',["require", "exports"], function (require, exports) {
+    "use strict";
+    function configure(config) {
+    }
+    exports.configure = configure;
+});
+
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -3458,11 +3594,12 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 define('framework/dx/elements/dx-widget',["require", "exports", "aurelia-framework", "../../base/export", "jquery"], function (require, exports, aurelia_framework_1, export_1, $) {
     "use strict";
     var DxWidget = (function () {
-        function DxWidget(element, templatingEngine, bindingEngine, deepObserver) {
+        function DxWidget(element, templatingEngine, bindingEngine, deepObserver, globalTemplate) {
             this.element = element;
             this.templatingEngine = templatingEngine;
             this.bindingEngine = bindingEngine;
             this.deepObserver = deepObserver;
+            this.globalTemplate = globalTemplate;
             this.templates = {};
         }
         DxWidget.prototype.created = function (owningView, myView) {
@@ -3532,6 +3669,7 @@ define('framework/dx/elements/dx-widget',["require", "exports", "aurelia-framewo
                 };
                 $(item).remove();
             });
+            Object.assign(this.templates, this.globalTemplate.getTemplates(this.bindingContext));
         };
         DxWidget.prototype.registerBindings = function () {
             var _this = this;
@@ -3634,9 +3772,56 @@ define('framework/dx/elements/dx-widget',["require", "exports", "aurelia-framewo
         __metadata("design:paramtypes", [Element,
             aurelia_framework_1.TemplatingEngine,
             aurelia_framework_1.BindingEngine,
-            export_1.DeepObserverService])
+            export_1.DeepObserverService,
+            export_1.GlobalTemplateService])
     ], DxWidget);
     exports.DxWidget = DxWidget;
+});
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+define('framework/base/attributes/icon/fa-icon-attribute',["require", "exports", "aurelia-framework"], function (require, exports, aurelia_framework_1) {
+    "use strict";
+    var FaIconAttribute = (function () {
+        function FaIconAttribute(element) {
+            this.element = element;
+        }
+        FaIconAttribute.prototype.bind = function (bindingContext) {
+            this.setClass();
+        };
+        FaIconAttribute.prototype.iconChanged = function (newValue, oldValue) {
+            this.setClass();
+        };
+        FaIconAttribute.prototype.setClass = function () {
+            var element = $(this.element);
+            if (this.currentIcon) {
+                element.removeClass(this.currentIcon);
+                this.currentIcon = null;
+            }
+            if (this.icon) {
+                this.currentIcon = "fa fa-" + this.icon;
+                element.addClass(this.currentIcon);
+            }
+        };
+        return FaIconAttribute;
+    }());
+    __decorate([
+        aurelia_framework_1.bindable,
+        __metadata("design:type", String)
+    ], FaIconAttribute.prototype, "icon", void 0);
+    FaIconAttribute = __decorate([
+        aurelia_framework_1.autoinject,
+        aurelia_framework_1.customAttribute("fa-icon"),
+        __metadata("design:paramtypes", [Element])
+    ], FaIconAttribute);
+    exports.FaIconAttribute = FaIconAttribute;
 });
 
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -3724,35 +3909,6 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-define('framework/default-ui/views/header/header',["require", "exports", "aurelia-framework", "../../../stack-router/export", "../../../base/services/export"], function (require, exports, aurelia_framework_1, export_1, export_2) {
-    "use strict";
-    var Header = (function () {
-        function Header(router, authorization) {
-            this.router = router;
-            this.authorization = authorization;
-        }
-        Header.prototype.logout = function () {
-            this.authorization.logout();
-        };
-        return Header;
-    }());
-    Header = __decorate([
-        aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [export_1.RouterService,
-            export_2.AuthorizationService])
-    ], Header);
-    exports.Header = Header;
-});
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
 define('framework/default-ui/views/container/container',["require", "exports", "aurelia-framework", "../../services/layout-service"], function (require, exports, aurelia_framework_1, layout_service_1) {
     "use strict";
     var Container = (function () {
@@ -3791,6 +3947,35 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+define('framework/default-ui/views/header/header',["require", "exports", "aurelia-framework", "../../../stack-router/export", "../../../base/services/export"], function (require, exports, aurelia_framework_1, export_1, export_2) {
+    "use strict";
+    var Header = (function () {
+        function Header(router, authorization) {
+            this.router = router;
+            this.authorization = authorization;
+        }
+        Header.prototype.logout = function () {
+            this.authorization.logout();
+        };
+        return Header;
+    }());
+    Header = __decorate([
+        aurelia_framework_1.autoinject,
+        __metadata("design:paramtypes", [export_1.RouterService,
+            export_2.AuthorizationService])
+    ], Header);
+    exports.Header = Header;
+});
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
 define('framework/default-ui/views/loading/loading',["require", "exports", "aurelia-framework", "../../../base/services/rest-service"], function (require, exports, aurelia_framework_1, rest_service_1) {
     "use strict";
     var Loading = (function () {
@@ -3804,39 +3989,6 @@ define('framework/default-ui/views/loading/loading',["require", "exports", "aure
         __metadata("design:paramtypes", [rest_service_1.RestService])
     ], Loading);
     exports.Loading = Loading;
-});
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/default-ui/views/loading-spinner/loading-spinner',["require", "exports", "aurelia-framework"], function (require, exports, aurelia_framework_1) {
-    "use strict";
-    var LoadingSpinner = (function () {
-        function LoadingSpinner(element) {
-            this.element = element;
-        }
-        LoadingSpinner.prototype.bind = function () {
-            $(this.element).removeClass("t--loading-active");
-        };
-        LoadingSpinner.prototype.attached = function () {
-            var _this = this;
-            setTimeout(function () {
-                $(_this.element).addClass("t--loading-active");
-            }, 500);
-        };
-        return LoadingSpinner;
-    }());
-    LoadingSpinner = __decorate([
-        aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [Element])
-    ], LoadingSpinner);
-    exports.LoadingSpinner = LoadingSpinner;
 });
 
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -3923,6 +4075,39 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+define('framework/default-ui/views/loading-spinner/loading-spinner',["require", "exports", "aurelia-framework"], function (require, exports, aurelia_framework_1) {
+    "use strict";
+    var LoadingSpinner = (function () {
+        function LoadingSpinner(element) {
+            this.element = element;
+        }
+        LoadingSpinner.prototype.bind = function () {
+            $(this.element).removeClass("t--loading-active");
+        };
+        LoadingSpinner.prototype.attached = function () {
+            var _this = this;
+            setTimeout(function () {
+                $(_this.element).addClass("t--loading-active");
+            }, 500);
+        };
+        return LoadingSpinner;
+    }());
+    LoadingSpinner = __decorate([
+        aurelia_framework_1.autoinject,
+        __metadata("design:paramtypes", [Element])
+    ], LoadingSpinner);
+    exports.LoadingSpinner = LoadingSpinner;
+});
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
 define('framework/default-ui/views/sidebar-sub/sidebar-sub',["require", "exports", "aurelia-framework"], function (require, exports, aurelia_framework_1) {
     "use strict";
     var SidebarSub = (function () {
@@ -3941,160 +4126,14 @@ define('framework/default-ui/views/sidebar-sub/sidebar-sub',["require", "exports
     exports.SidebarSub = SidebarSub;
 });
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/security/views/authgroup/authgroup-edit-form',["require", "exports", "../../../forms/form-export"], function (require, exports, fwx) {
+define('framework/forms/views/toolbar-button-template/toolbar-button-template',["require", "exports"], function (require, exports) {
     "use strict";
-    var AuthgroupEditForm = (function (_super) {
-        __extends(AuthgroupEditForm, _super);
-        function AuthgroupEditForm(formBaseImport) {
-            var _this = _super.call(this, formBaseImport) || this;
-            _this.id = "authgroup-edit";
-            _this.title = _this.translate("authgroup-edit.authgroup-edit_caption");
-            _this.addModel({
-                "id": "$m_A",
-                "webApiAction": "base/Security/Authgroup",
-                "key": "variables.data.$id",
-                "keyProperty": "Id",
-                "postOnSave": true,
-                "filters": []
-            });
-            _this.widgetCreator.addTextBox(_this, {
-                "caption": "authgroup-edit.name_caption",
-                "binding": {
-                    "dataContext": "$m_A",
-                    "bindTo": "Name",
-                    "bindToFQ": "models.data.$m_A.Name"
-                },
-                "validationRules": [],
-                "id": "name",
-                "options": {
-                    "optionsName": "nameOptions",
-                    "optionsNameFQ": "nameOptions"
-                }
-            });
-            _this.widgetCreator.addSelectBox(_this, {
-                "idSelect": "mandator",
-                "caption": "authgroup-edit.mandator_caption",
-                "binding": {
-                    "dataContext": "$m_A",
-                    "bindTo": "IdMandator",
-                    "bindToFQ": "models.data.$m_A.IdMandator"
-                },
-                "validationRules": [],
-                "id": "mandator",
-                "options": {
-                    "optionsName": "mandatorOptions",
-                    "optionsNameFQ": "mandatorOptions"
-                }
-            }, {
-                "selectItem": {
-                    "id": "mandator",
-                    "elementName": "select-box",
-                    "valueMember": "Id",
-                    "displayMember": "Name",
-                    "action": "base/Security/Mandator",
-                    "columns": ["Name", "Id"]
-                }
-            });
-            _super.prototype.onConstructionFinished.call(_this);
-            return _this;
+    var ToolbarButtonTemplate = (function () {
+        function ToolbarButtonTemplate() {
         }
-        return AuthgroupEditForm;
-    }(fwx.FormBase));
-    AuthgroupEditForm = __decorate([
-        fwx.autoinject,
-        __metadata("design:paramtypes", [fwx.FormBaseImport])
-    ], AuthgroupEditForm);
-    exports.AuthgroupEditForm = AuthgroupEditForm;
-});
-
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/security/views/authgroup/authgroup-list-form',["require", "exports", "../../../forms/form-export"], function (require, exports, fwx) {
-    "use strict";
-    var AuthgroupListForm = (function (_super) {
-        __extends(AuthgroupListForm, _super);
-        function AuthgroupListForm(formBaseImport) {
-            var _this = _super.call(this, formBaseImport) || this;
-            _this.id = "authgroup-list";
-            _this.title = _this.translate("authgroup-list.authgroup-list_caption");
-            _this.addModel({
-                "id": "$m_A",
-                "webApiAction": "base/Security/Authgroup",
-                "webApiExpand": {
-                    "Mandator": null
-                },
-                "keyProperty": "Id",
-                "filters": []
-            });
-            _this.widgetCreator.addDataGrid(_this, {
-                "columns": [{
-                        "id": "name",
-                        "caption": "authgroup-list.name_caption",
-                        "bindTo": "Name",
-                        "sortIndex": 0,
-                        "sortOrder": "asc"
-                    }, {
-                        "id": "mandantor",
-                        "caption": "authgroup-list.mandantor_caption",
-                        "bindTo": "Mandator.Name"
-                    }],
-                "optionsToolbar": {
-                    "optionsName": "authgroupsToolbarOptions",
-                    "optionsNameFQ": "authgroupsToolbarOptions"
-                },
-                "binding": {
-                    "dataContext": "$m_A",
-                    "bindToFQ": "models.data.$m_A."
-                },
-                "dataModel": "$m_A",
-                "editUrl": "security/authgroup",
-                "addShortscuts": true,
-                "isMainList": true,
-                "edits": [],
-                "filters": [],
-                "commands": [],
-                "id": "authgroups",
-                "options": {
-                    "optionsName": "authgroupsOptions",
-                    "optionsNameFQ": "authgroupsOptions"
-                }
-            });
-            _super.prototype.onConstructionFinished.call(_this);
-            return _this;
-        }
-        return AuthgroupListForm;
-    }(fwx.FormBase));
-    AuthgroupListForm = __decorate([
-        fwx.autoinject,
-        __metadata("design:paramtypes", [fwx.FormBaseImport])
-    ], AuthgroupListForm);
-    exports.AuthgroupListForm = AuthgroupListForm;
+        return ToolbarButtonTemplate;
+    }());
+    exports.ToolbarButtonTemplate = ToolbarButtonTemplate;
 });
 
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -4172,7 +4211,7 @@ define('framework/login/views/login/login-form',["require", "exports", "../../..
             var _this = _super.call(this, formBaseImport) || this;
             _this.$f = $f;
             _this.id = "login-form";
-            _this.title = _this.translate("login-form.login-form_caption");
+            _this.title = "login-form.login-form_caption";
             _this.addModel({
                 "id": "$m_login",
                 "filters": []
@@ -4300,6 +4339,49 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+define('framework/stack-router/views/stack-router/stack-router',["require", "exports", "aurelia-framework", "aurelia-event-aggregator", "../../services/router-service", "../../services/history-service"], function (require, exports, aurelia_framework_1, aurelia_event_aggregator_1, router_service_1, history_service_1) {
+    "use strict";
+    var StackRouter = (function () {
+        function StackRouter(history, router, eventAggregator) {
+            this.history = history;
+            this.router = router;
+            this.eventAggregator = eventAggregator;
+            this.createToolbar = true;
+        }
+        StackRouter.prototype.created = function (owningView) {
+            this.owningView = owningView;
+        };
+        StackRouter.prototype.bind = function (bindingContext, overrideContext) {
+            this.bindingContext = bindingContext;
+            this.overrideContext = overrideContext;
+        };
+        StackRouter.prototype.attached = function () {
+            this.history.navigateCurrentOrInPipeline();
+        };
+        return StackRouter;
+    }());
+    __decorate([
+        aurelia_framework_1.bindable,
+        __metadata("design:type", Boolean)
+    ], StackRouter.prototype, "createToolbar", void 0);
+    StackRouter = __decorate([
+        aurelia_framework_1.autoinject,
+        __metadata("design:paramtypes", [history_service_1.HistoryService,
+            router_service_1.RouterService,
+            aurelia_event_aggregator_1.EventAggregator])
+    ], StackRouter);
+    exports.StackRouter = StackRouter;
+});
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
 define('framework/stack-router/views/view/view',["require", "exports", "aurelia-framework"], function (require, exports, aurelia_framework_1) {
     "use strict";
     var View = (function () {
@@ -4368,6 +4450,11 @@ define('framework/stack-router/views/view/view',["require", "exports", "aurelia-
     exports.View = View;
 });
 
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -4377,40 +4464,77 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-define('framework/stack-router/views/stack-router/stack-router',["require", "exports", "aurelia-framework", "aurelia-event-aggregator", "../../services/router-service", "../../services/history-service"], function (require, exports, aurelia_framework_1, aurelia_event_aggregator_1, router_service_1, history_service_1) {
+define('framework/security/views/authgroup/authgroup-edit-form',["require", "exports", "../../../forms/form-export"], function (require, exports, fwx) {
     "use strict";
-    var StackRouter = (function () {
-        function StackRouter(history, router, eventAggregator) {
-            this.history = history;
-            this.router = router;
-            this.eventAggregator = eventAggregator;
-            this.createToolbar = true;
+    var AuthgroupEditForm = (function (_super) {
+        __extends(AuthgroupEditForm, _super);
+        function AuthgroupEditForm(formBaseImport) {
+            var _this = _super.call(this, formBaseImport) || this;
+            _this.id = "authgroup-edit";
+            _this.title = "authgroup-edit.authgroup-edit_caption";
+            _this.addModel({
+                "id": "$m_A",
+                "webApiAction": "base/Security/Authgroup",
+                "key": "variables.data.$id",
+                "keyProperty": "Id",
+                "postOnSave": true,
+                "filters": []
+            });
+            _this.widgetCreator.addTextBox(_this, {
+                "caption": "authgroup-edit.name_caption",
+                "binding": {
+                    "dataContext": "$m_A",
+                    "bindTo": "Name",
+                    "bindToFQ": "models.data.$m_A.Name"
+                },
+                "validationRules": [],
+                "id": "name",
+                "options": {
+                    "optionsName": "nameOptions",
+                    "optionsNameFQ": "nameOptions"
+                }
+            });
+            _this.widgetCreator.addSelectBox(_this, {
+                "idSelect": "mandator",
+                "caption": "authgroup-edit.mandator_caption",
+                "binding": {
+                    "dataContext": "$m_A",
+                    "bindTo": "IdMandator",
+                    "bindToFQ": "models.data.$m_A.IdMandator"
+                },
+                "validationRules": [],
+                "id": "mandator",
+                "options": {
+                    "optionsName": "mandatorOptions",
+                    "optionsNameFQ": "mandatorOptions"
+                }
+            }, {
+                "selectItem": {
+                    "id": "mandator",
+                    "elementName": "select-box",
+                    "valueMember": "Id",
+                    "displayMember": "Name",
+                    "action": "base/Security/Mandator",
+                    "columns": ["Name", "Id"]
+                }
+            });
+            _super.prototype.onConstructionFinished.call(_this);
+            return _this;
         }
-        StackRouter.prototype.created = function (owningView) {
-            this.owningView = owningView;
-        };
-        StackRouter.prototype.bind = function (bindingContext, overrideContext) {
-            this.bindingContext = bindingContext;
-            this.overrideContext = overrideContext;
-        };
-        StackRouter.prototype.attached = function () {
-            this.history.navigateCurrentOrInPipeline();
-        };
-        return StackRouter;
-    }());
-    __decorate([
-        aurelia_framework_1.bindable,
-        __metadata("design:type", Boolean)
-    ], StackRouter.prototype, "createToolbar", void 0);
-    StackRouter = __decorate([
-        aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [history_service_1.HistoryService,
-            router_service_1.RouterService,
-            aurelia_event_aggregator_1.EventAggregator])
-    ], StackRouter);
-    exports.StackRouter = StackRouter;
+        return AuthgroupEditForm;
+    }(fwx.FormBase));
+    AuthgroupEditForm = __decorate([
+        fwx.autoinject,
+        __metadata("design:paramtypes", [fwx.FormBaseImport])
+    ], AuthgroupEditForm);
+    exports.AuthgroupEditForm = AuthgroupEditForm;
 });
 
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -4420,41 +4544,66 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-define('framework/base/services/json-service',["require", "exports", "aurelia-framework"], function (require, exports, aurelia_framework_1) {
+define('framework/security/views/authgroup/authgroup-list-form',["require", "exports", "../../../forms/form-export"], function (require, exports, fwx) {
     "use strict";
-    var JsonService = (function () {
-        function JsonService() {
-            this.regexDateISO = /(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+)|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d)|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d)/;
-        }
-        JsonService.prototype.parse = function (json) {
-            var _this = this;
-            if (!json) {
-                return json;
-            }
-            if (!(typeof json === "string")) {
-                json = JSON.stringify(json);
-            }
-            return JSON.parse(json, function (key, value) {
-                if (typeof value === "string" && value.indexOf("{") < 0) {
-                    var a = _this.regexDateISO.exec(value);
-                    if (a) {
-                        return new Date(value);
-                    }
-                    return value;
-                }
-                return value;
+    var AuthgroupListForm = (function (_super) {
+        __extends(AuthgroupListForm, _super);
+        function AuthgroupListForm(formBaseImport) {
+            var _this = _super.call(this, formBaseImport) || this;
+            _this.id = "authgroup-list";
+            _this.title = "authgroup-list.authgroup-list_caption";
+            _this.addModel({
+                "id": "$m_A",
+                "webApiAction": "base/Security/Authgroup",
+                "webApiExpand": {
+                    "Mandator": null
+                },
+                "keyProperty": "Id",
+                "filters": []
             });
-        };
-        JsonService.prototype.stringify = function (obj) {
-            return JSON.stringify(obj);
-        };
-        return JsonService;
-    }());
-    JsonService = __decorate([
-        aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [])
-    ], JsonService);
-    exports.JsonService = JsonService;
+            _this.widgetCreator.addDataGrid(_this, {
+                "columns": [{
+                        "id": "name",
+                        "caption": "authgroup-list.name_caption",
+                        "bindTo": "Name",
+                        "sortIndex": 0,
+                        "sortOrder": "asc"
+                    }, {
+                        "id": "mandantor",
+                        "caption": "authgroup-list.mandantor_caption",
+                        "bindTo": "Mandator.Name"
+                    }],
+                "optionsToolbar": {
+                    "optionsName": "authgroupsToolbarOptions",
+                    "optionsNameFQ": "authgroupsToolbarOptions"
+                },
+                "binding": {
+                    "dataContext": "$m_A",
+                    "bindToFQ": "models.data.$m_A."
+                },
+                "dataModel": "$m_A",
+                "editUrl": "security/authgroup",
+                "addShortscuts": true,
+                "isMainList": true,
+                "edits": [],
+                "filters": [],
+                "commands": [],
+                "id": "authgroups",
+                "options": {
+                    "optionsName": "authgroupsOptions",
+                    "optionsNameFQ": "authgroupsOptions"
+                }
+            });
+            _super.prototype.onConstructionFinished.call(_this);
+            return _this;
+        }
+        return AuthgroupListForm;
+    }(fwx.FormBase));
+    AuthgroupListForm = __decorate([
+        fwx.autoinject,
+        __metadata("design:paramtypes", [fwx.FormBaseImport])
+    ], AuthgroupListForm);
+    exports.AuthgroupListForm = AuthgroupListForm;
 });
 
 define('text!app.html', ['module'], function(module) { module.exports = "<template>\r\n  <require from=\"./framework/default-ui/views/container/container\"></require>\r\n  <container></container>\r\n</template>\r\n"; });
@@ -4462,26 +4611,27 @@ define('text!framework/login/login.html', ['module'], function(module) { module.
 define('text!framework/dx/elements/dx-widget.html', ['module'], function(module) { module.exports = "<template class=\"dx-widget\">\r\n</template>"; });
 define('text!framework/default-ui/views/content/content.html', ['module'], function(module) { module.exports = "<template class=\"t--content\">\r\n  <require from=\"./content.css\"></require>\r\n\r\n  <stack-router></stack-router>\r\n</template>\r\n"; });
 define('text!framework/login/login.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--login-container {\n  display: flex;\n  height: 100vh;\n  width: 100vw;\n}\n.t--login-image {\n  position: relative;\n  flex-grow: 1;\n  background-image: url('http://www.aesthetic-lounge.de/wp-content/uploads/2015/02/Mann-_nr_2.jpg');\n  background-position: center center;\n  background-size: cover;\n  border-right: 1px solid lightgray;\n}\n.t--login-banner {\n  position: absolute;\n  padding: 12px 36px;\n  bottom: 30vh;\n  font-size: 60px;\n  font-weight: 100;\n  color: white;\n  background-color: rgba(0, 0, 0, 0.3);\n}\n.t--login-data {\n  display: flex;\n  width: 350px;\n  align-items: center;\n  background-color: #f7f7f7;\n}\n.t--login-data .t--view-content {\n  display: flex;\n  margin-top: 4vh;\n  flex-direction: column;\n  justify-content: center;\n}\n.t--login-logo {\n  margin-bottom: 40px;\n  text-align: center;\n}\n.t--login-logo img {\n  max-width: 200px;\n}\n"; });
+define('text!framework/default-ui/views/container/container.html', ['module'], function(module) { module.exports = "<template class=\"t--container\" class.bind=\"className\">\r\n  <require from=\"./container.css\"></require>\r\n  \r\n  <require from=\"../loading/loading\"></require>\r\n  <require from=\"../sidebar/sidebar\"></require>\r\n  <require from=\"../header/header\"></require>\r\n  <require from=\"../content/content\"></require>\r\n  <require from=\"../../../forms/views/toolbar-button-template/toolbar-button-template\"></require>\r\n\r\n  <toolbar-button-template></toolbar-button-template>\r\n  <loading></loading>\r\n  <sidebar></sidebar>\r\n  <header></header>\r\n  <content></content>\r\n</template>\r\n"; });
 define('text!framework/default-ui/views/header/header.html', ['module'], function(module) { module.exports = "<template class=\"t--header\">\r\n  <require from=\"./header.css\"></require>\r\n\r\n  <div class=\"t--header-flex\">\r\n    <div class=\"t--header-title\" tr=\"key.bind: router.currentViewItem.title\">\r\n    </div>\r\n    <div class=\"t--header-options\">\r\n      <a href=\"#\" click.delegate=\"logout()\" tr=\"key: base.logout\"></a>\r\n    </div>\r\n  </div>\r\n</template>"; });
-define('text!framework/default-ui/views/container/container.html', ['module'], function(module) { module.exports = "<template class=\"t--container\" class.bind=\"className\">\r\n  <require from=\"./container.css\"></require>\r\n  \r\n  <require from=\"../loading/loading\"></require>\r\n  <require from=\"../sidebar/sidebar\"></require>\r\n  <require from=\"../header/header\"></require>\r\n  <require from=\"../content/content\"></require>\r\n\r\n  <loading></loading>\r\n  <sidebar></sidebar>\r\n  <header></header>\r\n  <content></content>\r\n</template>\r\n"; });
 define('text!framework/base/styles/styles.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\nbody {\n  margin: 0;\n  padding: 0;\n  font-family: \"Helvetica Neue\", \"Segoe UI\", Helvetica, Verdana, sans-serif;\n  font-size: 12px;\n}\n.t--margin-top {\n  margin-top: 12px;\n}\n.t--editor-caption {\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n.t--cursor-pointer {\n  cursor: pointer;\n}\n.t--invisible-submit {\n  height: 0;\n  width: 0;\n  margin: 0;\n  padding: 0;\n  border: 0;\n}\n"; });
 define('text!framework/default-ui/views/loading/loading.html', ['module'], function(module) { module.exports = "<template>\r\n  <require from=\"../loading-spinner/loading-spinner\"></require>\r\n\r\n  <loading-spinner if.bind=\"rest.isLoading\"></loading-spinner>\r\n</template>"; });
 define('text!framework/base/styles/variables.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n"; });
-define('text!framework/default-ui/views/sidebar/sidebar.html', ['module'], function(module) { module.exports = "<template class=\"t--sidebar\">\r\n  <require from=\"../sidebar-sub/sidebar-sub\"></require>\r\n  <require from=\"./sidebar.css\"></require>\r\n\r\n  <div class=\"t--sidebar-header\" click.delegate=\"onHeaderClicked()\">\r\n    <div class=\"t--sidebar-header-title\">\r\n      Navigation\r\n    </div>\r\n    <div class=\"t--sidebar-header-icon\">\r\n      <i class=\"fa fa-${headerIcon}\"></i>\r\n    </div>\r\n  </div>\r\n\r\n  <ul>\r\n    <li\r\n      repeat.for=\"route of router.navigationRoutes\">\r\n      <sidebar-sub route.bind=\"route\" if.bind=\"route.sidebarExpanded\"></sidebar-sub>\r\n      <a \r\n        href.bind=\"route.route ? '#' + route.route : ''\" \r\n        class=\"t--sidebar-item\"\r\n        click.delegate=\"onRouteClicked(route)\"\r\n        stack-router-link=\"clear-stack.bind: true\">\r\n        <span class=\"t--sidebar-item-title\" tr=\"key.bind: route.caption\">\r\n        </span>\r\n        <span class=\"t--sidebar-item-icon\" if.bind=\"route.navigation.icon\">\r\n          <i class=\"fa fa-${route.navigation.icon}\"></i>\r\n        </span>\r\n      </a>\r\n    </li>\r\n  </ul>\r\n</template>\r\n"; });
 define('text!framework/default-ui/views/loading-spinner/loading-spinner.html', ['module'], function(module) { module.exports = "<template class=\"t--loading\">\r\n  <require from=\"./loading-spinner.css\"></require>\r\n  \r\n  <div class=\"t--loading-spinner\">\r\n    <div class=\"t--loading-rect1\"></div>\r\n    <div class=\"t--loading-rect2\"></div>\r\n    <div class=\"t--loading-rect3\"></div>\r\n    <div class=\"t--loading-rect4\"></div>\r\n    <div class=\"t--loading-rect5\"></div>\r\n  </div>\r\n</template>"; });
+define('text!framework/default-ui/views/sidebar/sidebar.html', ['module'], function(module) { module.exports = "<template class=\"t--sidebar\">\r\n  <require from=\"../sidebar-sub/sidebar-sub\"></require>\r\n  <require from=\"./sidebar.css\"></require>\r\n\r\n  <div class=\"t--sidebar-header\" click.delegate=\"onHeaderClicked()\">\r\n    <div class=\"t--sidebar-header-title\">\r\n      Navigation\r\n    </div>\r\n    <div class=\"t--sidebar-header-icon\">\r\n      <i class=\"fa fa-${headerIcon}\"></i>\r\n    </div>\r\n  </div>\r\n\r\n  <ul>\r\n    <li\r\n      repeat.for=\"route of router.navigationRoutes\">\r\n      <sidebar-sub route.bind=\"route\" if.bind=\"route.sidebarExpanded\"></sidebar-sub>\r\n      <a \r\n        href.bind=\"route.route ? '#' + route.route : ''\" \r\n        class=\"t--sidebar-item\"\r\n        click.delegate=\"onRouteClicked(route)\"\r\n        stack-router-link=\"clear-stack.bind: true\">\r\n        <span class=\"t--sidebar-item-title\" tr=\"key.bind: route.caption\">\r\n        </span>\r\n        <span class=\"t--sidebar-item-icon\" if.bind=\"route.navigation.icon\">\r\n          <i class=\"fa fa-${route.navigation.icon}\"></i>\r\n        </span>\r\n      </a>\r\n    </li>\r\n  </ul>\r\n</template>\r\n"; });
 define('text!framework/default-ui/styles/styles.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--view-content {\n  opacity: 0;\n  transform: translateX(10px);\n  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n  transition-property: all;\n}\n.t--view-content.t--view-content-attached {\n  opacity: 1;\n  transform: translateX(0);\n}\n"; });
 define('text!framework/default-ui/views/sidebar-sub/sidebar-sub.html', ['module'], function(module) { module.exports = "<template class=\"t--sidebar-sub au-animate\">\r\n  <ul>\r\n    <li repeat.for=\"child of route.children\">\r\n      <a \r\n        href.bind=\"child.route ? '#' + child.route : ''\" \r\n        class=\"t--sidebar-sub-item\"\r\n        stack-router-link=\"clear-stack.bind: true\">\r\n        <span class=\"t--sidebar-sub-item-title\" tr=\"key.bind: route.caption\">\r\n        </span>\r\n      </a>\r\n    </li>\r\n  </ul>\r\n</template>"; });
+define('text!framework/forms/views/toolbar-button-template/toolbar-button-template.html', ['module'], function(module) { module.exports = "<template>\r\n  <script id=\"global:toolbar-button-template\" type=\"text/global-template\">\r\n    <a class=\"t--view-toolbar-item\" click.delegate=\"data.guardedExecute()\">\r\n      <div if.bind=\"data.command.badgeText\" class=\"t--view-toolbar-item-badge\" tr=\"key.bind: data.command.badgeText\">\r\n      </div>\r\n      <div class=\"t--view-toolbar-item-content\">\r\n        <div if.bind=\"data.command.icon\" class=\"t--view-toolbar-item-icon\">\r\n          <i class=\"fa-fw\" fa-icon=\"icon.bind: data.command.icon\"></i>\r\n        </div>\r\n        <div if.bind=\"data.command.title\" class=\"t--view-toolbar-item-title\" tr=\"key.bind: data.command.title\">\r\n        </div>\r\n      </div>\r\n    </a>\r\n  </script>\r\n</template>\r\n"; });
 define('text!framework/login/views/login/login-form.html', ['module'], function(module) { module.exports = "<template>\n    <div class=\"t--margin-top col-xs-12 t--login-logo\">\n        <img class=\"t--form-element-image\" src=\"http://2014.erp-future.com/sites/2014.erp-future.com/files/1_business/Logo_U_TIP.png\"></img>\n    </div>\n    <form submit.delegate=\"submitForm('functions.$f.loginCommand')\">\n        <button class=\"t--invisible-submit\" type=\"submit\"></button>\n        <div class=\"col-xs-12\">\n            <div tr=\"key: login-form.enter_user_password_text; markdown: true; mode: html\"></div>\n        </div>\n        <div class=\"t--margin-top col-xs-12\">\n            <div class=\"t--editor-caption\" tr=\"key: login-form.username_caption\"></div>\n            <dx-widget name=\"dxTextBox\" options.bind=\"usernameOptions\" view-model.ref=\"username\"></dx-widget>\n        </div>\n        <div class=\"t--margin-top col-xs-12\">\n            <div class=\"t--editor-caption\" tr=\"key: login-form.password_caption\"></div>\n            <dx-widget name=\"dxTextBox\" options.bind=\"passwordOptions\" view-model.ref=\"password\"></dx-widget>\n        </div>\n        <div class=\"t--margin-top col-xs-12\">\n            <div class=\"t--editor-caption\">&nbsp;</div>\n            <dx-widget name=\"dxCheckBox\" options.bind=\"stayLoggodOnOptions\" view-model.ref=\"stayLoggodOn\"></dx-widget>\n        </div>\n        <div class=\"t--margin-top col-xs-12\">\n            <div class=\"t--editor-caption\">&nbsp;</div>\n            <dx-widget name=\"dxButton\" options.bind=\"wd1Options\"></dx-widget>\n        </div>\n    </form>\n</template>"; });
 define('text!framework/forms/styles/styles.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--form-element-flex-box {\n  display: flex;\n}\n.t--form-element-flex-box-with-padding > *:not(:first-child) {\n  margin-left: 12px;\n}\n.t--form-element-image-inline {\n  background-size: contain;\n  background-position: center center;\n  background-repeat: no-repeat;\n}\n.t--form-element-image {\n  max-width: 100%;\n}\n"; });
 define('text!framework/security/views/authgroup/authgroup-edit-form.html', ['module'], function(module) { module.exports = "<template>\n    <div class=\"t--margin-top col-xs-12\">\n        <div tr=\"key: authgroup-edit.info_text; markdown: true; mode: html\"></div>\n    </div>\n    <div class=\"t--margin-top col-xs-12 col-md-6\">\n        <div class=\"t--editor-caption\" tr=\"key: authgroup-edit.name_caption\"></div>\n        <dx-widget name=\"dxTextBox\" options.bind=\"nameOptions\" view-model.ref=\"name\"></dx-widget>\n    </div>\n    <div class=\"t--margin-top col-xs-12 col-md-6\">\n        <div class=\"t--editor-caption\" tr=\"key: authgroup-edit.mandator_caption\"></div>\n        <dx-widget name=\"dxSelectBox\" options.bind=\"mandatorOptions\" view-model.ref=\"mandator\"></dx-widget>\n    </div>\n</template>"; });
 define('text!framework/security/views/authgroup/authgroup-list-form.html', ['module'], function(module) { module.exports = "<template>\n    <div class=\"t--margin-top col-xs-12\">\n        <dx-widget name=\"dxDataGrid\" options.bind=\"authgroupsOptions\" view-model.ref=\"authgroups\"></dx-widget>\n    </div>\n</template>"; });
 define('text!framework/default-ui/views/content/content.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--content {\n  display: block;\n  margin-left: 280px;\n  height: calc(100% - 60px);\n  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n  transition-property: margin-left;\n}\n.t--sidebar-collapsed .t--content {\n  margin-left: 60px;\n}\n.t--view-current {\n  display: block;\n}\n.t--view-history {\n  display: none;\n}\n.t--view-toolbar-item {\n  display: flex;\n  height: 60px;\n  padding: 0 12px;\n  justify-content: center;\n  align-items: center;\n  text-align: center;\n  color: white;\n  text-decoration: none;\n  cursor: pointer;\n  -webkit-user-select: none;\n}\n.t--view-toolbar-item i {\n  font-size: 16px;\n}\n.t--view-toolbar-item:hover {\n  background-color: #4F4F4F;\n}\n.dx-state-disabled .t--view-toolbar-item {\n  cursor: default;\n  color: lightgray;\n}\n.dx-state-disabled .t--view-toolbar-item:hover {\n  background-color: inherit;\n}\n"; });
 define('text!framework/stack-router/views/stack-router/stack-router.html', ['module'], function(module) { module.exports = "<template class=\"t--stack-router\">\r\n  <require from=\"./stack-router.css\"></require>\r\n  <require from=\"../view/view\"></require>\r\n\r\n  <div \r\n    class=\"t--stack-router-item\" \r\n    class.bind=\"item.className\"\r\n    repeat.for=\"item of router.viewStack\">\r\n    <view view.bind=\"item\" create-toolbar.bind=\"$parent.createToolbar\"></view>\r\n  </div>\r\n</template>"; });
-define('text!framework/stack-router/views/view/view.html', ['module'], function(module) { module.exports = "<template class=\"t--view\" class.bind=\"className\">\r\n  <require from=\"./view.css\"></require>\r\n\r\n  <div class=\"t--view-toolbar\" if.bind=\"createToolbar\">\r\n    <dx-widget if.bind=\"toolbarOptions\" name=\"dxToolbar\" options.bind=\"toolbarOptions\">\r\n      <dx-template name=\"itemTemplate\">\r\n        <a class=\"t--view-toolbar-item\" click.delegate=\"data.guardedExecute()\">\r\n          <div if.bind=\"data.command.badgeText\" class=\"t--view-toolbar-item-badge\">\r\n            ${data.command.badgeText}\r\n          </div>\r\n          <div class=\"t--view-toolbar-item-content\">\r\n            <div if.bind=\"data.command.icon\" class=\"t--view-toolbar-item-icon\">\r\n              <i class=\"fa fa-fw fa-${data.command.icon}\"></i>\r\n            </div>\r\n            <div if.bind=\"data.command.title\" class=\"t--view-toolbar-item-title\">\r\n              ${data.command.title}\r\n            </div>\r\n          </div>\r\n        </a>\r\n      </dx-template>\r\n    </dx-widget>\r\n  </div>\r\n  <div class=\"t--view-content-wrapper\">\r\n    <div class=\"container-fluid\">\r\n      <div class=\"row\">\r\n        <compose\r\n          view-model.ref=\"view.controller\" \r\n          view-model.bind=\"view.moduleId\" \r\n          model.bind=\"view.model\" \r\n          class=\"t--view-content\"></compose>\r\n      </div>\r\n    </div>\r\n  </div>\r\n</template>"; });
-define('text!framework/default-ui/views/header/header.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--header {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  margin-left: 280px;\n  padding: 0 12px;\n  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n  transition-property: margin-left;\n}\n.t--sidebar-collapsed .t--header {\n  margin-left: 60px;\n}\n.t--header-flex {\n  display: flex;\n  width: 100%;\n}\n.t--header-title {\n  flex-grow: 1;\n}\n"; });
+define('text!framework/stack-router/views/view/view.html', ['module'], function(module) { module.exports = "<template class=\"t--view\" class.bind=\"className\">\r\n  <require from=\"./view.css\"></require>\r\n\r\n  <div class=\"t--view-toolbar\" if.bind=\"createToolbar\">\r\n    <dx-widget if.bind=\"toolbarOptions\" name=\"dxToolbar\" options.bind=\"toolbarOptions\">\r\n      <dx-template name=\"itemTemplate\">\r\n        <a class=\"t--view-toolbar-item\" click.delegate=\"data.guardedExecute()\">\r\n          <div if.bind=\"data.command.badgeText\" class=\"t--view-toolbar-item-badge\" tr=\"key.bind: data.command.badgeText\">\r\n          </div>\r\n          <div class=\"t--view-toolbar-item-content\">\r\n            <div if.bind=\"data.command.icon\" class=\"t--view-toolbar-item-icon\">\r\n              <i class=\"fa fa-fw fa-${data.command.icon}\"></i>\r\n            </div>\r\n            <div if.bind=\"data.command.title\" class=\"t--view-toolbar-item-title\" tr=\"key.bind: data.command.title\">\r\n            </div>\r\n          </div>\r\n        </a>\r\n      </dx-template>\r\n    </dx-widget>\r\n  </div>\r\n  <div class=\"t--view-content-wrapper\">\r\n    <div class=\"container-fluid\">\r\n      <div class=\"row\">\r\n        <compose\r\n          view-model.ref=\"view.controller\" \r\n          view-model.bind=\"view.moduleId\" \r\n          model.bind=\"view.model\" \r\n          class=\"t--view-content\"></compose>\r\n      </div>\r\n    </div>\r\n  </div>\r\n</template>"; });
 define('text!framework/default-ui/views/container/container.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--container {\n  display: block;\n  width: 100vw;\n  height: 100vh;\n}\n.t--container .dx-toolbar {\n  height: 60px;\n}\n.t--container .dx-toolbar .dx-toolbar-items-container {\n  height: 60px;\n}\n.t--toolbar-title {\n  min-width: 220px;\n  padding: 0 12px;\n  font-size: 20px;\n  font-weight: 100;\n  color: white;\n}\n"; });
-define('text!framework/default-ui/views/sidebar/sidebar.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--sidebar {\n  display: block;\n  position: fixed;\n  top: 0;\n  bottom: 0;\n  left: 0;\n  z-index: 10;\n  width: 280px;\n  background-color: #2a2e35;\n  font-size: 14px;\n  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n  transition-property: left;\n}\n.t--sidebar ul {\n  padding: 0;\n  margin: 0;\n  list-style: none;\n}\n.t--sidebar-collapsed .t--sidebar {\n  left: -220px;\n}\n.t--sidebar-header {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  background-color: #262930;\n  color: white;\n  cursor: pointer;\n}\n.t--sidebar-header-title {\n  flex-grow: 1;\n  font-size: 26px;\n  font-weight: 100;\n  padding: 12px;\n}\n.t--sidebar-header-icon {\n  display: flex;\n  width: 60px;\n  align-items: center;\n  justify-content: center;\n}\n.t--sidebar-item {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  color: lightgray;\n  text-decoration: none;\n}\n.t--sidebar-item:hover {\n  background-color: #17C4BB;\n  color: white;\n}\n.t--sidebar-item-title {\n  flex-grow: 1;\n  padding: 12px;\n}\n.t--sidebar-item-icon {\n  display: flex;\n  width: 60px;\n  align-items: center;\n  justify-content: center;\n}\n.t--sidebar-sub {\n  position: fixed;\n  z-index: -9;\n  left: 280px;\n  min-width: 280px;\n  background-color: #2a2e35;\n  padding: 12px;\n}\n.t--sidebar-sub.au-enter-active {\n  animation: leftFadeIn 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n}\n.t--sidebar-sub-item {\n  color: lightgray;\n  text-decoration: none;\n}\n.t--sidebar-sub-item:hover {\n  color: white;\n}\n"; });
+define('text!framework/default-ui/views/header/header.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--header {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  margin-left: 280px;\n  padding: 0 12px;\n  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n  transition-property: margin-left;\n}\n.t--sidebar-collapsed .t--header {\n  margin-left: 60px;\n}\n.t--header-flex {\n  display: flex;\n  width: 100%;\n}\n.t--header-title {\n  flex-grow: 1;\n}\n"; });
 define('text!framework/default-ui/views/loading-spinner/loading-spinner.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--loading {\n  position: fixed;\n  top: 0;\n  bottom: 0;\n  left: 0;\n  right: 0;\n  font-family: \"Helvetica Neue\", \"Segoe UI\", Helvetica, Verdana, sans-serif;\n  font-size: 60px;\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n  align-items: center;\n  background-color: rgba(255, 255, 255, 0.8);\n  z-index: 9999;\n  opacity: 0;\n  transition-delay: 500ms;\n  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n  transition-property: opacity;\n}\n.t--loading.t--loading-active {\n  opacity: 1;\n}\n.t--loading-spinner {\n  margin: 100px auto;\n  width: 50px;\n  height: 40px;\n  text-align: center;\n  font-size: 10px;\n}\n.t--loading-spinner > div {\n  background-color: #333;\n  height: 100%;\n  width: 6px;\n  display: inline-block;\n  -webkit-animation: animationLoadingSpinner 1.2s infinite ease-in-out;\n  animation: animationLoadingSpinner 1.2s infinite ease-in-out;\n}\n.t--loading-spinner > .t--loading-rect2 {\n  -webkit-animation-delay: -1.1s;\n  animation-delay: -1.1s;\n}\n.t--loading-spinner > .t--loading-rect3 {\n  -webkit-animation-delay: -1s;\n  animation-delay: -1s;\n}\n.t--loading-spinner > .t--loading-rect4 {\n  -webkit-animation-delay: -0.9s;\n  animation-delay: -0.9s;\n}\n.t--loading-spinner > .t--loading-rect5 {\n  -webkit-animation-delay: -0.8s;\n  animation-delay: -0.8s;\n}\n@-webkit-keyframes animationLoading {\n  0% {\n    opacity: 0;\n  }\n  100% {\n    opacity: 1;\n  }\n}\n@keyframes animationLoading {\n  0% {\n    opacity: 0;\n  }\n  100% {\n    opacity: 1;\n  }\n}\n@-webkit-keyframes animationLoadingSpinner {\n  0%,\n  40%,\n  100% {\n    -webkit-transform: scaleY(0.4);\n  }\n  20% {\n    -webkit-transform: scaleY(1);\n  }\n}\n@keyframes animationLoadingSpinner {\n  0%,\n  40%,\n  100% {\n    transform: scaleY(0.4);\n    -webkit-transform: scaleY(0.4);\n  }\n  20% {\n    transform: scaleY(1);\n    -webkit-transform: scaleY(1);\n  }\n}\n"; });
+define('text!framework/default-ui/views/sidebar/sidebar.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--sidebar {\n  display: block;\n  position: fixed;\n  top: 0;\n  bottom: 0;\n  left: 0;\n  z-index: 10;\n  width: 280px;\n  background-color: #2a2e35;\n  font-size: 14px;\n  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n  transition-property: left;\n}\n.t--sidebar ul {\n  padding: 0;\n  margin: 0;\n  list-style: none;\n}\n.t--sidebar-collapsed .t--sidebar {\n  left: -220px;\n}\n.t--sidebar-header {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  background-color: #262930;\n  color: white;\n  cursor: pointer;\n}\n.t--sidebar-header-title {\n  flex-grow: 1;\n  font-size: 26px;\n  font-weight: 100;\n  padding: 12px;\n}\n.t--sidebar-header-icon {\n  display: flex;\n  width: 60px;\n  align-items: center;\n  justify-content: center;\n}\n.t--sidebar-item {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  color: lightgray;\n  text-decoration: none;\n}\n.t--sidebar-item:hover {\n  background-color: #17C4BB;\n  color: white;\n}\n.t--sidebar-item-title {\n  flex-grow: 1;\n  padding: 12px;\n}\n.t--sidebar-item-icon {\n  display: flex;\n  width: 60px;\n  align-items: center;\n  justify-content: center;\n}\n.t--sidebar-sub {\n  position: fixed;\n  z-index: -9;\n  left: 280px;\n  min-width: 280px;\n  background-color: #2a2e35;\n  padding: 12px;\n}\n.t--sidebar-sub.au-enter-active {\n  animation: leftFadeIn 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n}\n.t--sidebar-sub-item {\n  color: lightgray;\n  text-decoration: none;\n}\n.t--sidebar-sub-item:hover {\n  color: white;\n}\n"; });
 define('text!framework/stack-router/views/stack-router/stack-router.css', ['module'], function(module) { module.exports = ".t--stack-router,\n.t--stack-router-item {\n  display: block;\n  height: 100%;\n}\n"; });
 define('text!framework/stack-router/views/view/view.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--view {\n  display: block;\n  position: relative;\n  height: 100%;\n  overflow-x: hidden;\n}\n.t--view-toolbar {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  background-color: #808080;\n  color: white;\n}\n.t--view-toolbar .dx-toolbar {\n  background-color: transparent;\n}\n.t--view-toolbar-title {\n  font-size: 26px;\n  font-weight: 100;\n  color: white;\n  padding: 0 12px;\n}\n.t--view-content-wrapper {\n  display: block;\n  height: 100%;\n  overflow-x: hidden;\n  overflow-y: auto;\n}\n.t--view-content {\n  display: table;\n  width: 100%;\n  margin-bottom: 12px;\n  -webkit-overflow-scrolling: touch;\n}\n.t--view-with-toolbar .t--view-content-wrapper {\n  height: calc(100% - 60px);\n}\n"; });
 //# sourceMappingURL=app-bundle.js.map
