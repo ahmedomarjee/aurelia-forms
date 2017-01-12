@@ -94,7 +94,8 @@ export class DxWidget {
 
             const result = this.templatingEngine.enhance({
               element: newElement.get(0),
-              bindingContext: model || this.bindingContext
+              bindingContext: this.bindingContext,
+              overrideContext: model
             });
             result.attached();
 
