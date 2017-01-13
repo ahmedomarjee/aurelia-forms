@@ -83,7 +83,7 @@ export class RestService {
   private createHeaders(options?: Interfaces.IRestGetOptions) {
     const headers: any = {};
 
-    if (options.getOptions) {
+    if (options && options.getOptions) {
       headers["X-GET-OPTIONS"] = this.json.stringify(options.getOptions);
     }
 

@@ -138,9 +138,9 @@ export class FormBase {
       });
   }
   delete(): Promise<any> {
-    return this.models.save()
+    return this.models.delete()
       .then(() => {
-        this.formBaseImport.router.removeViewModel(this);
+        history.back();
       })
       .catch(r => {
         this.formBaseImport.error.showAndLogError(r);

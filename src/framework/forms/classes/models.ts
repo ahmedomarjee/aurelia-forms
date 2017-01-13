@@ -136,7 +136,7 @@ export class Models {
       .map(m => {
         const promise = this.rest.delete({
             url: this.rest.getWebApiUrl(m.webApiAction),
-            id: this.data[m.id][m.key],
+            id: this.data[m.id][m.keyProperty],
             increaseLoadingCount: true
           });
 

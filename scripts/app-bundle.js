@@ -329,7 +329,7 @@ define('framework/base/services/rest-service',["require", "exports", "aurelia-fr
         };
         RestService.prototype.createHeaders = function (options) {
             var headers = {};
-            if (options.getOptions) {
+            if (options && options.getOptions) {
                 headers["X-GET-OPTIONS"] = this.json.stringify(options.getOptions);
             }
             headers["Content-Type"] = "application/json";
@@ -2157,7 +2157,7 @@ define('framework/forms/classes/models',["require", "exports", "aurelia-framewor
                 .map(function (m) {
                 var promise = _this.rest.delete({
                     url: _this.rest.getWebApiUrl(m.webApiAction),
-                    id: _this.data[m.id][m.key],
+                    id: _this.data[m.id][m.keyProperty],
                     increaseLoadingCount: true
                 });
                 return promise;
@@ -3448,9 +3448,9 @@ define('framework/forms/classes/form-base',["require", "exports"], function (req
         };
         FormBase.prototype.delete = function () {
             var _this = this;
-            return this.models.save()
+            return this.models.delete()
                 .then(function () {
-                _this.formBaseImport.router.removeViewModel(_this);
+                history.back();
             })
                 .catch(function (r) {
                 _this.formBaseImport.error.showAndLogError(r);
@@ -4693,7 +4693,7 @@ define('text!framework/login/login.html', ['module'], function(module) { module.
 define('text!framework/forms/templates/toolbar-button-template.html',[],function () { return '<a class="t--toolbar-item" click.delegate="data.guardedExecute()">\r\n  <div if.bind="data.command.badgeText" class="t--toolbar-item-badge" tr="key.bind: data.command.badgeText">\r\n  </div>\r\n  <div class="t--toolbar-item-content">\r\n    <div if.bind="data.command.icon" class="t--toolbar-item-icon">\r\n      <i class="fa-fw" fa-icon="icon.bind: data.command.icon"></i>\r\n    </div>\r\n    <div if.bind="data.command.title" class="t--toolbar-item-title" tr="key.bind: data.command.title">\r\n    </div>\r\n  </div>\r\n</a>\r\n';});
 
 define('text!framework/dx/elements/dx-widget.html', ['module'], function(module) { module.exports = "<template class=\"dx-widget\">\r\n</template>"; });
-define('text!framework/login/login.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--login-container {\n  display: flex;\n  height: 100vh;\n  width: 100vw;\n}\n.t--login-image {\n  position: relative;\n  flex-grow: 1;\n  background-image: url('http://www.aesthetic-lounge.de/wp-content/uploads/2015/02/Mann-_nr_2.jpg');\n  background-position: center center;\n  background-size: cover;\n  border-right: 1px solid lightgray;\n}\n.t--login-banner {\n  position: absolute;\n  padding: 12px 36px;\n  bottom: 30vh;\n  font-size: 60px;\n  font-weight: 100;\n  color: white;\n  background-color: rgba(0, 0, 0, 0.3);\n}\n.t--login-data {\n  display: flex;\n  width: 350px;\n  align-items: center;\n  background-color: #f7f7f7;\n}\n.t--login-data .t--view-content {\n  display: flex;\n  margin-top: 4vh;\n  flex-direction: column;\n  justify-content: center;\n}\n.t--login-logo {\n  margin-bottom: 40px;\n  text-align: center;\n}\n.t--login-logo img {\n  max-width: 200px;\n}\n"; });
+define('text!framework/login/login.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--login-container {\n  display: flex;\n  height: 100vh;\n  width: 100vw;\n}\n.t--login-image {\n  position: relative;\n  flex-grow: 1;\n  background-image: url('images/background-login.jpg');\n  background-position: center center;\n  background-size: cover;\n  border-right: 1px solid lightgray;\n}\n.t--login-banner {\n  position: absolute;\n  padding: 12px 36px;\n  bottom: 30vh;\n  font-size: 60px;\n  font-weight: 100;\n  color: white;\n  background-color: rgba(0, 0, 0, 0.3);\n}\n.t--login-data {\n  display: flex;\n  width: 350px;\n  align-items: center;\n  background-color: #f7f7f7;\n}\n.t--login-data .t--view-content {\n  display: flex;\n  margin-top: 4vh;\n  flex-direction: column;\n  justify-content: center;\n}\n.t--login-logo {\n  margin-bottom: 40px;\n  text-align: center;\n}\n.t--login-logo img {\n  max-width: 200px;\n}\n"; });
 define('text!framework/default-ui/views/container/container.html', ['module'], function(module) { module.exports = "<template class=\"t--container\" class.bind=\"className\">\r\n  <require from=\"./container.css\"></require>\r\n  \r\n  <require from=\"../loading/loading\"></require>\r\n  <require from=\"../sidebar/sidebar\"></require>\r\n  <require from=\"../header/header\"></require>\r\n  <require from=\"../content/content\"></require>\r\n\r\n  <loading></loading>\r\n  <sidebar></sidebar>\r\n  <header></header>\r\n  <content></content>\r\n</template>\r\n"; });
 define('text!framework/default-ui/views/content/content.html', ['module'], function(module) { module.exports = "<template class=\"t--content\">\r\n  <require from=\"./content.css\"></require>\r\n\r\n  <stack-router></stack-router>\r\n</template>\r\n"; });
 define('text!framework/default-ui/styles/styles.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--view-content {\n  opacity: 0;\n  transform: translateX(10px);\n  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n  transition-property: all;\n}\n.t--view-content.t--view-content-attached {\n  opacity: 1;\n  transform: translateX(0);\n}\n"; });
