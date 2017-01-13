@@ -8,14 +8,12 @@
     transform: translateX(0);
   }
 }
-.dx-toolbar {
+.t--container .dx-toolbar {
   height: 32px;
+  background-color: #D3D3D3;
 }
 .dx-toolbar .dx-toolbar-items-container {
   height: 32px;
-}
-.dx-toolbar {
-  background-color: #D3D3D3;
 }
 .t--toolbar-title {
   font-size: 16px;
