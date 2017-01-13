@@ -1,0 +1,85 @@
+@import "../../base/styles/variables.less";
+
+@inlineToolbarHeight: 32px;
+
+.dx-toolbar {
+  height: @inlineToolbarHeight;
+}
+
+.dx-toolbar .dx-toolbar-items-container {
+  height: @inlineToolbarHeight;
+}
+
+.dx-toolbar {
+  background-color: #D3D3D3;
+}
+
+.t--toolbar-title {
+  font-size: 16px;
+  font-weight: 100;
+  color: black;
+  padding: 0 12px;
+}
+
+.t--toolbar-item {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 @padding;
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-user-select: none;
+  i {
+    font-size: 16px;
+  }
+  &:hover {
+    color: white;
+    background-color: #808080;
+  }
+}
+.t--toolbar-item-content {
+  display: flex;
+  flex-direction: row;
+}
+
+.dx-state-disabled {
+  .t--toolbar-item {
+    cursor: default;
+    color: lightgray;
+    &:hover {
+      background-color: inherit;
+    }
+  }
+}
+
+.t--toolbar {
+  height: @toolbarHeight;
+  background-color: #808080;
+  color: white;
+  .dx-toolbar {
+    height: @toolbarHeight;
+    background-color: transparent;
+  }
+
+  .dx-toolbar .dx-toolbar-items-container {
+    height: @toolbarHeight;
+  }
+  .t--toolbar-title {
+    font-size: 26px;
+    color: white;
+  }
+  .t--toolbar-item {
+    height: @toolbarHeight;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: white;
+    &:hover {
+      background-color: #4F4F4F;
+    }
+  }
+  .t--toolbar-item-content {
+    flex-direction: column;
+  }
+}

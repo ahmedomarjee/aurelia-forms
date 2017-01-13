@@ -1,13 +1,17 @@
+@keyframes leftFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
 .t--container {
   display: block;
   width: 100vw;
   height: 100vh;
-}
-.t--container .dx-toolbar {
-  height: 60px;
-}
-.t--container .dx-toolbar .dx-toolbar-items-container {
-  height: 60px;
 }
 .t--toolbar-title {
   min-width: 220px;

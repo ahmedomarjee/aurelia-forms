@@ -23,6 +23,7 @@
     "mandantor_caption": "Mandant"
   },
   "base": {
+    "add": "Neuer Datensatz",
     "save": "Speichern",
     "delete": "Löschen",
     "question": "Frage",

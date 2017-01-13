@@ -7,6 +7,7 @@ export interface IListOptions extends IWidgetOptions {
     binding?: IBinding;
     relationBinding?: IBinding;
     
+    createToolbar?: boolean;
     optionsToolbar?: IOptions;
 
     caption?: string;

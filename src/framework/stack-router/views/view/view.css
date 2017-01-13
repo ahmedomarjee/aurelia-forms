@@ -1,30 +1,31 @@
+@keyframes leftFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
 .t--view {
   display: block;
   position: relative;
   height: 100%;
+  overflow-x: hidden;
 }
-.t--view-toolbar {
-  display: flex;
-  align-items: center;
-  height: 60px;
-  background-color: #808080;
-  color: white;
-}
-.t--view-toolbar .dx-toolbar {
-  background-color: transparent;
-}
-.t--view-toolbar-title {
-  font-size: 26px;
-  font-weight: 100;
-  color: white;
-  padding: 0 12px;
-}
-.t--view-content {
+.t--view-content-wrapper {
+  display: block;
   height: 100%;
   overflow-x: hidden;
   overflow-y: auto;
+}
+.t--view-content {
+  display: table;
+  width: 100%;
+  margin-bottom: 12px;
   -webkit-overflow-scrolling: touch;
 }
-.t--view-with-toolbar .t--view-content {
+.t--view-with-toolbar .t--view-content-wrapper {
   height: calc(100% - 60px);
 }

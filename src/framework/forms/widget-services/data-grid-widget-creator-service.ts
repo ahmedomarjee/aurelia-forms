@@ -8,16 +8,18 @@ import {
   BaseWidgetCreatorService
 } from "./base-widget-creator-service";
 import {
+  DataSourceService,
   GlobalizationService,
   LocalizationService,
   LocationService
 } from "../../base/services/export";
 import {
+  DefaultCommandsService,
+  ToolbarService
+} from "../services/export";
+import {
   SelectionModeEnum
 } from "../enums/selection-mode-enum";
-import {
-  DataSourceService
-} from "../../base/services/data-source-service";
 import * as WidgetOptions from "../widget-options/export";
 
 @autoinject
@@ -27,7 +29,9 @@ export class DataGridWidgetCreatorService {
     private dataSource: DataSourceService,
     private globalization: GlobalizationService,
     private localization: LocalizationService,
-    private location: LocationService
+    private location: LocationService,
+    private defaultCommands: DefaultCommandsService,
+    private toolbar: ToolbarService
   ) { }
 
   addDataGrid(form: FormBase, options: WidgetOptions.IDataGridOptions): DevExpress.ui.dxDataGridOptions {
@@ -142,7 +146,15 @@ export class DataGridWidgetCreatorService {
     //TODO - AutoHeight
     //TODO - EditPopup
     //TODO - AddShortcuts
-    //TODO - Toolbars
+    if (options.createToolbar || options.isMainList) {
+      const commands = this.defaultCommands.getListCommands(form, options);
+
+      if (options.createToolbar) {
+        form[options.optionsToolbar.optionsName] = this.toolbar.createToolbarOptions(form.expressions, options.caption, commands);
+      } else if (options.isMainList) {
+        commands.forEach(c => form.commands.addCommand(c));
+      }
+    }
 
     return dataGridOptions;
   }

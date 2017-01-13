@@ -15,17 +15,24 @@ import {
 export class Commands {
   private form: FormBase;
   private expressions: Expressions;
-  
+  private commands: Interfaces.ICommand[] = [];
+  private commandData: Interfaces.ICommandData[] = [];
+
   constructor() {}
 
-  commands: Interfaces.ICommand[] = [];
-
+  addCommand(commandData: Interfaces.ICommandData) {
+    this.commandData.push(commandData);
+  }
   addInfo(command: Interfaces.ICommand) {
     this.commands.push(command);
   }
 
   getCommands(): Interfaces.ICommandData[] {
-    return this.commands.map(i => this.expressions.evaluateExpression(i.binding.bindToFQ));
+    const result = this.commands.map(i => this.expressions.evaluateExpression(i.binding.bindToFQ));
+
+    result.push(...this.commandData);
+
+    return result;
   }
   
   registerForm(form: FormBase) {

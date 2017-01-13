@@ -7,4 +7,5 @@ export {LocalizationService} from "./localization-service";
 export {LocationService} from "./location-service";
 export {JsonService} from "./json-service";
 export {ObjectInfoService} from "./object-info-service";
+export {PermissionService} from "./permission-service";
 export {RestService} from "./rest-service";

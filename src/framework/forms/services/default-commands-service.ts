@@ -5,7 +5,12 @@ import {
   FormBase
 } from "../classes/form-base";
 import {
-  LocalizationService
+  IListOptions
+} from "../widget-options/export";
+import {
+  LocalizationService,
+  LocationService,
+  PermissionService
 } from "../../base/services/export";
 import {
   RouterService
@@ -16,11 +21,13 @@ import * as Interfaces from "../interfaces/export";
 export class DefaultCommandsService {
   constructor(
     private router: RouterService,
-    private localization: LocalizationService
+    private localization: LocalizationService,
+    private location: LocationService,
+    private permission: PermissionService
   ) {}
 
   getSaveCommand(form: FormBase): Interfaces.ICommandData {
-    return {
+    const cmd: Interfaces.ICommandData = {
       id: "$cmdSave",
       icon: "floppy-o",
       title: "base.save",
@@ -30,9 +37,11 @@ export class DefaultCommandsService {
         form.save();
       }
     };
+
+    return cmd;
   }
   getDeleteCommand(form: FormBase): Interfaces.ICommandData {
-    const cmd = {
+    const cmd: Interfaces.ICommandData = {
       id: "$cmdDelete",
       icon: "times",
       title: "base.delete",
@@ -57,8 +66,35 @@ export class DefaultCommandsService {
 
     return cmd;
   }
+  getAddCommand(form: FormBase, options: IListOptions): Interfaces.ICommandData {
+    const cmd: Interfaces.ICommandData = {
+      id: "$cmdAdd",
+      icon: "plus",
+      title: "base.add",
+      isVisible: false,
+      isEnabled: true,
+      execute: () => {
+        if (options.editUrl) {
+          this.location.goTo(options.editUrl + "/0", form);
+        }
+        //TODO
+      }
+    }
+
+    if (options.dataModel) {
+      const info = form.models.getInfo(options.dataModel);
+      if (info) {
+        cmd.isVisible = info.webApiAction
+          && info.keyProperty
+          && this.permission.canWebApiNew(info.webApiAction)
+          && !!(options.editUrl || options.idEditPopup || options.edits.length > 0);
+      }
+    }
+
+    return cmd;
+  }
   getGoBackCommand(form: FormBase): Interfaces.ICommandData {
-    return {
+    const cmd: Interfaces.ICommandData = {
       id: "$cmdGoBack",
       icon: "arrow-left",
       isVisible: this.router.viewStack.length > 1,
@@ -66,6 +102,18 @@ export class DefaultCommandsService {
         history.back();
       }
     }
+
+    return cmd;
+  }
+  getListCommands(form: FormBase, options: IListOptions): Interfaces.ICommandData[] {
+    const result: Interfaces.ICommandData[] = [];
+
+    const addCmd = this.getAddCommand(form, options);
+    if (addCmd) {
+      result.push(addCmd);
+    }
+
+    return result;
   }
 
   private canSave(form: FormBase): boolean {

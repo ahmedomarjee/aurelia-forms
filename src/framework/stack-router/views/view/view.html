@@ -1,22 +1,8 @@
 <template class="t--view" class.bind="className">
   <require from="./view.css"></require>
 
-  <div class="t--view-toolbar" if.bind="createToolbar">
-    <dx-widget if.bind="toolbarOptions" name="dxToolbar" options.bind="toolbarOptions">
-      <dx-template name="itemTemplate">
-        <a class="t--view-toolbar-item" click.delegate="data.guardedExecute()">
-          <div if.bind="data.command.badgeText" class="t--view-toolbar-item-badge" tr="key.bind: data.command.badgeText">
-          </div>
-          <div class="t--view-toolbar-item-content">
-            <div if.bind="data.command.icon" class="t--view-toolbar-item-icon">
-              <i class="fa fa-fw fa-${data.command.icon}"></i>
-            </div>
-            <div if.bind="data.command.title" class="t--view-toolbar-item-title" tr="key.bind: data.command.title">
-            </div>
-          </div>
-        </a>
-      </dx-template>
-    </dx-widget>
+  <div class="t--toolbar" if.bind="createToolbar">
+    <dx-widget if.bind="toolbarOptions" name="dxToolbar" options.bind="toolbarOptions"></dx-widget>
   </div>
   <div class="t--view-content-wrapper">
     <div class="container-fluid">
