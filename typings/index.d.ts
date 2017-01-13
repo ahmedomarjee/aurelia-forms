@@ -4,3 +4,5 @@
 
 declare module "text!*.json" {    
 }
+declare module "text!*.html" {    
+}

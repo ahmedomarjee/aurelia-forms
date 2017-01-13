@@ -5,18 +5,17 @@ import {
 
 @autoinject
 export class DxTemplateService {
-  private isInitialized = false;
   private templates = {};
 
   constructor(
     private templatingEngine: TemplatingEngine
   ) { }
 
-  getTemplates(bindingContext: any): any {
-    if (!this.isInitialized) {
-      this.initialize();
-    }
+  registerTemplate(key: string, template: string) {
+    this.templates[key] = template;
+  }
 
+  getTemplates(bindingContext: any): any {
     const result = {};
 
     for (let templateKey in this.templates) {
@@ -45,14 +44,5 @@ export class DxTemplateService {
     }
 
     return result;
-  }
-
-  private initialize() {
-    this.isInitialized = true;
-
-    $("script[type='text/dx-template']")
-      .each((index, item) => {
-        this.templates[$(item).attr("id")] = item.firstChild.textContent;
-      });
   }
 }
