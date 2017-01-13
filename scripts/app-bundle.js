@@ -2311,21 +2311,21 @@ define('framework/forms/services/command-service',["require", "exports"], functi
         function CommandService() {
             this.isCommandExecuting = false;
         }
-        CommandService.prototype.isVisible = function (expressions, command) {
+        CommandService.prototype.isVisible = function (expressionProvider, command) {
             if (command.isVisible != undefined) {
                 return command.isVisible;
             }
             else if (command.isVisibleExpression) {
-                return expressions.evaluateExpression(command.isVisibleExpression);
+                return expressionProvider.evaluateExpression(command.isVisibleExpression);
             }
             return true;
         };
-        CommandService.prototype.isEnabled = function (expressions, command) {
+        CommandService.prototype.isEnabled = function (expressionProvider, command) {
             if (command.isEnabled != undefined) {
                 return command.isEnabled;
             }
             else if (command.isEnabledExpression) {
-                return expressions.evaluateExpression(command.isEnabledExpression);
+                return expressionProvider.evaluateExpression(command.isEnabledExpression);
             }
             return true;
         };
@@ -2333,19 +2333,19 @@ define('framework/forms/services/command-service',["require", "exports"], functi
             return this.isVisible(expressions, command)
                 && this.isEnabled(expressions, command);
         };
-        CommandService.prototype.execute = function (expressions, command) {
+        CommandService.prototype.execute = function (expressionProvider, command) {
             var _this = this;
             if (this.isCommandExecuting) {
                 return;
             }
-            if (!this.isVisibleAndEnabled(expressions, command)) {
+            if (!this.isVisibleAndEnabled(expressionProvider, command)) {
                 return false;
             }
             if (!command.execute) {
                 return false;
             }
             this.isCommandExecuting = true;
-            var result = command.execute.bind(expressions)();
+            var result = command.execute.bind(expressionProvider)();
             if (result && result.then && result.catch) {
                 result
                     .catch(function () {
@@ -2385,7 +2385,7 @@ define('framework/forms/services/toolbar-service',["require", "exports", "aureli
         ToolbarService.prototype.createFormToolbarOptions = function (form) {
             var _this = this;
             var component;
-            var options = this.createToolbarOptions(form, form.title, this.collectItems(form), function (c) {
+            var options = this.createToolbarOptions(form.expressions, form.title, this.collectItems(form), function (c) {
                 component = c;
             });
             form.expressions.createObserver("title", function (newValue) {
@@ -2401,7 +2401,7 @@ define('framework/forms/services/toolbar-service',["require", "exports", "aureli
             });
             return options;
         };
-        ToolbarService.prototype.createToolbarOptions = function (form, title, commands, componentCreatedCallback) {
+        ToolbarService.prototype.createToolbarOptions = function (expressionProvider, title, commands, componentCreatedCallback) {
             var _this = this;
             var component;
             var options = {
@@ -2413,7 +2413,7 @@ define('framework/forms/services/toolbar-service',["require", "exports", "aureli
                 }
             };
             var items = commands
-                .map(function (i) { return _this.convertToToolbarItem(form, function () { return component; }, i); });
+                .map(function (i) { return _this.createToolbarItem(expressionProvider, function () { return component; }, i); });
             var titleItem = {
                 html: this.createTitleHtml(title),
                 location: "before"
@@ -2422,6 +2422,20 @@ define('framework/forms/services/toolbar-service',["require", "exports", "aureli
             items.splice(0, 0, titleItem);
             options.items = items;
             return options;
+        };
+        ToolbarService.prototype.createToolbarItem = function (expressionProvider, getToolbar, command) {
+            var _this = this;
+            var item = {};
+            this.setEnabled(expressionProvider, getToolbar, command, item);
+            this.setVisible(expressionProvider, getToolbar, command, item);
+            item.template = "global:toolbar-button-template";
+            item.location = command.location || "before";
+            item.locateInMenu = command.locateInMenu;
+            item.command = command;
+            item.guardedExecute = function () {
+                _this.command.execute(expressionProvider, command);
+            };
+            return item;
         };
         ToolbarService.prototype.collectItems = function (form) {
             var items = [];
@@ -2434,66 +2448,52 @@ define('framework/forms/services/toolbar-service',["require", "exports", "aureli
             }
             return items;
         };
-        ToolbarService.prototype.convertToToolbarItem = function (form, getToolbar, command) {
-            var _this = this;
-            var item = {};
-            this.setEnabled(form, getToolbar, command, item);
-            this.setVisible(form, getToolbar, command, item);
-            item.template = "global:toolbar-button-template";
-            item.location = command.location || "before";
-            item.locateInMenu = command.locateInMenu;
-            item.command = command;
-            item.guardedExecute = function () {
-                _this.command.execute(form.expressions, command);
-            };
-            return item;
-        };
         ToolbarService.prototype.createTitleHtml = function (title) {
             if (!title) {
                 return null;
             }
             return "<div class=\"t--toolbar-title\">" + this.localization.translate(null, title) + "</div>";
         };
-        ToolbarService.prototype.setEnabled = function (form, getToolbar, command, item) {
+        ToolbarService.prototype.setEnabled = function (expressionProvider, getToolbar, command, item) {
             var _this = this;
             var setEnabled = function (val) {
                 _this.setItemOption(getToolbar, item, "disabled", !val);
                 item.disabled = !val;
                 command.isEnabled = val;
             };
-            item.disabled = !this.command.isEnabled(form.expressions, command);
+            item.disabled = !this.command.isEnabled(expressionProvider, command);
             if (command.isEnabled != undefined) {
-                form.expressions.createObserver("isEnabled", function (newValue) {
+                expressionProvider.createObserver("isEnabled", function (newValue) {
                     setEnabled(newValue);
                 }, command);
             }
             else if (command.isEnabledExpression) {
-                form.expressions.createObserver(command.isEnabledExpression, function (newValue) {
+                expressionProvider.createObserver(command.isEnabledExpression, function (newValue) {
                     setEnabled(newValue);
                 });
             }
         };
-        ToolbarService.prototype.setVisible = function (form, getToolbar, command, item) {
+        ToolbarService.prototype.setVisible = function (expressionProvider, getToolbar, command, item) {
             var _this = this;
             var setVisible = function (val) {
                 _this.setItemOption(getToolbar, item, "visible", val);
                 item.visible = val;
                 command.isVisible = val;
             };
-            item.visible = this.command.isVisible(form.expressions, command);
+            item.visible = this.command.isVisible(expressionProvider, command);
             if (command.isVisible != undefined) {
-                form.expressions.createObserver("isVisible", function (newValue) {
+                expressionProvider.createObserver("isVisible", function (newValue) {
                     setVisible(newValue);
                 }, command);
             }
             else if (command.isVisibleExpression) {
-                form.expressions.createObserver(command.isVisibleExpression, function (newValue) {
+                expressionProvider.createObserver(command.isVisibleExpression, function (newValue) {
                     setVisible(newValue);
                 });
             }
         };
         ToolbarService.prototype.setItemOption = function (getToolbar, item, property, value) {
-            var toolbar = getToolbar();
+            var toolbar = getToolbar ? getToolbar() : null;
             if (!toolbar) {
                 return;
             }
@@ -2813,7 +2813,7 @@ define('framework/forms/widget-services/simple-widget-creator-service',["require
             if (options.maxWidth) {
                 widgetOptions.maxWidth = options.maxWidth;
             }
-            widgetOptions.toolbarItems = this.toolbar.createToolbarOptions(form, options.caption, []).items;
+            widgetOptions.toolbarItems = this.toolbar.createToolbarOptions(form.expressions, options.caption, []).items;
             return widgetOptions;
         };
         SimpleWidgetCreatorService.prototype.addRadioGroup = function (form, options, selectContainerOptions) {

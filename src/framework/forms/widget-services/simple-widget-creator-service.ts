@@ -154,7 +154,7 @@ export class SimpleWidgetCreatorService {
       widgetOptions.maxWidth = options.maxWidth;
     }
 
-    widgetOptions.toolbarItems = this.toolbar.createToolbarOptions(form, options.caption, []).items;
+    widgetOptions.toolbarItems = this.toolbar.createToolbarOptions(form.expressions, options.caption, []).items;
 
     return widgetOptions;
   }

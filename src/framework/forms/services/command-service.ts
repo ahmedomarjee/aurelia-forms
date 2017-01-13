@@ -2,41 +2,44 @@ import {
   Expressions
 } from "../classes/expressions";
 import {
+  IExpressionProvider
+} from "../../base/interfaces/export";
+import {
   ICommandData
 } from "../interfaces/export";
 
 export class CommandService {
   private isCommandExecuting = false;
 
-  isVisible(expressions: Expressions, command: ICommandData): boolean {
+  isVisible(expressionProvider: IExpressionProvider, command: ICommandData): boolean {
     if (command.isVisible != undefined) {
       return command.isVisible;
     } else if (command.isVisibleExpression) {
-      return expressions.evaluateExpression(command.isVisibleExpression);
+      return expressionProvider.evaluateExpression(command.isVisibleExpression);
     }
 
     return true;
   }
-  isEnabled(expressions: Expressions, command: ICommandData): boolean {
+  isEnabled(expressionProvider: IExpressionProvider, command: ICommandData): boolean {
     if (command.isEnabled != undefined) {
       return command.isEnabled;
     } else if (command.isEnabledExpression) {
-      return expressions.evaluateExpression(command.isEnabledExpression);
+      return expressionProvider.evaluateExpression(command.isEnabledExpression);
     }
 
     return true;
   }
-  isVisibleAndEnabled(expressions: Expressions, command: ICommandData): boolean {
+  isVisibleAndEnabled(expressions: IExpressionProvider, command: ICommandData): boolean {
     return this.isVisible(expressions, command)
       && this.isEnabled(expressions, command);
   }
 
-  execute(expressions: Expressions, command: ICommandData): boolean  {
+  execute(expressionProvider: IExpressionProvider, command: ICommandData): boolean  {
     if (this.isCommandExecuting) {
       return;
     }
 
-    if (!this.isVisibleAndEnabled(expressions, command)) {
+    if (!this.isVisibleAndEnabled(expressionProvider, command)) {
       return false;
     }
     if (!command.execute) {
@@ -44,7 +47,7 @@ export class CommandService {
     }
 
     this.isCommandExecuting = true;
-    const result = command.execute.bind(expressions)();
+    const result = command.execute.bind(expressionProvider)();
 
     if (result && result.then && result.catch) {
       result

@@ -5,6 +5,9 @@ import {
   FormBase
 } from "../classes/form-base";
 import {
+  IExpressionProvider
+} from "../../base/interfaces/export";
+import {
   LocalizationService
 } from "../../base/services/export";
 import {
@@ -28,7 +31,7 @@ export class ToolbarService {
   createFormToolbarOptions(form: FormBase): DevExpress.ui.dxToolbarOptions {
     let component: DevExpress.ui.dxToolbar;
 
-    const options = this.createToolbarOptions(form, form.title, this.collectItems(form), (c) => {
+    const options = this.createToolbarOptions(form.expressions, form.title, this.collectItems(form), (c) => {
       component = c;
     });
 
@@ -49,7 +52,7 @@ export class ToolbarService {
 
     return options;
   }
-  createToolbarOptions(form: FormBase, title: string, commands: Interfaces.ICommandData[], componentCreatedCallback?: {(component: DevExpress.ui.dxToolbar)}): DevExpress.ui.dxToolbarOptions {
+  createToolbarOptions(expressionProvider: IExpressionProvider, title: string, commands: Interfaces.ICommandData[], componentCreatedCallback?: {(component: DevExpress.ui.dxToolbar)}): DevExpress.ui.dxToolbarOptions {
     let component: DevExpress.ui.dxToolbar
 
     const options: DevExpress.ui.dxToolbarOptions = {
@@ -63,7 +66,7 @@ export class ToolbarService {
     };
 
     const items = commands
-      .map(i => this.convertToToolbarItem(form, () => component, i));
+      .map(i => this.createToolbarItem(expressionProvider, () => component, i));
 
     const titleItem: DevExpress.ui.dxPopupToolbarItemOptions = {
       html: this.createTitleHtml(title),
@@ -76,6 +79,21 @@ export class ToolbarService {
     options.items = items;
 
     return options;
+  }
+  createToolbarItem(expressionProvider: IExpressionProvider, getToolbar: {(): DevExpress.ui.dxToolbar}, command: Interfaces.ICommandData): DevExpress.ui.dxPopupToolbarItemOptions {
+    const item: DevExpress.ui.dxPopupToolbarItemOptions = {};
+
+    this.setEnabled(expressionProvider, getToolbar, command, item);
+    this.setVisible(expressionProvider, getToolbar, command, item);
+    item.template = "global:toolbar-button-template";
+    item.location = command.location || "before";
+    (<any>item).locateInMenu = command.locateInMenu;
+    (<any>item).command = command;
+    (<any>item).guardedExecute = () => {
+      this.command.execute(expressionProvider, command);
+    };
+
+    return item;
   }
 
   private collectItems(form: FormBase): Interfaces.ICommandData[] {
@@ -91,21 +109,6 @@ export class ToolbarService {
 
     return items;
   }
-  private convertToToolbarItem(form: FormBase, getToolbar: {(): DevExpress.ui.dxToolbar}, command: Interfaces.ICommandData): DevExpress.ui.dxPopupToolbarItemOptions {
-    const item: DevExpress.ui.dxPopupToolbarItemOptions = {};
-
-    this.setEnabled(form, getToolbar, command, item);
-    this.setVisible(form, getToolbar, command, item);
-    item.template = "global:toolbar-button-template";
-    item.location = command.location || "before";
-    (<any>item).locateInMenu = command.locateInMenu;
-    (<any>item).command = command;
-    (<any>item).guardedExecute = () => {
-      this.command.execute(form.expressions, command);
-    };
-
-    return item;
-  }
 
   private createTitleHtml(title: string): string {
     if (!title) {
@@ -115,44 +118,44 @@ export class ToolbarService {
     return `<div class="t--toolbar-title">${this.localization.translate(null, title)}</div>`;
   }
 
-  private setEnabled(form: FormBase, getToolbar: {(): DevExpress.ui.dxToolbar}, command: Interfaces.ICommandData, item: DevExpress.ui.dxPopupToolbarItemOptions) {
+  private setEnabled(expressionProvider: IExpressionProvider, getToolbar: {(): DevExpress.ui.dxToolbar}, command: Interfaces.ICommandData, item: DevExpress.ui.dxPopupToolbarItemOptions) {
     const setEnabled = (val) => {
       this.setItemOption(getToolbar, item, "disabled", !val);
       item.disabled = !val;
       command.isEnabled = val;
     }
 
-    item.disabled = !this.command.isEnabled(form.expressions, command);
+    item.disabled = !this.command.isEnabled(expressionProvider, command);
     if (command.isEnabled != undefined) {
-      form.expressions.createObserver("isEnabled", (newValue) => {
+      expressionProvider.createObserver("isEnabled", (newValue) => {
         setEnabled(newValue);
       }, command);
     } else if (command.isEnabledExpression) {
-      form.expressions.createObserver(command.isEnabledExpression, (newValue) => {
+      expressionProvider.createObserver(command.isEnabledExpression, (newValue) => {
         setEnabled(newValue);
       });
     }
   }
-  private setVisible(form: FormBase, getToolbar: {(): DevExpress.ui.dxToolbar}, command: Interfaces.ICommandData, item: DevExpress.ui.dxPopupToolbarItemOptions) {
+  private setVisible(expressionProvider: IExpressionProvider, getToolbar: {(): DevExpress.ui.dxToolbar}, command: Interfaces.ICommandData, item: DevExpress.ui.dxPopupToolbarItemOptions) {
     const setVisible = (val) => {
       this.setItemOption(getToolbar, item, "visible", val);
       item.visible = val;
       command.isVisible = val;
     }
 
-    item.visible = this.command.isVisible(form.expressions, command);
+    item.visible = this.command.isVisible(expressionProvider, command);
     if (command.isVisible != undefined) {
-      form.expressions.createObserver("isVisible", (newValue) => {
+      expressionProvider.createObserver("isVisible", (newValue) => {
         setVisible(newValue);
       }, command);
     } else if (command.isVisibleExpression) {
-      form.expressions.createObserver(command.isVisibleExpression, (newValue) => {
+      expressionProvider.createObserver(command.isVisibleExpression, (newValue) => {
         setVisible(newValue);
       });
     }
   }
   private setItemOption(getToolbar: {(): DevExpress.ui.dxToolbar}, item: DevExpress.ui.dxPopupToolbarItemOptions, property: string, value: any) {
-    const toolbar = getToolbar();
+    const toolbar = getToolbar ? getToolbar() : null;
     if (!toolbar) {
       return;
     }
