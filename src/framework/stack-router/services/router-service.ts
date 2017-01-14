@@ -5,7 +5,11 @@ import {
   ViewItem
 } from "../classes/view-item";
 import {
-  LocalizationService
+  Shortcuts
+} from "../../base/enumerations/export";
+import {
+  LocalizationService,
+  ShortcutService
 } from "../../base/services/export";
 import * as Interfaces from "../interfaces/export";
 
@@ -16,8 +20,11 @@ export class RouterService {
   private routeInfoId = 0;
 
   constructor(
-    private localization: LocalizationService
-  ) { }
+    private localization: LocalizationService,
+    private shortcut: ShortcutService
+  ) { 
+    this.registerShortcuts();
+  }
 
   navigationRoutes: Interfaces.INavigationRoute[];
   viewStack: ViewItem[] = [];
@@ -272,6 +279,38 @@ export class RouterService {
     }
 
     return routes;
+  }
+  private registerShortcuts() {
+    this.shortcut.onShortcutExecute.register(e => {
+      if (!this.currentViewItem) {
+        return Promise.resolve();
+      }
+
+      const currentViewModel = this.currentViewItem.controller["currentViewModel"];
+      if (!currentViewModel.executeCommand) {
+        return;
+      }
+
+      switch(e.shortcut) {
+        case Shortcuts.save: {
+          currentViewModel.executeCommand("$save");
+          break;
+        }
+        case Shortcuts.saveAndNew: {
+          currentViewModel.executeCommand("$saveAndNew");
+          break;
+        }
+        case Shortcuts.new: {
+          currentViewModel.executeCommand("$new");
+          break;
+        }
+        default: {
+          break;
+        }
+      }
+
+      return Promise.resolve();
+    });
   }
   private returnTrue(): boolean {
     return true;

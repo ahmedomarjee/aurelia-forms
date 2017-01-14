@@ -28,7 +28,7 @@ export class DefaultCommandsService {
 
   getSaveCommand(form: FormBase): Interfaces.ICommandData {
     const cmd: Interfaces.ICommandData = {
-      id: "$cmdSave",
+      id: "$save",
       icon: "floppy-o",
       title: "base.save",
       isVisible: this.canSave(form),
@@ -47,7 +47,7 @@ export class DefaultCommandsService {
   }
   getDeleteCommand(form: FormBase): Interfaces.ICommandData {
     const cmd: Interfaces.ICommandData = {
-      id: "$cmdDelete",
+      id: "$delete",
       icon: "times",
       title: "base.delete",
       isVisible: this.canSave(form),

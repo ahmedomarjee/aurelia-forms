@@ -150,6 +150,14 @@
             "main": "index"
           },
           {
+            "name": "mousetrap",
+            "path": "../node_modules/mousetrap",
+            "main": "mousetrap.js",
+            "resources": [
+              "plugins/global-bind/mousetrap-global-bind.js"
+            ]
+          },
+          {
             "name": "devextreme",
             "path": "../node_modules/devextreme/dist",
             "main": "js/dx.web.debug.js",

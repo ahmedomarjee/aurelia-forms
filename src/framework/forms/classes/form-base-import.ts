@@ -30,6 +30,9 @@ import {
   ToolbarService
 } from "../services/toolbar-service";
 import {
+  DefaultCommandsService
+} from "../services/default-commands-service";
+import {
   CommandService
 } from "../services/command-service";
 import {
@@ -58,6 +61,7 @@ export class FormBaseImport {
     public widgetCreator: WidgetCreatorService,
     public command: CommandService,
     public toolbar: ToolbarService,
+    public defaultCommands: DefaultCommandsService,
     public router: RouterService,
     public error: ErrorService,
     public models: Models,

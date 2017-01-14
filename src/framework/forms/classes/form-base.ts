@@ -128,6 +128,17 @@ export class FormBase {
     return [this, ...this.nestedForms.getNestedForms()];
   }
 
+  executeCommand(id: string) {
+    const command = this.commands
+      .getCommands()
+      .find(i => i.id == id);
+
+    if (!command) {
+      return;
+    }
+
+    this.command.execute(this.expressions, command);
+  }
   save(): Promise<any> {
     return this.models.save()
       .then(() => {
@@ -183,6 +194,10 @@ export class FormBase {
     this.command.execute(this.expressions, command);
   }
   protected onConstructionFinished(): void {
+    this.commands.addCommand(this.formBaseImport.defaultCommands.getGoBackCommand(this));
+    this.commands.addCommand(this.formBaseImport.defaultCommands.getSaveCommand(this));
+    this.commands.addCommand(this.formBaseImport.defaultCommands.getDeleteCommand(this));
+
     this.toolbarOptions = this.toolbar.createFormToolbarOptions(this);
   }
 }

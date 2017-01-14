@@ -9,3 +9,4 @@ export {JsonService} from "./json-service";
 export {ObjectInfoService} from "./object-info-service";
 export {PermissionService} from "./permission-service";
 export {RestService} from "./rest-service";
+export {ShortcutService} from "./shortcut-service";

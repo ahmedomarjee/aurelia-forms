@@ -11,9 +11,6 @@ import {
   LocalizationService
 } from "../../base/services/export";
 import {
-  DefaultCommandsService
-} from "../services/default-commands-service";
-import {
   CommandService
 } from "../services/command-service";
 import * as Interfaces from "../interfaces/export";
@@ -23,7 +20,6 @@ export class ToolbarService {
   private titleItemTemplate = "TITEL_ITEM_TEMPLATE";
 
   constructor(
-    private defaultCommands: DefaultCommandsService,
     private command: CommandService,
     private localization: LocalizationService
   ) { }
@@ -31,7 +27,7 @@ export class ToolbarService {
   createFormToolbarOptions(form: FormBase): DevExpress.ui.dxToolbarOptions {
     let component: DevExpress.ui.dxToolbar;
 
-    const options = this.createToolbarOptions(form.expressions, form.title, this.collectItems(form), (c) => {
+    const options = this.createToolbarOptions(form.expressions, form.title, form.commands.getCommands(), (c) => {
       component = c;
     });
 
@@ -94,20 +90,6 @@ export class ToolbarService {
     };
 
     return item;
-  }
-
-  private collectItems(form: FormBase): Interfaces.ICommandData[] {
-    const items: Interfaces.ICommandData[] = [];
-
-    items.push(this.defaultCommands.getGoBackCommand(form));
-    items.push(this.defaultCommands.getSaveCommand(form));
-    items.push(this.defaultCommands.getDeleteCommand(form));
-
-    for (let command of form.commands.getCommands()) {
-      items.push(command);
-    }
-
-    return items;
   }
 
   private createTitleHtml(title: string): string {
