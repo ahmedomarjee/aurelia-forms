@@ -32,11 +32,16 @@ export class DefaultCommandsService {
       icon: "floppy-o",
       title: "base.save",
       isVisible: this.canSave(form),
-      isEnabled: true,
+      isEnabled: this.canSaveNow(form),
       execute() {
         form.save();
       }
     };
+
+    form.models.onLoaded.register(() => {
+      cmd.isEnabled = this.canSaveNow(form);
+      return Promise.resolve();
+    });
 
     return cmd;
   }
@@ -60,9 +65,10 @@ export class DefaultCommandsService {
     };
 
     form.models.onLoaded.register(() => {
+      cmd.isVisible = this.canSave(form);
       cmd.isEnabled = this.canDelete(form);
       return Promise.resolve();
-    })
+    });
 
     return cmd;
   }
@@ -119,7 +125,27 @@ export class DefaultCommandsService {
   private canSave(form: FormBase): boolean {
     return form
       .getFormsInclOwn()
-      .some(i => i.models.getModels().some(m => m.postOnSave));
+      .some(i => i.models.getModels().some(m => {
+        if (!m.postOnSave) {
+          return false;
+        }
+
+        return true;
+      }));
+  }
+  private canSaveNow(form: FormBase): boolean {
+    return form
+      .getFormsInclOwn()
+      .some(i => i.models.getModels().some(m => {
+        if (!m.postOnSave) {
+          return false;
+        }
+        if (!form.models.data[m.id] || form.models.data[m.id][m.keyProperty] === undefined) {
+          return false;
+        }
+
+        return true;
+      }));
   }
   private canDelete(form: FormBase): boolean {
     return form

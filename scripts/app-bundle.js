@@ -48,51 +48,7 @@ define('framework/base/services/object-info-service',["require", "exports"], fun
     exports.ObjectInfoService = ObjectInfoService;
 });
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments)).next());
-    });
-};
-var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t;
-    return { next: verb(0), "throw": verb(1), "return": verb(2) };
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
-            if (f = 1, y && (t = y[op[0] & 2 ? "return" : op[0] ? "throw" : "next"]) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [0, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-    }
-};
-define('framework/base/classes/custom-event',["require", "exports", "aurelia-framework", "../services/object-info-service"], function (require, exports, aurelia_framework_1, object_info_service_1) {
+define('framework/base/classes/custom-event',["require", "exports", "tslib", "aurelia-framework", "../services/object-info-service"], function (require, exports, tslib_1, aurelia_framework_1, object_info_service_1) {
     "use strict";
     var CustomEvent = (function () {
         function CustomEvent(objectInfo, taskQueue) {
@@ -133,10 +89,10 @@ define('framework/base/classes/custom-event',["require", "exports", "aurelia-fra
             }
         };
         CustomEvent.prototype.fireQueue = function () {
-            return __awaiter(this, void 0, void 0, function () {
+            return tslib_1.__awaiter(this, void 0, void 0, function () {
                 var _this = this;
                 var argsQueue;
-                return __generator(this, function (_a) {
+                return tslib_1.__generator(this, function (_a) {
                     argsQueue = this.argsQueue.slice(0);
                     this.argsQueue.splice(0, this.argsQueue.length);
                     argsQueue.forEach(function (args) {
@@ -150,10 +106,10 @@ define('framework/base/classes/custom-event',["require", "exports", "aurelia-fra
         };
         return CustomEvent;
     }());
-    CustomEvent = __decorate([
+    CustomEvent = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
         aurelia_framework_1.transient(),
-        __metadata("design:paramtypes", [object_info_service_1.ObjectInfoService,
+        tslib_1.__metadata("design:paramtypes", [object_info_service_1.ObjectInfoService,
             aurelia_framework_1.TaskQueue])
     ], CustomEvent);
     exports.CustomEvent = CustomEvent;
@@ -171,16 +127,7 @@ define('framework/base/event-args/export',["require", "exports"], function (requ
     "use strict";
 });
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/base/services/json-service',["require", "exports", "aurelia-framework"], function (require, exports, aurelia_framework_1) {
+define('framework/base/services/json-service',["require", "exports", "tslib", "aurelia-framework"], function (require, exports, tslib_1, aurelia_framework_1) {
     "use strict";
     var JsonService = (function () {
         function JsonService() {
@@ -210,9 +157,9 @@ define('framework/base/services/json-service',["require", "exports", "aurelia-fr
         };
         return JsonService;
     }());
-    JsonService = __decorate([
+    JsonService = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [])
+        tslib_1.__metadata("design:paramtypes", [])
     ], JsonService);
     exports.JsonService = JsonService;
 });
@@ -258,16 +205,7 @@ define('config',["require", "exports"], function (require, exports) {
     };
 });
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/base/services/rest-service',["require", "exports", "aurelia-framework", "aurelia-fetch-client", "../classes/custom-event", "./json-service", "../../../config"], function (require, exports, aurelia_framework_1, aurelia_fetch_client_1, custom_event_1, json_service_1, config_1) {
+define('framework/base/services/rest-service',["require", "exports", "tslib", "aurelia-framework", "aurelia-fetch-client", "../classes/custom-event", "./json-service", "../../../config"], function (require, exports, tslib_1, aurelia_framework_1, aurelia_fetch_client_1, custom_event_1, json_service_1, config_1) {
     "use strict";
     var RestService = (function () {
         function RestService(json, onUnauthorizated) {
@@ -379,29 +317,20 @@ define('framework/base/services/rest-service',["require", "exports", "aurelia-fr
         };
         return RestService;
     }());
-    __decorate([
+    tslib_1.__decorate([
         aurelia_framework_1.computedFrom("loadingCount"),
-        __metadata("design:type", Boolean),
-        __metadata("design:paramtypes", [])
+        tslib_1.__metadata("design:type", Boolean),
+        tslib_1.__metadata("design:paramtypes", [])
     ], RestService.prototype, "isLoading", null);
-    RestService = __decorate([
+    RestService = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [json_service_1.JsonService,
+        tslib_1.__metadata("design:paramtypes", [json_service_1.JsonService,
             custom_event_1.CustomEvent])
     ], RestService);
     exports.RestService = RestService;
 });
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/base/services/authorization-service',["require", "exports", "aurelia-framework", "./rest-service", "../../../config"], function (require, exports, aurelia_framework_1, rest_service_1, config_1) {
+define('framework/base/services/authorization-service',["require", "exports", "tslib", "aurelia-framework", "./rest-service", "../../../config"], function (require, exports, tslib_1, aurelia_framework_1, rest_service_1, config_1) {
     "use strict";
     var AuthorizationService = (function () {
         function AuthorizationService(rest, aurelia, bindingEngine) {
@@ -474,25 +403,16 @@ define('framework/base/services/authorization-service',["require", "exports", "a
         };
         return AuthorizationService;
     }());
-    AuthorizationService = __decorate([
+    AuthorizationService = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [rest_service_1.RestService,
+        tslib_1.__metadata("design:paramtypes", [rest_service_1.RestService,
             aurelia_framework_1.Aurelia,
             aurelia_framework_1.BindingEngine])
     ], AuthorizationService);
     exports.AuthorizationService = AuthorizationService;
 });
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/base/services/data-source-service',["require", "exports", "aurelia-framework", "./rest-service"], function (require, exports, aurelia_framework_1, rest_service_1) {
+define('framework/base/services/data-source-service',["require", "exports", "tslib", "aurelia-framework", "./rest-service"], function (require, exports, tslib_1, aurelia_framework_1, rest_service_1) {
     "use strict";
     var DataSourceService = (function () {
         function DataSourceService(rest) {
@@ -715,23 +635,14 @@ define('framework/base/services/data-source-service',["require", "exports", "aur
         };
         return DataSourceService;
     }());
-    DataSourceService = __decorate([
+    DataSourceService = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [rest_service_1.RestService])
+        tslib_1.__metadata("design:paramtypes", [rest_service_1.RestService])
     ], DataSourceService);
     exports.DataSourceService = DataSourceService;
 });
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/base/services/deep-observer-service',["require", "exports", "aurelia-framework"], function (require, exports, aurelia_framework_1) {
+define('framework/base/services/deep-observer-service',["require", "exports", "tslib", "aurelia-framework"], function (require, exports, tslib_1, aurelia_framework_1) {
     "use strict";
     var DeepObserverService = (function () {
         function DeepObserverService(bindingEngine) {
@@ -800,9 +711,9 @@ define('framework/base/services/deep-observer-service',["require", "exports", "a
         };
         return DeepObserverService;
     }());
-    DeepObserverService = __decorate([
+    DeepObserverService = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [aurelia_framework_1.BindingEngine])
+        tslib_1.__metadata("design:paramtypes", [aurelia_framework_1.BindingEngine])
     ], DeepObserverService);
     exports.DeepObserverService = DeepObserverService;
     var Subscription = (function () {
@@ -858,16 +769,7 @@ define('framework/base/services/error-service',["require", "exports"], function 
     exports.ErrorService = ErrorService;
 });
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/base/services/globalization-service',["require", "exports", "moment", "aurelia-framework"], function (require, exports, moment, aurelia_framework_1) {
+define('framework/base/services/globalization-service',["require", "exports", "tslib", "moment", "aurelia-framework"], function (require, exports, tslib_1, moment, aurelia_framework_1) {
     "use strict";
     var GlobalizationService = (function () {
         function GlobalizationService() {
@@ -999,9 +901,9 @@ define('framework/base/services/globalization-service',["require", "exports", "m
         };
         return GlobalizationService;
     }());
-    GlobalizationService = __decorate([
+    GlobalizationService = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [])
+        tslib_1.__metadata("design:paramtypes", [])
     ], GlobalizationService);
     exports.GlobalizationService = GlobalizationService;
     var GermanGlobalizationProvider = (function () {
@@ -1023,16 +925,7 @@ define('framework/base/services/globalization-service',["require", "exports", "m
     exports.GermanGlobalizationProvider = GermanGlobalizationProvider;
 });
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/base/services/localization-service',["require", "exports", "aurelia-framework", "./rest-service", "text!../../../localization-neutral.json"], function (require, exports, aurelia_framework_1, rest_service_1, localizationNeutral) {
+define('framework/base/services/localization-service',["require", "exports", "tslib", "aurelia-framework", "./rest-service", "text!../../../localization-neutral.json"], function (require, exports, tslib_1, aurelia_framework_1, rest_service_1, localizationNeutral) {
     "use strict";
     var LocalizationService = (function () {
         function LocalizationService(rest) {
@@ -1094,23 +987,14 @@ define('framework/base/services/localization-service',["require", "exports", "au
         };
         return LocalizationService;
     }());
-    LocalizationService = __decorate([
+    LocalizationService = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [rest_service_1.RestService])
+        tslib_1.__metadata("design:paramtypes", [rest_service_1.RestService])
     ], LocalizationService);
     exports.LocalizationService = LocalizationService;
 });
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/base/services/location-service',["require", "exports", "aurelia-framework", "../classes/custom-event"], function (require, exports, aurelia_framework_1, custom_event_1) {
+define('framework/base/services/location-service',["require", "exports", "tslib", "aurelia-framework", "../classes/custom-event"], function (require, exports, tslib_1, aurelia_framework_1, custom_event_1) {
     "use strict";
     var LocationService = (function () {
         function LocationService(onLocationGoTo) {
@@ -1132,23 +1016,14 @@ define('framework/base/services/location-service',["require", "exports", "aureli
         };
         return LocationService;
     }());
-    LocationService = __decorate([
+    LocationService = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [custom_event_1.CustomEvent])
+        tslib_1.__metadata("design:paramtypes", [custom_event_1.CustomEvent])
     ], LocationService);
     exports.LocationService = LocationService;
 });
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/base/services/permission-service',["require", "exports", "aurelia-framework"], function (require, exports, aurelia_framework_1) {
+define('framework/base/services/permission-service',["require", "exports", "tslib", "aurelia-framework"], function (require, exports, tslib_1, aurelia_framework_1) {
     "use strict";
     var PermissionService = (function () {
         function PermissionService() {
@@ -1164,9 +1039,8 @@ define('framework/base/services/permission-service',["require", "exports", "aure
         };
         return PermissionService;
     }());
-    PermissionService = __decorate([
-        aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [])
+    PermissionService = tslib_1.__decorate([
+        aurelia_framework_1.autoinject
     ], PermissionService);
     exports.PermissionService = PermissionService;
 });
@@ -1210,16 +1084,7 @@ define('framework/stack-router/interfaces/export',["require", "exports"], functi
     "use strict";
 });
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/stack-router/classes/view-item',["require", "exports", "aurelia-framework"], function (require, exports, aurelia_framework_1) {
+define('framework/stack-router/classes/view-item',["require", "exports", "tslib", "aurelia-framework"], function (require, exports, tslib_1, aurelia_framework_1) {
     "use strict";
     var ViewItem = (function () {
         function ViewItem(routeInfo) {
@@ -1240,24 +1105,15 @@ define('framework/stack-router/classes/view-item',["require", "exports", "aureli
         });
         return ViewItem;
     }());
-    __decorate([
+    tslib_1.__decorate([
         aurelia_framework_1.computedFrom("isCurrent"),
-        __metadata("design:type", String),
-        __metadata("design:paramtypes", [])
+        tslib_1.__metadata("design:type", String),
+        tslib_1.__metadata("design:paramtypes", [])
     ], ViewItem.prototype, "className", null);
     exports.ViewItem = ViewItem;
 });
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/stack-router/services/router-service',["require", "exports", "aurelia-framework", "../classes/view-item", "../../base/services/export"], function (require, exports, aurelia_framework_1, view_item_1, export_1) {
+define('framework/stack-router/services/router-service',["require", "exports", "tslib", "aurelia-framework", "../classes/view-item", "../../base/services/export"], function (require, exports, tslib_1, aurelia_framework_1, view_item_1, export_1) {
     "use strict";
     var RouterService = (function () {
         function RouterService(localization) {
@@ -1442,6 +1298,9 @@ define('framework/stack-router/services/router-service',["require", "exports", "
             }
         };
         RouterService.prototype.isRoutePattern = function (route, url) {
+            if (!route) {
+                return null;
+            }
             var routeParts = route.split("/");
             var urlParts = url.split("/");
             var parameters = {};
@@ -1503,23 +1362,14 @@ define('framework/stack-router/services/router-service',["require", "exports", "
         };
         return RouterService;
     }());
-    RouterService = __decorate([
+    RouterService = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [export_1.LocalizationService])
+        tslib_1.__metadata("design:paramtypes", [export_1.LocalizationService])
     ], RouterService);
     exports.RouterService = RouterService;
 });
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/stack-router/services/history-service',["require", "exports", "aurelia-framework", "aurelia-event-aggregator", "../../base/services/export", "./router-service"], function (require, exports, aurelia_framework_1, aurelia_event_aggregator_1, export_1, router_service_1) {
+define('framework/stack-router/services/history-service',["require", "exports", "tslib", "aurelia-framework", "aurelia-event-aggregator", "../../base/services/export", "./router-service"], function (require, exports, tslib_1, aurelia_framework_1, aurelia_event_aggregator_1, export_1, router_service_1) {
     "use strict";
     var HistoryService = (function () {
         function HistoryService(eventAggregator, taskQueue, router, location) {
@@ -1642,9 +1492,9 @@ define('framework/stack-router/services/history-service',["require", "exports", 
         };
         return HistoryService;
     }());
-    HistoryService = __decorate([
+    HistoryService = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [aurelia_event_aggregator_1.EventAggregator,
+        tslib_1.__metadata("design:paramtypes", [aurelia_event_aggregator_1.EventAggregator,
             aurelia_framework_1.TaskQueue,
             router_service_1.RouterService,
             export_1.LocationService])
@@ -1708,16 +1558,7 @@ define('framework/stack-router/services/export',["require", "exports", "./histor
     exports.RoutesCreatorService = routes_creator_service_1.RoutesCreatorService;
 });
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('app',["require", "exports", "aurelia-framework", "./framework/stack-router/services/export", "text!./routes/forms.json", "text!./routes/structure.json"], function (require, exports, aurelia_framework_1, export_1, routesForm, routesStructure) {
+define('app',["require", "exports", "tslib", "aurelia-framework", "./framework/stack-router/services/export", "text!./routes/forms.json", "text!./routes/structure.json"], function (require, exports, tslib_1, aurelia_framework_1, export_1, routesForm, routesStructure) {
     "use strict";
     var App = (function () {
         function App(router, routesCreator) {
@@ -1731,9 +1572,9 @@ define('app',["require", "exports", "aurelia-framework", "./framework/stack-rout
         };
         return App;
     }());
-    App = __decorate([
+    App = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [export_1.RouterService,
+        tslib_1.__metadata("design:paramtypes", [export_1.RouterService,
             export_1.RoutesCreatorService])
     ], App);
     exports.App = App;
@@ -1780,6 +1621,31 @@ define('main',["require", "exports", "./environment", "./framework/base/services
     exports.configure = configure;
 });
 
+define('framework/base/classes/export',["require", "exports", "./custom-event"], function (require, exports, custom_event_1) {
+    "use strict";
+    exports.CustomEvent = custom_event_1.CustomEvent;
+});
+
+define('framework/base/export',["require", "exports", "./classes/export", "./services/export"], function (require, exports, export_1, export_2) {
+    "use strict";
+    function __export(m) {
+        for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+    }
+    __export(export_1);
+    __export(export_2);
+});
+
+define('framework/base/index',["require", "exports"], function (require, exports) {
+    "use strict";
+    function configure(config) {
+        config
+            .globalResources("./attributes/icon/fa-icon-attribute")
+            .globalResources("./attributes/translation/translation-attribute")
+            .globalResources("./styles/styles.css");
+    }
+    exports.configure = configure;
+});
+
 define('framework/default-ui/services/layout-service',["require", "exports"], function (require, exports) {
     "use strict";
     var LayoutService = (function () {
@@ -1814,117 +1680,7 @@ define('framework/default-ui/index',["require", "exports"], function (require, e
     exports.configure = configure;
 });
 
-define('framework/base/classes/export',["require", "exports", "./custom-event"], function (require, exports, custom_event_1) {
-    "use strict";
-    exports.CustomEvent = custom_event_1.CustomEvent;
-});
-
-define('framework/base/export',["require", "exports", "./classes/export", "./services/export"], function (require, exports, export_1, export_2) {
-    "use strict";
-    function __export(m) {
-        for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-    }
-    __export(export_1);
-    __export(export_2);
-});
-
-define('framework/base/index',["require", "exports"], function (require, exports) {
-    "use strict";
-    function configure(config) {
-        config
-            .globalResources("./attributes/icon/fa-icon-attribute")
-            .globalResources("./attributes/translation/translation-attribute")
-            .globalResources("./styles/styles.css");
-    }
-    exports.configure = configure;
-});
-
-define('framework/dx/index',["require", "exports"], function (require, exports) {
-    "use strict";
-    function configure(config) {
-        config
-            .globalResources("devextreme")
-            .globalResources("./elements/dx-widget");
-    }
-    exports.configure = configure;
-});
-
-define('framework/stack-router/classes/export',["require", "exports", "./view-item"], function (require, exports, view_item_1) {
-    "use strict";
-    exports.ViewItem = view_item_1.ViewItem;
-});
-
-define('framework/stack-router/export',["require", "exports", "./classes/export", "./services/export"], function (require, exports, export_1, export_2) {
-    "use strict";
-    function __export(m) {
-        for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-    }
-    __export(export_1);
-    __export(export_2);
-});
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/login/login',["require", "exports", "aurelia-framework", "../stack-router/export"], function (require, exports, aurelia_framework_1, export_1) {
-    "use strict";
-    var Login = (function () {
-        function Login(router) {
-            this.router = router;
-        }
-        Object.defineProperty(Login.prototype, "title", {
-            get: function () {
-                if (!this.router.currentViewItem || !this.router.currentViewItem.controller) {
-                    return null;
-                }
-                var currentViewModel = this.router.currentViewItem.controller["currentViewModel"];
-                if (!currentViewModel) {
-                    return;
-                }
-                return currentViewModel.title;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Login.prototype.attached = function () {
-            this.router.registerRoutes([
-                {
-                    moduleId: "framework/login/views/login/login-form",
-                    caption: "base.login",
-                    route: "login"
-                }
-            ], "login");
-        };
-        return Login;
-    }());
-    __decorate([
-        aurelia_framework_1.computedFrom("router.currentViewItem.controller.currentViewModel.title"),
-        __metadata("design:type", String),
-        __metadata("design:paramtypes", [])
-    ], Login.prototype, "title", null);
-    Login = __decorate([
-        aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [export_1.RouterService])
-    ], Login);
-    exports.Login = Login;
-});
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/forms/classes/command-server-data',["require", "exports", "aurelia-framework"], function (require, exports, aurelia_framework_1) {
+define('framework/forms/classes/command-server-data',["require", "exports", "tslib", "aurelia-framework"], function (require, exports, tslib_1, aurelia_framework_1) {
     "use strict";
     var CommandServerData = (function () {
         function CommandServerData() {
@@ -1934,10 +1690,10 @@ define('framework/forms/classes/command-server-data',["require", "exports", "aur
         };
         return CommandServerData;
     }());
-    CommandServerData = __decorate([
+    CommandServerData = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
         aurelia_framework_1.singleton(true),
-        __metadata("design:paramtypes", [])
+        tslib_1.__metadata("design:paramtypes", [])
     ], CommandServerData);
     exports.CommandServerData = CommandServerData;
 });
@@ -2006,16 +1762,7 @@ define('framework/forms/event-args/export',["require", "exports"], function (req
     "use strict";
 });
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/forms/classes/expressions',["require", "exports", "aurelia-framework"], function (require, exports, aurelia_framework_1) {
+define('framework/forms/classes/expressions',["require", "exports", "tslib", "aurelia-framework"], function (require, exports, tslib_1, aurelia_framework_1) {
     "use strict";
     var Expressions = (function () {
         function Expressions(bindingEngine) {
@@ -2048,24 +1795,15 @@ define('framework/forms/classes/expressions',["require", "exports", "aurelia-fra
         };
         return Expressions;
     }());
-    Expressions = __decorate([
+    Expressions = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
         aurelia_framework_1.singleton(true),
-        __metadata("design:paramtypes", [aurelia_framework_1.BindingEngine])
+        tslib_1.__metadata("design:paramtypes", [aurelia_framework_1.BindingEngine])
     ], Expressions);
     exports.Expressions = Expressions;
 });
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/forms/classes/models',["require", "exports", "aurelia-framework", "../../base/export", "../../base/services/data-source-service"], function (require, exports, aurelia_framework_1, export_1, data_source_service_1) {
+define('framework/forms/classes/models',["require", "exports", "tslib", "aurelia-framework", "../../base/export", "../../base/services/data-source-service"], function (require, exports, tslib_1, aurelia_framework_1, export_1, data_source_service_1) {
     "use strict";
     var Models = (function () {
         function Models(rest, dataSource, onLoadRequired, onLoadedInterceptor, onLoaded) {
@@ -2141,6 +1879,10 @@ define('framework/forms/classes/models',["require", "exports", "aurelia-framewor
                     getOptions: _this.dataSource.createGetOptions(_this.expressions, m)
                 }).then(function (r) {
                     _this.data[m.id] = r;
+                    _this.onLoaded.fire({
+                        model: m,
+                        data: r
+                    });
                 });
                 return promise;
             });
@@ -2189,10 +1931,10 @@ define('framework/forms/classes/models',["require", "exports", "aurelia-framewor
         };
         return Models;
     }());
-    Models = __decorate([
+    Models = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
         aurelia_framework_1.singleton(true),
-        __metadata("design:paramtypes", [export_1.RestService,
+        tslib_1.__metadata("design:paramtypes", [export_1.RestService,
             data_source_service_1.DataSourceService,
             export_1.CustomEvent,
             export_1.CustomEvent,
@@ -2201,16 +1943,7 @@ define('framework/forms/classes/models',["require", "exports", "aurelia-framewor
     exports.Models = Models;
 });
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/forms/classes/functions',["require", "exports", "aurelia-framework"], function (require, exports, aurelia_framework_1) {
+define('framework/forms/classes/functions',["require", "exports", "tslib", "aurelia-framework"], function (require, exports, tslib_1, aurelia_framework_1) {
     "use strict";
     var Functions = (function () {
         function Functions() {
@@ -2229,24 +1962,15 @@ define('framework/forms/classes/functions',["require", "exports", "aurelia-frame
         };
         return Functions;
     }());
-    Functions = __decorate([
+    Functions = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
         aurelia_framework_1.singleton(true),
-        __metadata("design:paramtypes", [])
+        tslib_1.__metadata("design:paramtypes", [])
     ], Functions);
     exports.Functions = Functions;
 });
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/forms/classes/variables',["require", "exports", "aurelia-framework"], function (require, exports, aurelia_framework_1) {
+define('framework/forms/classes/variables',["require", "exports", "tslib", "aurelia-framework"], function (require, exports, tslib_1, aurelia_framework_1) {
     "use strict";
     var Variables = (function () {
         function Variables() {
@@ -2264,24 +1988,15 @@ define('framework/forms/classes/variables',["require", "exports", "aurelia-frame
         };
         return Variables;
     }());
-    Variables = __decorate([
+    Variables = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
         aurelia_framework_1.singleton(true),
-        __metadata("design:paramtypes", [])
+        tslib_1.__metadata("design:paramtypes", [])
     ], Variables);
     exports.Variables = Variables;
 });
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/forms/classes/nested-forms',["require", "exports", "aurelia-framework"], function (require, exports, aurelia_framework_1) {
+define('framework/forms/classes/nested-forms',["require", "exports", "tslib", "aurelia-framework"], function (require, exports, tslib_1, aurelia_framework_1) {
     "use strict";
     var NestedForms = (function () {
         function NestedForms() {
@@ -2308,10 +2023,10 @@ define('framework/forms/classes/nested-forms',["require", "exports", "aurelia-fr
         };
         return NestedForms;
     }());
-    NestedForms = __decorate([
+    NestedForms = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
         aurelia_framework_1.singleton(true),
-        __metadata("design:paramtypes", [])
+        tslib_1.__metadata("design:paramtypes", [])
     ], NestedForms);
     exports.NestedForms = NestedForms;
 });
@@ -2446,16 +2161,7 @@ define('framework/forms/widget-options/export',["require", "exports"], function 
     "use strict";
 });
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/forms/services/default-commands-service',["require", "exports", "aurelia-framework", "../../base/services/export", "../../stack-router/services/router-service"], function (require, exports, aurelia_framework_1, export_1, router_service_1) {
+define('framework/forms/services/default-commands-service',["require", "exports", "tslib", "aurelia-framework", "../../base/services/export", "../../stack-router/services/router-service"], function (require, exports, tslib_1, aurelia_framework_1, export_1, router_service_1) {
     "use strict";
     var DefaultCommandsService = (function () {
         function DefaultCommandsService(router, localization, location, permission) {
@@ -2465,16 +2171,21 @@ define('framework/forms/services/default-commands-service',["require", "exports"
             this.permission = permission;
         }
         DefaultCommandsService.prototype.getSaveCommand = function (form) {
+            var _this = this;
             var cmd = {
                 id: "$cmdSave",
                 icon: "floppy-o",
                 title: "base.save",
                 isVisible: this.canSave(form),
-                isEnabled: true,
+                isEnabled: this.canSaveNow(form),
                 execute: function () {
                     form.save();
                 }
             };
+            form.models.onLoaded.register(function () {
+                cmd.isEnabled = _this.canSaveNow(form);
+                return Promise.resolve();
+            });
             return cmd;
         };
         DefaultCommandsService.prototype.getDeleteCommand = function (form) {
@@ -2495,6 +2206,7 @@ define('framework/forms/services/default-commands-service',["require", "exports"
                 }
             };
             form.models.onLoaded.register(function () {
+                cmd.isVisible = _this.canSave(form);
                 cmd.isEnabled = _this.canDelete(form);
                 return Promise.resolve();
             });
@@ -2547,7 +2259,25 @@ define('framework/forms/services/default-commands-service',["require", "exports"
         DefaultCommandsService.prototype.canSave = function (form) {
             return form
                 .getFormsInclOwn()
-                .some(function (i) { return i.models.getModels().some(function (m) { return m.postOnSave; }); });
+                .some(function (i) { return i.models.getModels().some(function (m) {
+                if (!m.postOnSave) {
+                    return false;
+                }
+                return true;
+            }); });
+        };
+        DefaultCommandsService.prototype.canSaveNow = function (form) {
+            return form
+                .getFormsInclOwn()
+                .some(function (i) { return i.models.getModels().some(function (m) {
+                if (!m.postOnSave) {
+                    return false;
+                }
+                if (!form.models.data[m.id] || form.models.data[m.id][m.keyProperty] === undefined) {
+                    return false;
+                }
+                return true;
+            }); });
         };
         DefaultCommandsService.prototype.canDelete = function (form) {
             return form
@@ -2564,9 +2294,9 @@ define('framework/forms/services/default-commands-service',["require", "exports"
         };
         return DefaultCommandsService;
     }());
-    DefaultCommandsService = __decorate([
+    DefaultCommandsService = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [router_service_1.RouterService,
+        tslib_1.__metadata("design:paramtypes", [router_service_1.RouterService,
             export_1.LocalizationService,
             export_1.LocationService,
             export_1.PermissionService])
@@ -2633,16 +2363,7 @@ define('framework/forms/services/command-service',["require", "exports"], functi
     exports.CommandService = CommandService;
 });
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/forms/services/toolbar-service',["require", "exports", "aurelia-framework", "../../base/services/export", "../services/default-commands-service", "../services/command-service"], function (require, exports, aurelia_framework_1, export_1, default_commands_service_1, command_service_1) {
+define('framework/forms/services/toolbar-service',["require", "exports", "tslib", "aurelia-framework", "../../base/services/export", "../services/default-commands-service", "../services/command-service"], function (require, exports, tslib_1, aurelia_framework_1, export_1, default_commands_service_1, command_service_1) {
     "use strict";
     var ToolbarService = (function () {
         function ToolbarService(defaultCommands, command, localization) {
@@ -2775,25 +2496,16 @@ define('framework/forms/services/toolbar-service',["require", "exports", "aureli
         };
         return ToolbarService;
     }());
-    ToolbarService = __decorate([
+    ToolbarService = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [default_commands_service_1.DefaultCommandsService,
+        tslib_1.__metadata("design:paramtypes", [default_commands_service_1.DefaultCommandsService,
             command_service_1.CommandService,
             export_1.LocalizationService])
     ], ToolbarService);
     exports.ToolbarService = ToolbarService;
 });
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/forms/widget-services/base-widget-creator-service',["require", "exports", "aurelia-framework"], function (require, exports, aurelia_framework_1) {
+define('framework/forms/widget-services/base-widget-creator-service',["require", "exports", "tslib", "aurelia-framework"], function (require, exports, tslib_1, aurelia_framework_1) {
     "use strict";
     var BaseWidgetCreatorService = (function () {
         function BaseWidgetCreatorService() {
@@ -2816,23 +2528,14 @@ define('framework/forms/widget-services/base-widget-creator-service',["require",
         };
         return BaseWidgetCreatorService;
     }());
-    BaseWidgetCreatorService = __decorate([
+    BaseWidgetCreatorService = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [])
+        tslib_1.__metadata("design:paramtypes", [])
     ], BaseWidgetCreatorService);
     exports.BaseWidgetCreatorService = BaseWidgetCreatorService;
 });
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/forms/widget-services/simple-widget-creator-service',["require", "exports", "aurelia-framework", "../services/toolbar-service", "../../base/services/export", "./base-widget-creator-service"], function (require, exports, aurelia_framework_1, toolbar_service_1, export_1, base_widget_creator_service_1) {
+define('framework/forms/widget-services/simple-widget-creator-service',["require", "exports", "tslib", "aurelia-framework", "../services/toolbar-service", "../../base/services/export", "./base-widget-creator-service"], function (require, exports, tslib_1, aurelia_framework_1, toolbar_service_1, export_1, base_widget_creator_service_1) {
     "use strict";
     var SimpleWidgetCreatorService = (function () {
         function SimpleWidgetCreatorService(baseWidgetCreator, dataSource, globalization, localization, toolbar) {
@@ -3065,9 +2768,9 @@ define('framework/forms/widget-services/simple-widget-creator-service',["require
         };
         return SimpleWidgetCreatorService;
     }());
-    SimpleWidgetCreatorService = __decorate([
+    SimpleWidgetCreatorService = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [base_widget_creator_service_1.BaseWidgetCreatorService,
+        tslib_1.__metadata("design:paramtypes", [base_widget_creator_service_1.BaseWidgetCreatorService,
             export_1.DataSourceService,
             export_1.GlobalizationService,
             export_1.LocalizationService,
@@ -3083,16 +2786,7 @@ define('framework/forms/services/export',["require", "exports", "./command-servi
     exports.ToolbarService = toolbar_service_1.ToolbarService;
 });
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/forms/widget-services/data-grid-widget-creator-service',["require", "exports", "aurelia-framework", "./base-widget-creator-service", "../../base/services/export", "../services/export", "../enums/selection-mode-enum"], function (require, exports, aurelia_framework_1, base_widget_creator_service_1, export_1, export_2, selection_mode_enum_1) {
+define('framework/forms/widget-services/data-grid-widget-creator-service',["require", "exports", "tslib", "aurelia-framework", "./base-widget-creator-service", "../../base/services/export", "../services/export", "../enums/selection-mode-enum"], function (require, exports, tslib_1, aurelia_framework_1, base_widget_creator_service_1, export_1, export_2, selection_mode_enum_1) {
     "use strict";
     var DataGridWidgetCreatorService = (function () {
         function DataGridWidgetCreatorService(baseWidgetCreator, dataSource, globalization, localization, location, defaultCommands, toolbar) {
@@ -3220,9 +2914,9 @@ define('framework/forms/widget-services/data-grid-widget-creator-service',["requ
         };
         return DataGridWidgetCreatorService;
     }());
-    DataGridWidgetCreatorService = __decorate([
+    DataGridWidgetCreatorService = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [base_widget_creator_service_1.BaseWidgetCreatorService,
+        tslib_1.__metadata("design:paramtypes", [base_widget_creator_service_1.BaseWidgetCreatorService,
             export_1.DataSourceService,
             export_1.GlobalizationService,
             export_1.LocalizationService,
@@ -3233,16 +2927,7 @@ define('framework/forms/widget-services/data-grid-widget-creator-service',["requ
     exports.DataGridWidgetCreatorService = DataGridWidgetCreatorService;
 });
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/forms/widget-services/widget-creator-service',["require", "exports", "aurelia-framework", "./simple-widget-creator-service", "./data-grid-widget-creator-service"], function (require, exports, aurelia_framework_1, simple_widget_creator_service_1, data_grid_widget_creator_service_1) {
+define('framework/forms/widget-services/widget-creator-service',["require", "exports", "tslib", "aurelia-framework", "./simple-widget-creator-service", "./data-grid-widget-creator-service"], function (require, exports, tslib_1, aurelia_framework_1, simple_widget_creator_service_1, data_grid_widget_creator_service_1) {
     "use strict";
     var WidgetCreatorService = (function () {
         function WidgetCreatorService(simpleWidgetCreator, dataGridWidgetCreator) {
@@ -3314,24 +2999,15 @@ define('framework/forms/widget-services/widget-creator-service',["require", "exp
         };
         return WidgetCreatorService;
     }());
-    WidgetCreatorService = __decorate([
+    WidgetCreatorService = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [simple_widget_creator_service_1.SimpleWidgetCreatorService,
+        tslib_1.__metadata("design:paramtypes", [simple_widget_creator_service_1.SimpleWidgetCreatorService,
             data_grid_widget_creator_service_1.DataGridWidgetCreatorService])
     ], WidgetCreatorService);
     exports.WidgetCreatorService = WidgetCreatorService;
 });
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/forms/classes/form-base-import',["require", "exports", "aurelia-framework", "./models", "./functions", "./commands", "./variables", "./expressions", "./nested-forms", "./command-server-data", "../services/toolbar-service", "../services/command-service", "../widget-services/widget-creator-service", "../../base/export", "../../stack-router/services/router-service"], function (require, exports, aurelia_framework_1, models_1, functions_1, commands_1, variables_1, expressions_1, nested_forms_1, command_server_data_1, toolbar_service_1, command_service_1, widget_creator_service_1, export_1, router_service_1) {
+define('framework/forms/classes/form-base-import',["require", "exports", "tslib", "aurelia-framework", "./models", "./functions", "./commands", "./variables", "./expressions", "./nested-forms", "./command-server-data", "../services/toolbar-service", "../services/command-service", "../widget-services/widget-creator-service", "../../base/export", "../../stack-router/services/router-service"], function (require, exports, tslib_1, aurelia_framework_1, models_1, functions_1, commands_1, variables_1, expressions_1, nested_forms_1, command_server_data_1, toolbar_service_1, command_service_1, widget_creator_service_1, export_1, router_service_1) {
     "use strict";
     var FormBaseImport = (function () {
         function FormBaseImport(bindingEngine, taskQueue, widgetCreator, command, toolbar, router, error, models, nestedForms, variables, functions, commands, expressions, globalization, localization, commandServerData, onFormAttached, onFormReady, onFormReactivated) {
@@ -3357,9 +3033,9 @@ define('framework/forms/classes/form-base-import',["require", "exports", "aureli
         }
         return FormBaseImport;
     }());
-    FormBaseImport = __decorate([
+    FormBaseImport = tslib_1.__decorate([
         aurelia_framework_1.transient(),
-        __metadata("design:paramtypes", [aurelia_framework_1.BindingEngine,
+        tslib_1.__metadata("design:paramtypes", [aurelia_framework_1.BindingEngine,
             aurelia_framework_1.TaskQueue,
             widget_creator_service_1.WidgetCreatorService,
             command_service_1.CommandService,
@@ -3496,16 +3172,7 @@ define('framework/forms/classes/form-base',["require", "exports"], function (req
     exports.FormBase = FormBase;
 });
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/forms/classes/commands',["require", "exports", "aurelia-framework"], function (require, exports, aurelia_framework_1) {
+define('framework/forms/classes/commands',["require", "exports", "tslib", "aurelia-framework"], function (require, exports, tslib_1, aurelia_framework_1) {
     "use strict";
     var Commands = (function () {
         function Commands() {
@@ -3533,10 +3200,10 @@ define('framework/forms/classes/commands',["require", "exports", "aurelia-framew
         };
         return Commands;
     }());
-    Commands = __decorate([
+    Commands = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
         aurelia_framework_1.singleton(true),
-        __metadata("design:paramtypes", [])
+        tslib_1.__metadata("design:paramtypes", [])
     ], Commands);
     exports.Commands = Commands;
 });
@@ -3584,16 +3251,7 @@ define('framework/forms/form-export',["require", "exports", "aurelia-framework",
     exports.FormBaseImport = form_base_import_1.FormBaseImport;
 });
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/dx/services/dx-template-service',["require", "exports", "aurelia-framework"], function (require, exports, aurelia_framework_1) {
+define('framework/dx/services/dx-template-service',["require", "exports", "tslib", "aurelia-framework"], function (require, exports, tslib_1, aurelia_framework_1) {
     "use strict";
     var DxTemplateService = (function () {
         function DxTemplateService(templatingEngine) {
@@ -3634,9 +3292,9 @@ define('framework/dx/services/dx-template-service',["require", "exports", "aurel
         };
         return DxTemplateService;
     }());
-    DxTemplateService = __decorate([
+    DxTemplateService = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [aurelia_framework_1.TemplatingEngine])
+        tslib_1.__metadata("design:paramtypes", [aurelia_framework_1.TemplatingEngine])
     ], DxTemplateService);
     exports.DxTemplateService = DxTemplateService;
 });
@@ -3650,6 +3308,73 @@ define('framework/forms/index',["require", "exports", "../dx/services/dx-templat
         dxTemplate.registerTemplate("global:toolbar-button-template", toolbarButtonTemplate);
     }
     exports.configure = configure;
+});
+
+define('framework/dx/index',["require", "exports"], function (require, exports) {
+    "use strict";
+    function configure(config) {
+        config
+            .globalResources("devextreme")
+            .globalResources("./elements/dx-widget");
+    }
+    exports.configure = configure;
+});
+
+define('framework/stack-router/classes/export',["require", "exports", "./view-item"], function (require, exports, view_item_1) {
+    "use strict";
+    exports.ViewItem = view_item_1.ViewItem;
+});
+
+define('framework/stack-router/export',["require", "exports", "./classes/export", "./services/export"], function (require, exports, export_1, export_2) {
+    "use strict";
+    function __export(m) {
+        for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+    }
+    __export(export_1);
+    __export(export_2);
+});
+
+define('framework/login/login',["require", "exports", "tslib", "aurelia-framework", "../stack-router/export"], function (require, exports, tslib_1, aurelia_framework_1, export_1) {
+    "use strict";
+    var Login = (function () {
+        function Login(router) {
+            this.router = router;
+        }
+        Object.defineProperty(Login.prototype, "title", {
+            get: function () {
+                if (!this.router.currentViewItem || !this.router.currentViewItem.controller) {
+                    return null;
+                }
+                var currentViewModel = this.router.currentViewItem.controller["currentViewModel"];
+                if (!currentViewModel) {
+                    return;
+                }
+                return currentViewModel.title;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Login.prototype.attached = function () {
+            this.router.registerRoutes([
+                {
+                    moduleId: "framework/login/views/login/login-form",
+                    caption: "base.login",
+                    route: "login"
+                }
+            ], "login");
+        };
+        return Login;
+    }());
+    tslib_1.__decorate([
+        aurelia_framework_1.computedFrom("router.currentViewItem.controller.currentViewModel.title"),
+        tslib_1.__metadata("design:type", String),
+        tslib_1.__metadata("design:paramtypes", [])
+    ], Login.prototype, "title", null);
+    Login = tslib_1.__decorate([
+        aurelia_framework_1.autoinject,
+        tslib_1.__metadata("design:paramtypes", [export_1.RouterService])
+    ], Login);
+    exports.Login = Login;
 });
 
 define('framework/security/index',["require", "exports"], function (require, exports) {
@@ -3669,16 +3394,7 @@ define('framework/stack-router/index',["require", "exports"], function (require,
     exports.configure = configure;
 });
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/dx/elements/dx-widget',["require", "exports", "aurelia-framework", "../services/dx-template-service", "../../base/export", "jquery"], function (require, exports, aurelia_framework_1, dx_template_service_1, export_1, $) {
+define('framework/dx/elements/dx-widget',["require", "exports", "tslib", "aurelia-framework", "../services/dx-template-service", "../../base/export", "jquery"], function (require, exports, tslib_1, aurelia_framework_1, dx_template_service_1, export_1, $) {
     "use strict";
     var DxWidget = (function () {
         function DxWidget(element, templatingEngine, bindingEngine, deepObserver, dxTemplate) {
@@ -3841,22 +3557,22 @@ define('framework/dx/elements/dx-widget',["require", "exports", "aurelia-framewo
         };
         return DxWidget;
     }());
-    __decorate([
+    tslib_1.__decorate([
         aurelia_framework_1.bindable,
-        __metadata("design:type", String)
+        tslib_1.__metadata("design:type", String)
     ], DxWidget.prototype, "name", void 0);
-    __decorate([
+    tslib_1.__decorate([
         aurelia_framework_1.bindable,
-        __metadata("design:type", Object)
+        tslib_1.__metadata("design:type", Object)
     ], DxWidget.prototype, "options", void 0);
-    __decorate([
+    tslib_1.__decorate([
         aurelia_framework_1.bindable,
-        __metadata("design:type", Object)
+        tslib_1.__metadata("design:type", Object)
     ], DxWidget.prototype, "validator", void 0);
-    DxWidget = __decorate([
+    DxWidget = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
         aurelia_framework_1.processContent(false),
-        __metadata("design:paramtypes", [Element,
+        tslib_1.__metadata("design:paramtypes", [Element,
             aurelia_framework_1.TemplatingEngine,
             aurelia_framework_1.BindingEngine,
             export_1.DeepObserverService,
@@ -3870,16 +3586,7 @@ define('framework/dx/services/export',["require", "exports", "./dx-template-serv
     exports.DxTemplateService = dx_template_service_1.DxTemplateService;
 });
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/base/attributes/icon/fa-icon-attribute',["require", "exports", "aurelia-framework"], function (require, exports, aurelia_framework_1) {
+define('framework/base/attributes/icon/fa-icon-attribute',["require", "exports", "tslib", "aurelia-framework"], function (require, exports, tslib_1, aurelia_framework_1) {
     "use strict";
     var FaIconAttribute = (function () {
         function FaIconAttribute(element) {
@@ -3904,28 +3611,19 @@ define('framework/base/attributes/icon/fa-icon-attribute',["require", "exports",
         };
         return FaIconAttribute;
     }());
-    __decorate([
+    tslib_1.__decorate([
         aurelia_framework_1.bindable,
-        __metadata("design:type", String)
+        tslib_1.__metadata("design:type", String)
     ], FaIconAttribute.prototype, "icon", void 0);
-    FaIconAttribute = __decorate([
+    FaIconAttribute = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
         aurelia_framework_1.customAttribute("fa-icon"),
-        __metadata("design:paramtypes", [Element])
+        tslib_1.__metadata("design:paramtypes", [Element])
     ], FaIconAttribute);
     exports.FaIconAttribute = FaIconAttribute;
 });
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/base/attributes/translation/translation-attribute',["require", "exports", "aurelia-framework", "../../services/localization-service"], function (require, exports, aurelia_framework_1, localization_service_1) {
+define('framework/base/attributes/translation/translation-attribute',["require", "exports", "tslib", "aurelia-framework", "../../services/localization-service"], function (require, exports, tslib_1, aurelia_framework_1, localization_service_1) {
     "use strict";
     var TrCustomAttribute = (function () {
         function TrCustomAttribute(element, localization) {
@@ -3947,37 +3645,43 @@ define('framework/base/attributes/translation/translation-attribute',["require",
         };
         return TrCustomAttribute;
     }());
-    __decorate([
+    tslib_1.__decorate([
         aurelia_framework_1.bindable,
-        __metadata("design:type", String)
+        tslib_1.__metadata("design:type", String)
     ], TrCustomAttribute.prototype, "mode", void 0);
-    __decorate([
+    tslib_1.__decorate([
         aurelia_framework_1.bindable,
-        __metadata("design:type", String)
+        tslib_1.__metadata("design:type", String)
     ], TrCustomAttribute.prototype, "key", void 0);
-    __decorate([
+    tslib_1.__decorate([
         aurelia_framework_1.bindable,
-        __metadata("design:type", Boolean)
+        tslib_1.__metadata("design:type", Boolean)
     ], TrCustomAttribute.prototype, "markdown", void 0);
-    TrCustomAttribute = __decorate([
+    TrCustomAttribute = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
         aurelia_framework_1.customAttribute("tr"),
-        __metadata("design:paramtypes", [Element,
+        tslib_1.__metadata("design:paramtypes", [Element,
             localization_service_1.LocalizationService])
     ], TrCustomAttribute);
     exports.TrCustomAttribute = TrCustomAttribute;
 });
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/default-ui/views/container/container',["require", "exports", "aurelia-framework", "../../services/layout-service"], function (require, exports, aurelia_framework_1, layout_service_1) {
+define('framework/default-ui/views/content/content',["require", "exports", "tslib", "aurelia-framework", "../../services/layout-service"], function (require, exports, tslib_1, aurelia_framework_1, layout_service_1) {
+    "use strict";
+    var Content = (function () {
+        function Content(layout) {
+            this.layout = layout;
+        }
+        return Content;
+    }());
+    Content = tslib_1.__decorate([
+        aurelia_framework_1.autoinject,
+        tslib_1.__metadata("design:paramtypes", [layout_service_1.LayoutService])
+    ], Content);
+    exports.Content = Content;
+});
+
+define('framework/default-ui/views/container/container',["require", "exports", "tslib", "aurelia-framework", "../../services/layout-service"], function (require, exports, tslib_1, aurelia_framework_1, layout_service_1) {
     "use strict";
     var Container = (function () {
         function Container(layout) {
@@ -3994,28 +3698,19 @@ define('framework/default-ui/views/container/container',["require", "exports", "
         });
         return Container;
     }());
-    __decorate([
+    tslib_1.__decorate([
         aurelia_framework_1.computedFrom("layout.isSidebarCollapsed"),
-        __metadata("design:type", String),
-        __metadata("design:paramtypes", [])
+        tslib_1.__metadata("design:type", String),
+        tslib_1.__metadata("design:paramtypes", [])
     ], Container.prototype, "className", null);
-    Container = __decorate([
+    Container = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [layout_service_1.LayoutService])
+        tslib_1.__metadata("design:paramtypes", [layout_service_1.LayoutService])
     ], Container);
     exports.Container = Container;
 });
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/default-ui/views/header/header',["require", "exports", "aurelia-framework", "../../../stack-router/export", "../../../base/services/export"], function (require, exports, aurelia_framework_1, export_1, export_2) {
+define('framework/default-ui/views/header/header',["require", "exports", "tslib", "aurelia-framework", "../../../stack-router/export", "../../../base/services/export"], function (require, exports, tslib_1, aurelia_framework_1, export_1, export_2) {
     "use strict";
     var Header = (function () {
         function Header(router, authorization) {
@@ -4027,48 +3722,15 @@ define('framework/default-ui/views/header/header',["require", "exports", "aureli
         };
         return Header;
     }());
-    Header = __decorate([
+    Header = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [export_1.RouterService,
+        tslib_1.__metadata("design:paramtypes", [export_1.RouterService,
             export_2.AuthorizationService])
     ], Header);
     exports.Header = Header;
 });
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/default-ui/views/content/content',["require", "exports", "aurelia-framework", "../../services/layout-service"], function (require, exports, aurelia_framework_1, layout_service_1) {
-    "use strict";
-    var Content = (function () {
-        function Content(layout) {
-            this.layout = layout;
-        }
-        return Content;
-    }());
-    Content = __decorate([
-        aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [layout_service_1.LayoutService])
-    ], Content);
-    exports.Content = Content;
-});
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/default-ui/views/loading/loading',["require", "exports", "aurelia-framework", "../../../base/services/rest-service"], function (require, exports, aurelia_framework_1, rest_service_1) {
+define('framework/default-ui/views/loading/loading',["require", "exports", "tslib", "aurelia-framework", "../../../base/services/rest-service"], function (require, exports, tslib_1, aurelia_framework_1, rest_service_1) {
     "use strict";
     var Loading = (function () {
         function Loading(rest) {
@@ -4076,23 +3738,38 @@ define('framework/default-ui/views/loading/loading',["require", "exports", "aure
         }
         return Loading;
     }());
-    Loading = __decorate([
+    Loading = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [rest_service_1.RestService])
+        tslib_1.__metadata("design:paramtypes", [rest_service_1.RestService])
     ], Loading);
     exports.Loading = Loading;
 });
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/default-ui/views/sidebar/sidebar',["require", "exports", "aurelia-framework", "../../services/layout-service", "../../../stack-router/export"], function (require, exports, aurelia_framework_1, layout_service_1, export_1) {
+define('framework/default-ui/views/loading-spinner/loading-spinner',["require", "exports", "tslib", "aurelia-framework"], function (require, exports, tslib_1, aurelia_framework_1) {
+    "use strict";
+    var LoadingSpinner = (function () {
+        function LoadingSpinner(element) {
+            this.element = element;
+        }
+        LoadingSpinner.prototype.bind = function () {
+            $(this.element).removeClass("t--loading-active");
+        };
+        LoadingSpinner.prototype.attached = function () {
+            var _this = this;
+            setTimeout(function () {
+                $(_this.element).addClass("t--loading-active");
+            }, 500);
+        };
+        return LoadingSpinner;
+    }());
+    LoadingSpinner = tslib_1.__decorate([
+        aurelia_framework_1.autoinject,
+        tslib_1.__metadata("design:paramtypes", [Element])
+    ], LoadingSpinner);
+    exports.LoadingSpinner = LoadingSpinner;
+});
+
+define('framework/default-ui/views/sidebar/sidebar',["require", "exports", "tslib", "aurelia-framework", "../../services/layout-service", "../../../stack-router/export"], function (require, exports, tslib_1, aurelia_framework_1, layout_service_1, export_1) {
     "use strict";
     var Sidebar = (function () {
         function Sidebar(layout, router) {
@@ -4145,89 +3822,38 @@ define('framework/default-ui/views/sidebar/sidebar',["require", "exports", "aure
         };
         return Sidebar;
     }());
-    __decorate([
+    tslib_1.__decorate([
         aurelia_framework_1.computedFrom("layout.isSidebarCollapsed"),
-        __metadata("design:type", String),
-        __metadata("design:paramtypes", [])
+        tslib_1.__metadata("design:type", String),
+        tslib_1.__metadata("design:paramtypes", [])
     ], Sidebar.prototype, "headerIcon", null);
-    Sidebar = __decorate([
+    Sidebar = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [layout_service_1.LayoutService,
+        tslib_1.__metadata("design:paramtypes", [layout_service_1.LayoutService,
             export_1.RouterService])
     ], Sidebar);
     exports.Sidebar = Sidebar;
 });
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/default-ui/views/sidebar-sub/sidebar-sub',["require", "exports", "aurelia-framework"], function (require, exports, aurelia_framework_1) {
+define('framework/default-ui/views/sidebar-sub/sidebar-sub',["require", "exports", "tslib", "aurelia-framework"], function (require, exports, tslib_1, aurelia_framework_1) {
     "use strict";
     var SidebarSub = (function () {
         function SidebarSub() {
         }
         return SidebarSub;
     }());
-    __decorate([
+    tslib_1.__decorate([
         aurelia_framework_1.bindable,
-        __metadata("design:type", Object)
+        tslib_1.__metadata("design:type", Object)
     ], SidebarSub.prototype, "route", void 0);
-    SidebarSub = __decorate([
+    SidebarSub = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [])
+        tslib_1.__metadata("design:paramtypes", [])
     ], SidebarSub);
     exports.SidebarSub = SidebarSub;
 });
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/default-ui/views/loading-spinner/loading-spinner',["require", "exports", "aurelia-framework"], function (require, exports, aurelia_framework_1) {
-    "use strict";
-    var LoadingSpinner = (function () {
-        function LoadingSpinner(element) {
-            this.element = element;
-        }
-        LoadingSpinner.prototype.bind = function () {
-            $(this.element).removeClass("t--loading-active");
-        };
-        LoadingSpinner.prototype.attached = function () {
-            var _this = this;
-            setTimeout(function () {
-                $(_this.element).addClass("t--loading-active");
-            }, 500);
-        };
-        return LoadingSpinner;
-    }());
-    LoadingSpinner = __decorate([
-        aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [Element])
-    ], LoadingSpinner);
-    exports.LoadingSpinner = LoadingSpinner;
-});
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/login/views/login/login-form-funcs',["require", "exports", "aurelia-framework", "../../../base/export", "../../../stack-router/export"], function (require, exports, aurelia_framework_1, export_1, export_2) {
+define('framework/login/views/login/login-form-funcs',["require", "exports", "tslib", "aurelia-framework", "../../../base/export", "../../../stack-router/export"], function (require, exports, tslib_1, aurelia_framework_1, export_1, export_2) {
     "use strict";
     var LoginFuncs = (function () {
         function LoginFuncs(authorization, history) {
@@ -4263,32 +3889,18 @@ define('framework/login/views/login/login-form-funcs',["require", "exports", "au
         };
         return LoginFuncs;
     }());
-    LoginFuncs = __decorate([
+    LoginFuncs = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [export_1.AuthorizationService,
+        tslib_1.__metadata("design:paramtypes", [export_1.AuthorizationService,
             export_2.HistoryService])
     ], LoginFuncs);
     exports.LoginFuncs = LoginFuncs;
 });
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/login/views/login/login-form',["require", "exports", "../../../forms/form-export", "./login-form-funcs"], function (require, exports, fwx, login_form_funcs_1) {
+define('framework/login/views/login/login-form',["require", "exports", "tslib", "../../../forms/form-export", "./login-form-funcs"], function (require, exports, tslib_1, fwx, login_form_funcs_1) {
     "use strict";
     var LoginForm = (function (_super) {
-        __extends(LoginForm, _super);
+        tslib_1.__extends(LoginForm, _super);
         function LoginForm(formBaseImport, $f) {
             var _this = _super.call(this, formBaseImport) || this;
             _this.$f = $f;
@@ -4359,77 +3971,17 @@ define('framework/login/views/login/login-form',["require", "exports", "../../..
         }
         return LoginForm;
     }(fwx.FormBase));
-    LoginForm = __decorate([
+    LoginForm = tslib_1.__decorate([
         fwx.autoinject,
-        __metadata("design:paramtypes", [fwx.FormBaseImport, login_form_funcs_1.LoginFuncs])
+        tslib_1.__metadata("design:paramtypes", [fwx.FormBaseImport, login_form_funcs_1.LoginFuncs])
     ], LoginForm);
     exports.LoginForm = LoginForm;
 });
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/stack-router/attributes/stack-router-link/stack-router-link',["require", "exports", "aurelia-framework", "../../services/history-service"], function (require, exports, aurelia_framework_1, history_service_1) {
-    "use strict";
-    var StackRouterLinkCustomAttribute = (function () {
-        function StackRouterLinkCustomAttribute(element, history) {
-            this.element = element;
-            this.history = history;
-        }
-        StackRouterLinkCustomAttribute.prototype.bind = function () {
-            var _this = this;
-            this.element.addEventListener("click", function (e) {
-                var event = window.event;
-                if (!event.ctrlKey
-                    && !event.altKey
-                    && !event.shiftKey
-                    && !event.metaKey) {
-                    var href = _this.element.getAttribute("href");
-                    if (href) {
-                        _this.history.navigateByCode(_this.element.getAttribute("href"), _this.clearStack);
-                    }
-                    e.preventDefault();
-                }
-            });
-        };
-        return StackRouterLinkCustomAttribute;
-    }());
-    __decorate([
-        aurelia_framework_1.bindable,
-        __metadata("design:type", Boolean)
-    ], StackRouterLinkCustomAttribute.prototype, "clearStack", void 0);
-    StackRouterLinkCustomAttribute = __decorate([
-        aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [Element,
-            history_service_1.HistoryService])
-    ], StackRouterLinkCustomAttribute);
-    exports.StackRouterLinkCustomAttribute = StackRouterLinkCustomAttribute;
-});
-
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/security/views/authgroup/authgroup-edit-form',["require", "exports", "../../../forms/form-export"], function (require, exports, fwx) {
+define('framework/security/views/authgroup/authgroup-edit-form',["require", "exports", "tslib", "../../../forms/form-export"], function (require, exports, tslib_1, fwx) {
     "use strict";
     var AuthgroupEditForm = (function (_super) {
-        __extends(AuthgroupEditForm, _super);
+        tslib_1.__extends(AuthgroupEditForm, _super);
         function AuthgroupEditForm(formBaseImport) {
             var _this = _super.call(this, formBaseImport) || this;
             _this.id = "authgroup-edit";
@@ -4485,31 +4037,17 @@ define('framework/security/views/authgroup/authgroup-edit-form',["require", "exp
         }
         return AuthgroupEditForm;
     }(fwx.FormBase));
-    AuthgroupEditForm = __decorate([
+    AuthgroupEditForm = tslib_1.__decorate([
         fwx.autoinject,
-        __metadata("design:paramtypes", [fwx.FormBaseImport])
+        tslib_1.__metadata("design:paramtypes", [fwx.FormBaseImport])
     ], AuthgroupEditForm);
     exports.AuthgroupEditForm = AuthgroupEditForm;
 });
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/security/views/authgroup/authgroup-list-form',["require", "exports", "../../../forms/form-export"], function (require, exports, fwx) {
+define('framework/security/views/authgroup/authgroup-list-form',["require", "exports", "tslib", "../../../forms/form-export"], function (require, exports, tslib_1, fwx) {
     "use strict";
     var AuthgroupListForm = (function (_super) {
-        __extends(AuthgroupListForm, _super);
+        tslib_1.__extends(AuthgroupListForm, _super);
         function AuthgroupListForm(formBaseImport) {
             var _this = _super.call(this, formBaseImport) || this;
             _this.id = "authgroup-list";
@@ -4561,23 +4099,51 @@ define('framework/security/views/authgroup/authgroup-list-form',["require", "exp
         }
         return AuthgroupListForm;
     }(fwx.FormBase));
-    AuthgroupListForm = __decorate([
+    AuthgroupListForm = tslib_1.__decorate([
         fwx.autoinject,
-        __metadata("design:paramtypes", [fwx.FormBaseImport])
+        tslib_1.__metadata("design:paramtypes", [fwx.FormBaseImport])
     ], AuthgroupListForm);
     exports.AuthgroupListForm = AuthgroupListForm;
 });
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/stack-router/views/stack-router/stack-router',["require", "exports", "aurelia-framework", "aurelia-event-aggregator", "../../services/router-service", "../../services/history-service"], function (require, exports, aurelia_framework_1, aurelia_event_aggregator_1, router_service_1, history_service_1) {
+define('framework/stack-router/attributes/stack-router-link/stack-router-link',["require", "exports", "tslib", "aurelia-framework", "../../services/history-service"], function (require, exports, tslib_1, aurelia_framework_1, history_service_1) {
+    "use strict";
+    var StackRouterLinkCustomAttribute = (function () {
+        function StackRouterLinkCustomAttribute(element, history) {
+            this.element = element;
+            this.history = history;
+        }
+        StackRouterLinkCustomAttribute.prototype.bind = function () {
+            var _this = this;
+            this.element.addEventListener("click", function (e) {
+                var event = window.event;
+                if (!event.ctrlKey
+                    && !event.altKey
+                    && !event.shiftKey
+                    && !event.metaKey) {
+                    var href = _this.element.getAttribute("href");
+                    if (href) {
+                        _this.history.navigateByCode(_this.element.getAttribute("href"), _this.clearStack);
+                    }
+                    e.preventDefault();
+                }
+            });
+        };
+        return StackRouterLinkCustomAttribute;
+    }());
+    tslib_1.__decorate([
+        aurelia_framework_1.bindable,
+        tslib_1.__metadata("design:type", Boolean)
+    ], StackRouterLinkCustomAttribute.prototype, "clearStack", void 0);
+    StackRouterLinkCustomAttribute = tslib_1.__decorate([
+        aurelia_framework_1.autoinject,
+        tslib_1.__metadata("design:paramtypes", [Element,
+            history_service_1.HistoryService])
+    ], StackRouterLinkCustomAttribute);
+    exports.StackRouterLinkCustomAttribute = StackRouterLinkCustomAttribute;
+});
+
+define('framework/stack-router/views/stack-router/stack-router',["require", "exports", "tslib", "aurelia-framework", "aurelia-event-aggregator", "../../services/router-service", "../../services/history-service"], function (require, exports, tslib_1, aurelia_framework_1, aurelia_event_aggregator_1, router_service_1, history_service_1) {
     "use strict";
     var StackRouter = (function () {
         function StackRouter(history, router, eventAggregator) {
@@ -4598,29 +4164,20 @@ define('framework/stack-router/views/stack-router/stack-router',["require", "exp
         };
         return StackRouter;
     }());
-    __decorate([
+    tslib_1.__decorate([
         aurelia_framework_1.bindable,
-        __metadata("design:type", Boolean)
+        tslib_1.__metadata("design:type", Boolean)
     ], StackRouter.prototype, "createToolbar", void 0);
-    StackRouter = __decorate([
+    StackRouter = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [history_service_1.HistoryService,
+        tslib_1.__metadata("design:paramtypes", [history_service_1.HistoryService,
             router_service_1.RouterService,
             aurelia_event_aggregator_1.EventAggregator])
     ], StackRouter);
     exports.StackRouter = StackRouter;
 });
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-define('framework/stack-router/views/view/view',["require", "exports", "aurelia-framework"], function (require, exports, aurelia_framework_1) {
+define('framework/stack-router/views/view/view',["require", "exports", "tslib", "aurelia-framework"], function (require, exports, tslib_1, aurelia_framework_1) {
     "use strict";
     var View = (function () {
         function View(element, bindingEngine, taskQueue) {
@@ -4661,61 +4218,61 @@ define('framework/stack-router/views/view/view',["require", "exports", "aurelia-
         };
         return View;
     }());
-    __decorate([
+    tslib_1.__decorate([
         aurelia_framework_1.bindable,
-        __metadata("design:type", Boolean)
+        tslib_1.__metadata("design:type", Boolean)
     ], View.prototype, "createToolbar", void 0);
-    __decorate([
+    tslib_1.__decorate([
         aurelia_framework_1.bindable,
-        __metadata("design:type", Object)
+        tslib_1.__metadata("design:type", Object)
     ], View.prototype, "view", void 0);
-    __decorate([
+    tslib_1.__decorate([
         aurelia_framework_1.computedFrom("createToolbar"),
-        __metadata("design:type", String),
-        __metadata("design:paramtypes", [])
+        tslib_1.__metadata("design:type", String),
+        tslib_1.__metadata("design:paramtypes", [])
     ], View.prototype, "className", null);
-    __decorate([
+    tslib_1.__decorate([
         aurelia_framework_1.computedFrom("view.controller.currentViewModel.toolbarOptions"),
-        __metadata("design:type", Object),
-        __metadata("design:paramtypes", [])
+        tslib_1.__metadata("design:type", Object),
+        tslib_1.__metadata("design:paramtypes", [])
     ], View.prototype, "toolbarOptions", null);
-    View = __decorate([
+    View = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
-        __metadata("design:paramtypes", [Element,
+        tslib_1.__metadata("design:paramtypes", [Element,
             aurelia_framework_1.BindingEngine,
             aurelia_framework_1.TaskQueue])
     ], View);
     exports.View = View;
 });
 
-define('text!app.html', ['module'], function(module) { module.exports = "<template>\r\n  <require from=\"./framework/default-ui/views/container/container\"></require>\r\n  <container></container>\r\n</template>\r\n"; });
-define('text!framework/login/login.html', ['module'], function(module) { module.exports = "<template>\r\n  <require from=\"../stack-router/views/stack-router/stack-router\"></require>\r\n  <require from=\"../../framework/default-ui/views/loading/loading\"></require>\r\n  <require from=\"./login.css\"></require>\r\n\r\n  <loading></loading>\r\n  <div class=\"t--login-container\">\r\n    <div class=\"t--login-image\">\r\n      <div class=\"t--login-banner\" tr=\"key.bind: title\">\r\n      </div>\r\n    </div>  \r\n    <div class=\"t--login-data\">\r\n      <stack-router create-toolbar.bind=\"false\"></stack-router>\r\n    </div>\r\n  </div>\r\n</template>"; });
-define('text!framework/forms/templates/toolbar-button-template.html',[],function () { return '<a class="t--toolbar-item" click.delegate="data.guardedExecute()">\r\n  <div if.bind="data.command.badgeText" class="t--toolbar-item-badge" tr="key.bind: data.command.badgeText">\r\n  </div>\r\n  <div class="t--toolbar-item-content">\r\n    <div if.bind="data.command.icon" class="t--toolbar-item-icon">\r\n      <i class="fa-fw" fa-icon="icon.bind: data.command.icon"></i>\r\n    </div>\r\n    <div if.bind="data.command.title" class="t--toolbar-item-title" tr="key.bind: data.command.title">\r\n    </div>\r\n  </div>\r\n</a>\r\n';});
+define('text!app.html', ['module'], function(module) { module.exports = "<template>\n  <require from=\"./framework/default-ui/views/container/container\"></require>\n  <container></container>\n</template>\n"; });
+define('text!framework/login/login.html', ['module'], function(module) { module.exports = "<template>\n  <require from=\"../stack-router/views/stack-router/stack-router\"></require>\n  <require from=\"../../framework/default-ui/views/loading/loading\"></require>\n  <require from=\"./login.css\"></require>\n\n  <loading></loading>\n  <div class=\"t--login-container\">\n    <div class=\"t--login-image\">\n      <div class=\"t--login-banner\" tr=\"key.bind: title\">\n      </div>\n    </div>  \n    <div class=\"t--login-data\">\n      <stack-router create-toolbar.bind=\"false\"></stack-router>\n    </div>\n  </div>\n</template>"; });
+define('text!framework/dx/elements/dx-widget.html', ['module'], function(module) { module.exports = "<template class=\"dx-widget\">\n</template>"; });
+define('text!framework/forms/templates/toolbar-button-template.html',[],function () { return '<a class="t--toolbar-item" click.delegate="data.guardedExecute()">\n  <div if.bind="data.command.badgeText" class="t--toolbar-item-badge" tr="key.bind: data.command.badgeText">\n  </div>\n  <div class="t--toolbar-item-content">\n    <div if.bind="data.command.icon" class="t--toolbar-item-icon">\n      <i class="fa-fw" fa-icon="icon.bind: data.command.icon"></i>\n    </div>\n    <div if.bind="data.command.title" class="t--toolbar-item-title" tr="key.bind: data.command.title">\n    </div>\n  </div>\n</a>\n';});
 
-define('text!framework/dx/elements/dx-widget.html', ['module'], function(module) { module.exports = "<template class=\"dx-widget\">\r\n</template>"; });
 define('text!framework/login/login.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--login-container {\n  display: flex;\n  height: 100vh;\n  width: 100vw;\n}\n.t--login-image {\n  position: relative;\n  flex-grow: 1;\n  background-image: url('images/background-login.jpg');\n  background-position: center center;\n  background-size: cover;\n  border-right: 1px solid lightgray;\n}\n.t--login-banner {\n  position: absolute;\n  padding: 12px 36px;\n  bottom: 30vh;\n  font-size: 60px;\n  font-weight: 100;\n  color: white;\n  background-color: rgba(0, 0, 0, 0.3);\n}\n.t--login-data {\n  display: flex;\n  width: 350px;\n  align-items: center;\n  background-color: #f7f7f7;\n}\n.t--login-data .t--view-content {\n  display: flex;\n  margin-top: 4vh;\n  flex-direction: column;\n  justify-content: center;\n}\n.t--login-logo {\n  margin-bottom: 40px;\n  text-align: center;\n}\n.t--login-logo img {\n  max-width: 200px;\n}\n"; });
-define('text!framework/default-ui/views/container/container.html', ['module'], function(module) { module.exports = "<template class=\"t--container\" class.bind=\"className\">\r\n  <require from=\"./container.css\"></require>\r\n  \r\n  <require from=\"../loading/loading\"></require>\r\n  <require from=\"../sidebar/sidebar\"></require>\r\n  <require from=\"../header/header\"></require>\r\n  <require from=\"../content/content\"></require>\r\n\r\n  <loading></loading>\r\n  <sidebar></sidebar>\r\n  <header></header>\r\n  <content></content>\r\n</template>\r\n"; });
-define('text!framework/default-ui/views/content/content.html', ['module'], function(module) { module.exports = "<template class=\"t--content\">\r\n  <require from=\"./content.css\"></require>\r\n\r\n  <stack-router></stack-router>\r\n</template>\r\n"; });
-define('text!framework/default-ui/styles/styles.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--view-content {\n  opacity: 0;\n  transform: translateX(10px);\n  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n  transition-property: all;\n}\n.t--view-content.t--view-content-attached {\n  opacity: 1;\n  transform: translateX(0);\n}\n"; });
-define('text!framework/default-ui/views/header/header.html', ['module'], function(module) { module.exports = "<template class=\"t--header\">\r\n  <require from=\"./header.css\"></require>\r\n\r\n  <div class=\"t--header-flex\">\r\n    <div class=\"t--header-title\" tr=\"key.bind: router.currentViewItem.title\">\r\n    </div>\r\n    <div class=\"t--header-options\">\r\n      <a href=\"#\" click.delegate=\"logout()\" tr=\"key: base.logout\"></a>\r\n    </div>\r\n  </div>\r\n</template>"; });
-define('text!framework/default-ui/views/loading/loading.html', ['module'], function(module) { module.exports = "<template>\r\n  <require from=\"../loading-spinner/loading-spinner\"></require>\r\n\r\n  <loading-spinner if.bind=\"rest.isLoading\"></loading-spinner>\r\n</template>"; });
+define('text!framework/default-ui/views/container/container.html', ['module'], function(module) { module.exports = "<template class=\"t--container\" class.bind=\"className\">\n  <require from=\"./container.css\"></require>\n  \n  <require from=\"../loading/loading\"></require>\n  <require from=\"../sidebar/sidebar\"></require>\n  <require from=\"../header/header\"></require>\n  <require from=\"../content/content\"></require>\n\n  <loading></loading>\n  <sidebar></sidebar>\n  <header></header>\n  <content></content>\n</template>\n"; });
+define('text!framework/default-ui/views/content/content.html', ['module'], function(module) { module.exports = "<template class=\"t--content\">\n  <require from=\"./content.css\"></require>\n\n  <stack-router></stack-router>\n</template>\n"; });
 define('text!framework/base/styles/styles.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\nbody {\n  margin: 0;\n  padding: 0;\n  font-family: \"Helvetica Neue\", \"Segoe UI\", Helvetica, Verdana, sans-serif;\n  font-size: 12px;\n}\n.t--margin-top {\n  margin-top: 12px;\n}\n.t--editor-caption {\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n.t--cursor-pointer {\n  cursor: pointer;\n}\n.t--invisible-submit {\n  height: 0;\n  width: 0;\n  margin: 0;\n  padding: 0;\n  border: 0;\n}\n"; });
-define('text!framework/default-ui/views/sidebar/sidebar.html', ['module'], function(module) { module.exports = "<template class=\"t--sidebar\">\r\n  <require from=\"../sidebar-sub/sidebar-sub\"></require>\r\n  <require from=\"./sidebar.css\"></require>\r\n\r\n  <div class=\"t--sidebar-header\" click.delegate=\"onHeaderClicked()\">\r\n    <div class=\"t--sidebar-header-title\">\r\n      Navigation\r\n    </div>\r\n    <div class=\"t--sidebar-header-icon\">\r\n      <i class=\"fa fa-${headerIcon}\"></i>\r\n    </div>\r\n  </div>\r\n\r\n  <ul>\r\n    <li\r\n      repeat.for=\"route of router.navigationRoutes\">\r\n      <sidebar-sub route.bind=\"route\" if.bind=\"route.sidebarExpanded\"></sidebar-sub>\r\n      <a \r\n        href.bind=\"route.route ? '#' + route.route : ''\" \r\n        class=\"t--sidebar-item\"\r\n        click.delegate=\"onRouteClicked(route)\"\r\n        stack-router-link=\"clear-stack.bind: true\">\r\n        <span class=\"t--sidebar-item-title\" tr=\"key.bind: route.caption\">\r\n        </span>\r\n        <span class=\"t--sidebar-item-icon\" if.bind=\"route.navigation.icon\">\r\n          <i class=\"fa fa-${route.navigation.icon}\"></i>\r\n        </span>\r\n      </a>\r\n    </li>\r\n  </ul>\r\n</template>\r\n"; });
+define('text!framework/default-ui/views/header/header.html', ['module'], function(module) { module.exports = "<template class=\"t--header\">\n  <require from=\"./header.css\"></require>\n\n  <div class=\"t--header-flex\">\n    <div class=\"t--header-title\" tr=\"key.bind: router.currentViewItem.title\">\n    </div>\n    <div class=\"t--header-options\">\n      <a href=\"#\" click.delegate=\"logout()\" tr=\"key: base.logout\"></a>\n    </div>\n  </div>\n</template>"; });
 define('text!framework/base/styles/variables.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n"; });
-define('text!framework/default-ui/views/loading-spinner/loading-spinner.html', ['module'], function(module) { module.exports = "<template class=\"t--loading\">\r\n  <require from=\"./loading-spinner.css\"></require>\r\n  \r\n  <div class=\"t--loading-spinner\">\r\n    <div class=\"t--loading-rect1\"></div>\r\n    <div class=\"t--loading-rect2\"></div>\r\n    <div class=\"t--loading-rect3\"></div>\r\n    <div class=\"t--loading-rect4\"></div>\r\n    <div class=\"t--loading-rect5\"></div>\r\n  </div>\r\n</template>"; });
-define('text!framework/default-ui/views/sidebar-sub/sidebar-sub.html', ['module'], function(module) { module.exports = "<template class=\"t--sidebar-sub au-animate\">\r\n  <ul>\r\n    <li repeat.for=\"child of route.children\">\r\n      <a \r\n        href.bind=\"child.route ? '#' + child.route : ''\" \r\n        class=\"t--sidebar-sub-item\"\r\n        stack-router-link=\"clear-stack.bind: true\">\r\n        <span class=\"t--sidebar-sub-item-title\" tr=\"key.bind: route.caption\">\r\n        </span>\r\n      </a>\r\n    </li>\r\n  </ul>\r\n</template>"; });
+define('text!framework/default-ui/views/loading/loading.html', ['module'], function(module) { module.exports = "<template>\n  <require from=\"../loading-spinner/loading-spinner\"></require>\n\n  <loading-spinner if.bind=\"rest.isLoading\"></loading-spinner>\n</template>"; });
+define('text!framework/default-ui/views/loading-spinner/loading-spinner.html', ['module'], function(module) { module.exports = "<template class=\"t--loading\">\n  <require from=\"./loading-spinner.css\"></require>\n  \n  <div class=\"t--loading-spinner\">\n    <div class=\"t--loading-rect1\"></div>\n    <div class=\"t--loading-rect2\"></div>\n    <div class=\"t--loading-rect3\"></div>\n    <div class=\"t--loading-rect4\"></div>\n    <div class=\"t--loading-rect5\"></div>\n  </div>\n</template>"; });
+define('text!framework/default-ui/styles/styles.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--view-content {\n  opacity: 0;\n  transform: translateX(10px);\n  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n  transition-property: all;\n}\n.t--view-content.t--view-content-attached {\n  opacity: 1;\n  transform: translateX(0);\n}\n"; });
+define('text!framework/default-ui/views/sidebar/sidebar.html', ['module'], function(module) { module.exports = "<template class=\"t--sidebar\">\n  <require from=\"../sidebar-sub/sidebar-sub\"></require>\n  <require from=\"./sidebar.css\"></require>\n\n  <div class=\"t--sidebar-header\" click.delegate=\"onHeaderClicked()\">\n    <div class=\"t--sidebar-header-title\">\n      Navigation\n    </div>\n    <div class=\"t--sidebar-header-icon\">\n      <i class=\"fa fa-${headerIcon}\"></i>\n    </div>\n  </div>\n\n  <ul>\n    <li\n      repeat.for=\"route of router.navigationRoutes\">\n      <sidebar-sub route.bind=\"route\" if.bind=\"route.sidebarExpanded\"></sidebar-sub>\n      <a \n        href.bind=\"route.route ? '#' + route.route : ''\" \n        class=\"t--sidebar-item\"\n        click.delegate=\"onRouteClicked(route)\"\n        stack-router-link=\"clear-stack.bind: true\">\n        <span class=\"t--sidebar-item-title\" tr=\"key.bind: route.caption\">\n        </span>\n        <span class=\"t--sidebar-item-icon\" if.bind=\"route.navigation.icon\">\n          <i class=\"fa fa-${route.navigation.icon}\"></i>\n        </span>\n      </a>\n    </li>\n  </ul>\n</template>\n"; });
+define('text!framework/default-ui/views/sidebar-sub/sidebar-sub.html', ['module'], function(module) { module.exports = "<template class=\"t--sidebar-sub au-animate\">\n  <ul>\n    <li repeat.for=\"child of route.children\">\n      <a \n        href.bind=\"child.route ? '#' + child.route : ''\" \n        class=\"t--sidebar-sub-item\"\n        stack-router-link=\"clear-stack.bind: true\">\n        <span class=\"t--sidebar-sub-item-title\" tr=\"key.bind: route.caption\">\n        </span>\n      </a>\n    </li>\n  </ul>\n</template>"; });
+define('text!framework/default-ui/styles/toolbar.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--container .dx-toolbar {\n  height: 32px;\n  background-color: #D3D3D3;\n}\n.dx-toolbar .dx-toolbar-items-container {\n  height: 32px;\n}\n.t--toolbar-title {\n  font-size: 16px;\n  font-weight: 100;\n  color: black;\n  padding: 0 12px;\n}\n.t--toolbar-item {\n  display: flex;\n  align-items: center;\n  height: 32px;\n  padding: 0 12px;\n  text-decoration: none;\n  cursor: pointer;\n  -webkit-user-select: none;\n}\n.t--toolbar-item i {\n  font-size: 16px;\n}\n.t--toolbar-item:hover {\n  color: white;\n  background-color: #808080;\n}\n.t--toolbar-item-content {\n  display: flex;\n  flex-direction: row;\n}\n.t--toolbar {\n  height: 60px;\n  background-color: #808080;\n  color: white;\n}\n.t--toolbar .dx-toolbar {\n  height: 60px;\n  background-color: transparent;\n}\n.t--toolbar .dx-toolbar .dx-toolbar-items-container {\n  height: 60px;\n}\n.t--toolbar .dx-state-disabled .t--toolbar-item {\n  cursor: default;\n  color: lightgray;\n}\n.t--toolbar .dx-state-disabled .t--toolbar-item:hover {\n  background-color: inherit;\n}\n.t--toolbar .t--toolbar-title {\n  font-size: 26px;\n  color: white;\n}\n.t--toolbar .t--toolbar-item {\n  height: 60px;\n  flex-direction: column;\n  justify-content: center;\n  align-items: center;\n  text-align: center;\n  color: white;\n}\n.t--toolbar .t--toolbar-item:hover {\n  background-color: #4F4F4F;\n}\n.t--toolbar .t--toolbar-item-content {\n  flex-direction: column;\n}\n"; });
 define('text!framework/login/views/login/login-form.html', ['module'], function(module) { module.exports = "<template>\n    <div class=\"t--margin-top col-xs-12 t--login-logo\">\n        <img class=\"t--form-element-image\" src=\"http://2014.erp-future.com/sites/2014.erp-future.com/files/1_business/Logo_U_TIP.png\"></img>\n    </div>\n    <form submit.delegate=\"submitForm('functions.$f.loginCommand')\">\n        <button class=\"t--invisible-submit\" type=\"submit\"></button>\n        <div class=\"col-xs-12\">\n            <div tr=\"key: login-form.enter_user_password_text; markdown: true; mode: html\"></div>\n        </div>\n        <div class=\"t--margin-top col-xs-12\">\n            <div class=\"t--editor-caption\" tr=\"key: login-form.username_caption\"></div>\n            <dx-widget name=\"dxTextBox\" options.bind=\"usernameOptions\" view-model.ref=\"username\"></dx-widget>\n        </div>\n        <div class=\"t--margin-top col-xs-12\">\n            <div class=\"t--editor-caption\" tr=\"key: login-form.password_caption\"></div>\n            <dx-widget name=\"dxTextBox\" options.bind=\"passwordOptions\" view-model.ref=\"password\"></dx-widget>\n        </div>\n        <div class=\"t--margin-top col-xs-12\">\n            <div class=\"t--editor-caption\">&nbsp;</div>\n            <dx-widget name=\"dxCheckBox\" options.bind=\"stayLoggodOnOptions\" view-model.ref=\"stayLoggodOn\"></dx-widget>\n        </div>\n        <div class=\"t--margin-top col-xs-12\">\n            <div class=\"t--editor-caption\">&nbsp;</div>\n            <dx-widget name=\"dxButton\" options.bind=\"wd1Options\"></dx-widget>\n        </div>\n    </form>\n</template>"; });
-define('text!framework/forms/styles/styles.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--form-element-flex-box {\n  display: flex;\n}\n.t--form-element-flex-box-with-padding > *:not(:first-child) {\n  margin-left: 12px;\n}\n.t--form-element-image-inline {\n  background-size: contain;\n  background-position: center center;\n  background-repeat: no-repeat;\n}\n.t--form-element-image {\n  max-width: 100%;\n}\n"; });
 define('text!framework/security/views/authgroup/authgroup-edit-form.html', ['module'], function(module) { module.exports = "<template>\n    <div class=\"t--margin-top col-xs-12\">\n        <div tr=\"key: authgroup-edit.info_text; markdown: true; mode: html\"></div>\n    </div>\n    <div class=\"t--margin-top col-xs-12 col-md-6\">\n        <div class=\"t--editor-caption\" tr=\"key: authgroup-edit.name_caption\"></div>\n        <dx-widget name=\"dxTextBox\" options.bind=\"nameOptions\" view-model.ref=\"name\"></dx-widget>\n    </div>\n    <div class=\"t--margin-top col-xs-12 col-md-6\">\n        <div class=\"t--editor-caption\" tr=\"key: authgroup-edit.mandator_caption\"></div>\n        <dx-widget name=\"dxSelectBox\" options.bind=\"mandatorOptions\" view-model.ref=\"mandator\"></dx-widget>\n    </div>\n</template>"; });
 define('text!framework/security/views/authgroup/authgroup-list-form.html', ['module'], function(module) { module.exports = "<template>\n    <div class=\"t--margin-top col-xs-12\">\n        <dx-widget name=\"dxDataGrid\" options.bind=\"authgroupsOptions\" view-model.ref=\"authgroups\"></dx-widget>\n    </div>\n</template>"; });
+define('text!framework/forms/styles/styles.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--form-element-flex-box {\n  display: flex;\n}\n.t--form-element-flex-box-with-padding > *:not(:first-child) {\n  margin-left: 12px;\n}\n.t--form-element-image-inline {\n  background-size: contain;\n  background-position: center center;\n  background-repeat: no-repeat;\n}\n.t--form-element-image {\n  max-width: 100%;\n}\n"; });
+define('text!framework/stack-router/views/stack-router/stack-router.html', ['module'], function(module) { module.exports = "<template class=\"t--stack-router\">\n  <require from=\"./stack-router.css\"></require>\n  <require from=\"../view/view\"></require>\n\n  <div \n    class=\"t--stack-router-item\" \n    class.bind=\"item.className\"\n    repeat.for=\"item of router.viewStack\">\n    <view view.bind=\"item\" create-toolbar.bind=\"$parent.createToolbar\"></view>\n  </div>\n</template>"; });
+define('text!framework/stack-router/views/view/view.html', ['module'], function(module) { module.exports = "<template class=\"t--view\" class.bind=\"className\">\n  <require from=\"./view.css\"></require>\n\n  <div class=\"t--toolbar\" if.bind=\"createToolbar\">\n    <dx-widget if.bind=\"toolbarOptions\" name=\"dxToolbar\" options.bind=\"toolbarOptions\"></dx-widget>\n  </div>\n  <div class=\"t--view-content-wrapper\">\n    <div class=\"container-fluid\">\n      <div class=\"row\">\n        <compose\n          view-model.ref=\"view.controller\" \n          view-model.bind=\"view.moduleId\" \n          model.bind=\"view.model\" \n          class=\"t--view-content\"></compose>\n      </div>\n    </div>\n  </div>\n</template>"; });
 define('text!framework/default-ui/views/container/container.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--container {\n  display: block;\n  width: 100vw;\n  height: 100vh;\n}\n.t--toolbar-title {\n  min-width: 220px;\n  padding: 0 12px;\n  font-size: 20px;\n  font-weight: 100;\n  color: white;\n}\n"; });
-define('text!framework/stack-router/views/stack-router/stack-router.html', ['module'], function(module) { module.exports = "<template class=\"t--stack-router\">\r\n  <require from=\"./stack-router.css\"></require>\r\n  <require from=\"../view/view\"></require>\r\n\r\n  <div \r\n    class=\"t--stack-router-item\" \r\n    class.bind=\"item.className\"\r\n    repeat.for=\"item of router.viewStack\">\r\n    <view view.bind=\"item\" create-toolbar.bind=\"$parent.createToolbar\"></view>\r\n  </div>\r\n</template>"; });
-define('text!framework/stack-router/views/view/view.html', ['module'], function(module) { module.exports = "<template class=\"t--view\" class.bind=\"className\">\r\n  <require from=\"./view.css\"></require>\r\n\r\n  <div class=\"t--toolbar\" if.bind=\"createToolbar\">\r\n    <dx-widget if.bind=\"toolbarOptions\" name=\"dxToolbar\" options.bind=\"toolbarOptions\"></dx-widget>\r\n  </div>\r\n  <div class=\"t--view-content-wrapper\">\r\n    <div class=\"container-fluid\">\r\n      <div class=\"row\">\r\n        <compose\r\n          view-model.ref=\"view.controller\" \r\n          view-model.bind=\"view.moduleId\" \r\n          model.bind=\"view.model\" \r\n          class=\"t--view-content\"></compose>\r\n      </div>\r\n    </div>\r\n  </div>\r\n</template>"; });
 define('text!framework/default-ui/views/content/content.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--content {\n  display: block;\n  margin-left: 280px;\n  height: calc(100% - 60px);\n  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n  transition-property: margin-left;\n}\n.t--sidebar-collapsed .t--content {\n  margin-left: 60px;\n}\n.t--view-current {\n  display: block;\n}\n.t--view-history {\n  display: none;\n}\n"; });
 define('text!framework/default-ui/views/header/header.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--header {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  margin-left: 280px;\n  padding: 0 12px;\n  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n  transition-property: margin-left;\n}\n.t--sidebar-collapsed .t--header {\n  margin-left: 60px;\n}\n.t--header-flex {\n  display: flex;\n  width: 100%;\n}\n.t--header-title {\n  flex-grow: 1;\n}\n"; });
-define('text!framework/default-ui/views/sidebar/sidebar.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--sidebar {\n  display: block;\n  position: fixed;\n  top: 0;\n  bottom: 0;\n  left: 0;\n  z-index: 10;\n  width: 280px;\n  background-color: #2a2e35;\n  font-size: 14px;\n  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n  transition-property: left;\n}\n.t--sidebar ul {\n  padding: 0;\n  margin: 0;\n  list-style: none;\n}\n.t--sidebar-collapsed .t--sidebar {\n  left: -220px;\n}\n.t--sidebar-header {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  background-color: #262930;\n  color: white;\n  cursor: pointer;\n}\n.t--sidebar-header-title {\n  flex-grow: 1;\n  font-size: 26px;\n  font-weight: 100;\n  padding: 12px;\n}\n.t--sidebar-header-icon {\n  display: flex;\n  width: 60px;\n  align-items: center;\n  justify-content: center;\n}\n.t--sidebar-item {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  color: lightgray;\n  text-decoration: none;\n}\n.t--sidebar-item:hover {\n  background-color: #17C4BB;\n  color: white;\n}\n.t--sidebar-item-title {\n  flex-grow: 1;\n  padding: 12px;\n}\n.t--sidebar-item-icon {\n  display: flex;\n  width: 60px;\n  align-items: center;\n  justify-content: center;\n}\n.t--sidebar-sub {\n  position: fixed;\n  z-index: -9;\n  left: 280px;\n  min-width: 280px;\n  background-color: #2a2e35;\n  padding: 12px;\n}\n.t--sidebar-sub.au-enter-active {\n  animation: leftFadeIn 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n}\n.t--sidebar-sub-item {\n  color: lightgray;\n  text-decoration: none;\n}\n.t--sidebar-sub-item:hover {\n  color: white;\n}\n"; });
 define('text!framework/default-ui/views/loading-spinner/loading-spinner.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--loading {\n  position: fixed;\n  top: 0;\n  bottom: 0;\n  left: 0;\n  right: 0;\n  font-family: \"Helvetica Neue\", \"Segoe UI\", Helvetica, Verdana, sans-serif;\n  font-size: 60px;\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n  align-items: center;\n  background-color: rgba(255, 255, 255, 0.8);\n  z-index: 9999;\n  opacity: 0;\n  transition-delay: 500ms;\n  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n  transition-property: opacity;\n}\n.t--loading.t--loading-active {\n  opacity: 1;\n}\n.t--loading-spinner {\n  margin: 100px auto;\n  width: 50px;\n  height: 40px;\n  text-align: center;\n  font-size: 10px;\n}\n.t--loading-spinner > div {\n  background-color: #333;\n  height: 100%;\n  width: 6px;\n  display: inline-block;\n  -webkit-animation: animationLoadingSpinner 1.2s infinite ease-in-out;\n  animation: animationLoadingSpinner 1.2s infinite ease-in-out;\n}\n.t--loading-spinner > .t--loading-rect2 {\n  -webkit-animation-delay: -1.1s;\n  animation-delay: -1.1s;\n}\n.t--loading-spinner > .t--loading-rect3 {\n  -webkit-animation-delay: -1s;\n  animation-delay: -1s;\n}\n.t--loading-spinner > .t--loading-rect4 {\n  -webkit-animation-delay: -0.9s;\n  animation-delay: -0.9s;\n}\n.t--loading-spinner > .t--loading-rect5 {\n  -webkit-animation-delay: -0.8s;\n  animation-delay: -0.8s;\n}\n@-webkit-keyframes animationLoading {\n  0% {\n    opacity: 0;\n  }\n  100% {\n    opacity: 1;\n  }\n}\n@keyframes animationLoading {\n  0% {\n    opacity: 0;\n  }\n  100% {\n    opacity: 1;\n  }\n}\n@-webkit-keyframes animationLoadingSpinner {\n  0%,\n  40%,\n  100% {\n    -webkit-transform: scaleY(0.4);\n  }\n  20% {\n    -webkit-transform: scaleY(1);\n  }\n}\n@keyframes animationLoadingSpinner {\n  0%,\n  40%,\n  100% {\n    transform: scaleY(0.4);\n    -webkit-transform: scaleY(0.4);\n  }\n  20% {\n    transform: scaleY(1);\n    -webkit-transform: scaleY(1);\n  }\n}\n"; });
+define('text!framework/default-ui/views/sidebar/sidebar.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--sidebar {\n  display: block;\n  position: fixed;\n  top: 0;\n  bottom: 0;\n  left: 0;\n  z-index: 10;\n  width: 280px;\n  background-color: #2a2e35;\n  font-size: 14px;\n  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n  transition-property: left;\n}\n.t--sidebar ul {\n  padding: 0;\n  margin: 0;\n  list-style: none;\n}\n.t--sidebar-collapsed .t--sidebar {\n  left: -220px;\n}\n.t--sidebar-header {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  background-color: #262930;\n  color: white;\n  cursor: pointer;\n}\n.t--sidebar-header-title {\n  flex-grow: 1;\n  font-size: 26px;\n  font-weight: 100;\n  padding: 12px;\n}\n.t--sidebar-header-icon {\n  display: flex;\n  width: 60px;\n  align-items: center;\n  justify-content: center;\n}\n.t--sidebar-item {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  color: lightgray;\n  text-decoration: none;\n}\n.t--sidebar-item:hover {\n  background-color: #17C4BB;\n  color: white;\n}\n.t--sidebar-item-title {\n  flex-grow: 1;\n  padding: 12px;\n}\n.t--sidebar-item-icon {\n  display: flex;\n  width: 60px;\n  align-items: center;\n  justify-content: center;\n}\n.t--sidebar-sub {\n  position: fixed;\n  z-index: -9;\n  left: 280px;\n  min-width: 280px;\n  background-color: #2a2e35;\n  padding: 12px;\n}\n.t--sidebar-sub.au-enter-active {\n  animation: leftFadeIn 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n}\n.t--sidebar-sub-item {\n  color: lightgray;\n  text-decoration: none;\n}\n.t--sidebar-sub-item:hover {\n  color: white;\n}\n"; });
 define('text!framework/stack-router/views/stack-router/stack-router.css', ['module'], function(module) { module.exports = ".t--stack-router,\n.t--stack-router-item {\n  display: block;\n  height: 100%;\n}\n"; });
 define('text!framework/stack-router/views/view/view.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--view {\n  display: block;\n  position: relative;\n  height: 100%;\n  overflow-x: hidden;\n}\n.t--view-content-wrapper {\n  display: block;\n  height: 100%;\n  overflow-x: hidden;\n  overflow-y: auto;\n}\n.t--view-content {\n  display: table;\n  width: 100%;\n  margin-bottom: 12px;\n  -webkit-overflow-scrolling: touch;\n}\n.t--view-with-toolbar .t--view-content-wrapper {\n  height: calc(100% - 60px);\n}\n"; });
-define('text!framework/default-ui/styles/toolbar.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--container .dx-toolbar {\n  height: 32px;\n  background-color: #D3D3D3;\n}\n.dx-toolbar .dx-toolbar-items-container {\n  height: 32px;\n}\n.t--toolbar-title {\n  font-size: 16px;\n  font-weight: 100;\n  color: black;\n  padding: 0 12px;\n}\n.t--toolbar-item {\n  display: flex;\n  align-items: center;\n  height: 32px;\n  padding: 0 12px;\n  text-decoration: none;\n  cursor: pointer;\n  -webkit-user-select: none;\n}\n.t--toolbar-item i {\n  font-size: 16px;\n}\n.t--toolbar-item:hover {\n  color: white;\n  background-color: #808080;\n}\n.t--toolbar-item-content {\n  display: flex;\n  flex-direction: row;\n}\n.dx-state-disabled .t--toolbar-item {\n  cursor: default;\n  color: lightgray;\n}\n.dx-state-disabled .t--toolbar-item:hover {\n  background-color: inherit;\n}\n.t--toolbar {\n  height: 60px;\n  background-color: #808080;\n  color: white;\n}\n.t--toolbar .dx-toolbar {\n  height: 60px;\n  background-color: transparent;\n}\n.t--toolbar .dx-toolbar .dx-toolbar-items-container {\n  height: 60px;\n}\n.t--toolbar .t--toolbar-title {\n  font-size: 26px;\n  color: white;\n}\n.t--toolbar .t--toolbar-item {\n  height: 60px;\n  flex-direction: column;\n  justify-content: center;\n  align-items: center;\n  text-align: center;\n  color: white;\n}\n.t--toolbar .t--toolbar-item:hover {\n  background-color: #4F4F4F;\n}\n.t--toolbar .t--toolbar-item-content {\n  flex-direction: column;\n}\n"; });
 //# sourceMappingURL=app-bundle.js.map

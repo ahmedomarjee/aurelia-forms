@@ -119,6 +119,10 @@ export class Models {
             getOptions: this.dataSource.createGetOptions(this.expressions, m)
           }).then(r => {
             this.data[m.id] = r;
+            this.onLoaded.fire({
+              model: m,
+              data: r
+            });
           });
 
         return promise;

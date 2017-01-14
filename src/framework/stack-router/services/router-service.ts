@@ -217,6 +217,10 @@ export class RouterService {
     }
   }
   private isRoutePattern(route: string, url: string): any {
+    if (!route) {
+      return null;
+    }
+    
     const routeParts = route.split("/");
     const urlParts = url.split("/");
     const parameters: any = {};

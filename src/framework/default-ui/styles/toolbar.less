@@ -1,7 +1,5 @@
 @import "../../base/styles/variables.less";
-
 @inlineToolbarHeight: 32px;
-
 .t--container {
   .dx-toolbar {
     height: @inlineToolbarHeight;
@@ -36,19 +34,10 @@
     background-color: #808080;
   }
 }
+
 .t--toolbar-item-content {
   display: flex;
   flex-direction: row;
-}
-
-.dx-state-disabled {
-  .t--toolbar-item {
-    cursor: default;
-    color: lightgray;
-    &:hover {
-      background-color: inherit;
-    }
-  }
 }
 
 .t--toolbar {
@@ -59,9 +48,17 @@
     height: @toolbarHeight;
     background-color: transparent;
   }
-
   .dx-toolbar .dx-toolbar-items-container {
     height: @toolbarHeight;
+  }
+  .dx-state-disabled {
+    .t--toolbar-item {
+      cursor: default;
+      color: lightgray;
+      &:hover {
+        background-color: inherit;
+      }
+    }
   }
   .t--toolbar-title {
     font-size: 26px;

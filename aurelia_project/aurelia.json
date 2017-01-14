@@ -102,6 +102,7 @@
           "node_modules/requirejs/require.js"
         ],
         "dependencies": [
+          "tslib",
           "aurelia-binding",
           "aurelia-bootstrapper",
           "aurelia-dependency-injection",
