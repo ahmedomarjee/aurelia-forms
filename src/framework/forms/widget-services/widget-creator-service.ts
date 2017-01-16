@@ -31,7 +31,7 @@ export class WidgetCreatorService {
   addColorBox(form: FormBase, options: WidgetOptions.IColorBoxOptions): DevExpress.ui.dxColorBoxOptions {
     return this.simpleWidgetCreator.addColorBox(form, options);
   }
-  addCommand(form: FormBase, options: WidgetOptions.ICommandOptions): DevExpress.ui.dxButtonOptions {
+  addCommand(form: FormBase, options: WidgetOptions.ICommandElementOptions): DevExpress.ui.dxButtonOptions {
     return this.simpleWidgetCreator.addCommand(form, options);
   }
   addDateBox(form: FormBase, options: WidgetOptions.IDateBoxOptions): DevExpress.ui.dxDateBoxOptions {

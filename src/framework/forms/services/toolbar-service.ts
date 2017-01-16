@@ -13,7 +13,11 @@ import {
 import {
   CommandService
 } from "../services/command-service";
+import {
+  DxTemplateService
+} from "../../dx/services/dx-template-service";
 import * as Interfaces from "../interfaces/export";
+import * as toolbarButtonTemplate from "text!../templates/toolbar-button-template.html";
 
 @autoinject
 export class ToolbarService {
@@ -21,13 +25,14 @@ export class ToolbarService {
 
   constructor(
     private command: CommandService,
-    private localization: LocalizationService
+    private localization: LocalizationService,
+    private dxTemplate: DxTemplateService
   ) { }
 
   createFormToolbarOptions(form: FormBase): DevExpress.ui.dxToolbarOptions {
     let component: DevExpress.ui.dxToolbar;
 
-    const options = this.createToolbarOptions(form.expressions, form.title, form.commands.getCommands(), (c) => {
+    const options = this.createToolbarOptions(form, form.expressions, form.title, form.commands.getCommands(), (c) => {
       component = c;
     });
 
@@ -48,7 +53,7 @@ export class ToolbarService {
 
     return options;
   }
-  createToolbarOptions(expressionProvider: IExpressionProvider, title: string, commands: Interfaces.ICommandData[], componentCreatedCallback?: {(component: DevExpress.ui.dxToolbar)}): DevExpress.ui.dxToolbarOptions {
+  createToolbarOptions(bindingContext: any, expressionProvider: IExpressionProvider, title: string, commands: Interfaces.ICommandData[], componentCreatedCallback?: {(component: DevExpress.ui.dxToolbar)}): DevExpress.ui.dxToolbarOptions {
     let component: DevExpress.ui.dxToolbar
 
     const options: DevExpress.ui.dxToolbarOptions = {
@@ -62,7 +67,7 @@ export class ToolbarService {
     };
 
     const items = commands
-      .map(i => this.createToolbarItem(expressionProvider, () => component, i));
+      .map(i => this.createToolbarItem(bindingContext, expressionProvider, () => component, i));
 
     const titleItem: DevExpress.ui.dxPopupToolbarItemOptions = {
       html: this.createTitleHtml(title),
@@ -76,12 +81,21 @@ export class ToolbarService {
 
     return options;
   }
-  createToolbarItem(expressionProvider: IExpressionProvider, getToolbar: {(): DevExpress.ui.dxToolbar}, command: Interfaces.ICommandData): DevExpress.ui.dxPopupToolbarItemOptions {
+  createToolbarItem(bindingContext: any, expressionProvider: IExpressionProvider, getToolbar: {(): DevExpress.ui.dxToolbar}, command: Interfaces.ICommandData): DevExpress.ui.dxPopupToolbarItemOptions {
     const item: DevExpress.ui.dxPopupToolbarItemOptions = {};
 
     this.setEnabled(expressionProvider, getToolbar, command, item);
     this.setVisible(expressionProvider, getToolbar, command, item);
-    item.template = "global:toolbar-button-template";
+    item.template = (model, dummy, container) => {
+      return this.dxTemplate.render(
+        <string>toolbarButtonTemplate,
+        container,
+        null,
+        bindingContext,
+        model
+      );
+    };
+    
     item.location = command.location || "before";
     (<any>item).locateInMenu = command.locateInMenu;
     (<any>item).command = command;

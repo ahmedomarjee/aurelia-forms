@@ -3,10 +3,16 @@
     <model id="$m_A" web-api-action="base/Security/Authgroup" key="$id" post-on-save="true" />
   </models>
   <content>
-    <text id="info">Hallo ${$m_A.Name}</text>
+    <text id="info" on-click="showPopup('popup')">Hallo ${$m_A.Name}</text>
     <data-context data-context="$m_A">
       <editor id="name" bind-to="Name" c-md="6" />
       <editor id="mandator" bind-to="IdMandator" c-md="6" />
     </data-context>
+
+    <popup id="popup" caption="Ich bin eine Überschrift">
+      <content>
+        <text id="popupText">Das ist ein Test</text>
+      </content>
+    </popup>
   </content>
 </form>

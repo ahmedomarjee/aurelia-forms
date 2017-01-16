@@ -15,7 +15,9 @@
       ]
     },
     "name_caption": "Bezeichnung",
-    "mandator_caption": "Mandant"
+    "mandator_caption": "Mandant",
+    "popup_caption": "Ich bin eine Überschrift",
+    "popuptext_text": "Das ist ein Test"
   },
   "authgroup-list": {
     "authgroup-list_caption": "Berechtigungsgruppen",

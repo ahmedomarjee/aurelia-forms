@@ -26,32 +26,32 @@ export class DefaultCommandsService {
     private permission: PermissionService
   ) {}
 
-  getSaveCommand(form: FormBase): Interfaces.ICommandData {
+  getFormSaveCommand(form: FormBase): Interfaces.ICommandData {
     const cmd: Interfaces.ICommandData = {
       id: "$save",
       icon: "floppy-o",
       title: "base.save",
-      isVisible: this.canSave(form),
-      isEnabled: this.canSaveNow(form),
+      isVisible: form.canSave(),
+      isEnabled: form.canSaveNow(),
       execute() {
         form.save();
       }
     };
 
     form.models.onLoaded.register(() => {
-      cmd.isEnabled = this.canSaveNow(form);
+      cmd.isEnabled = form.canSaveNow();
       return Promise.resolve();
     });
 
     return cmd;
   }
-  getDeleteCommand(form: FormBase): Interfaces.ICommandData {
+  getFormDeleteCommand(form: FormBase): Interfaces.ICommandData {
     const cmd: Interfaces.ICommandData = {
       id: "$delete",
       icon: "times",
       title: "base.delete",
-      isVisible: this.canSave(form),
-      isEnabled: this.canDelete(form),
+      isVisible: form.canSave(),
+      isEnabled: form.canDeleteNow(),
       execute: () => {
         DevExpress.ui.dialog.confirm(
           this.localization.translate(form.expressions, "base.sure_delete_question"),
@@ -65,16 +65,28 @@ export class DefaultCommandsService {
     };
 
     form.models.onLoaded.register(() => {
-      cmd.isVisible = this.canSave(form);
-      cmd.isEnabled = this.canDelete(form);
+      cmd.isVisible = form.canSave();
+      cmd.isEnabled = form.canDeleteNow();
       return Promise.resolve();
     });
 
     return cmd;
   }
-  getAddCommand(form: FormBase, options: IListOptions): Interfaces.ICommandData {
+  getFormGoBackCommand(form: FormBase): Interfaces.ICommandData {
     const cmd: Interfaces.ICommandData = {
-      id: "$cmdAdd",
+      id: "$goBack",
+      icon: "arrow-left",
+      isVisible: this.router.viewStack.length > 1,
+      execute() {
+        history.back();
+      }
+    }
+
+    return cmd;
+  }
+  getListAddCommand(form: FormBase, options: IListOptions): Interfaces.ICommandData {
+    const cmd: Interfaces.ICommandData = {
+      id: "$add",
       icon: "plus",
       title: "base.add",
       isVisible: false,
@@ -99,66 +111,26 @@ export class DefaultCommandsService {
 
     return cmd;
   }
-  getGoBackCommand(form: FormBase): Interfaces.ICommandData {
-    const cmd: Interfaces.ICommandData = {
-      id: "$cmdGoBack",
-      icon: "arrow-left",
-      isVisible: this.router.viewStack.length > 1,
-      execute() {
-        history.back();
-      }
-    }
-
-    return cmd;
-  }
   getListCommands(form: FormBase, options: IListOptions): Interfaces.ICommandData[] {
     const result: Interfaces.ICommandData[] = [];
 
-    const addCmd = this.getAddCommand(form, options);
+    const addCmd = this.getListAddCommand(form, options);
     if (addCmd) {
       result.push(addCmd);
     }
 
     return result;
   }
+  getCloseCommand(action: {(): void}) {
+    const cmd: Interfaces.ICommandData = {
+      id: "$close",
+      icon: "times",
+      location: "after",
+      execute() {
+        action();
+      }
+    }
 
-  private canSave(form: FormBase): boolean {
-    return form
-      .getFormsInclOwn()
-      .some(i => i.models.getModels().some(m => {
-        if (!m.postOnSave) {
-          return false;
-        }
-
-        return true;
-      }));
-  }
-  private canSaveNow(form: FormBase): boolean {
-    return form
-      .getFormsInclOwn()
-      .some(i => i.models.getModels().some(m => {
-        if (!m.postOnSave) {
-          return false;
-        }
-        if (!form.models.data[m.id] || form.models.data[m.id][m.keyProperty] === undefined) {
-          return false;
-        }
-
-        return true;
-      }));
-  }
-  private canDelete(form: FormBase): boolean {
-    return form
-      .getFormsInclOwn()
-      .some(i => i.models.getModels().some(m => {
-        if (!m.postOnSave) {
-          return false;
-        }
-        if (!form.models.data[m.id] || !form.models.data[m.id][m.keyProperty]) {
-          return false;
-        }
-
-        return true;
-      }));
+    return cmd;
   }
 }

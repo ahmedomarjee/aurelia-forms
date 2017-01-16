@@ -1,4 +1,14 @@
 <template>
+    <require from="./authgroup-edit-form"></require>
+    <dx-widget name="dxPopup" options.bind="editOptions" view-model.ref="edit">
+        <dx-template name="contentTemplate">
+            <div class="container-fluid">
+                <div class="row">
+                    <authgroup-edit-form view-model.ref="editContent" is-edit-form="true"></authgroup-edit-form>
+                </div>
+            </div>
+        </dx-template>
+    </dx-widget>
     <div class="t--margin-top col-xs-12">
         <dx-widget name="dxDataGrid" options.bind="authgroupsOptions" view-model.ref="authgroups"></dx-widget>
     </div>

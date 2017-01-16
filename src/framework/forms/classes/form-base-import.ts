@@ -21,6 +21,9 @@ import {
   Expressions
 } from "./expressions";
 import {
+  EditPopups
+} from "./edit-popups";
+import {
   NestedForms
 } from "./nested-forms";
 import {
@@ -69,6 +72,7 @@ export class FormBaseImport {
     public variables: Variables,
     public functions: Functions,
     public commands: Commands,
+    public editPopups: EditPopups,
     public expressions: Expressions,
     public globalization: GlobalizationService,
     public localization: LocalizationService,

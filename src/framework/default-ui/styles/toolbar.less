@@ -1,15 +1,5 @@
 @import "../../base/styles/variables.less";
 @inlineToolbarHeight: 32px;
-.t--container {
-  .dx-toolbar {
-    height: @inlineToolbarHeight;
-    background-color: #D3D3D3;
-  }
-}
-
-.dx-toolbar .dx-toolbar-items-container {
-  height: @inlineToolbarHeight;
-}
 
 .t--toolbar-title {
   font-size: 16px;
@@ -40,17 +30,35 @@
   flex-direction: row;
 }
 
-.t--toolbar {
-  height: @toolbarHeight;
-  background-color: #808080;
-  color: white;
+.t--container .dx-toolbar {
+  height: @inlineToolbarHeight;
+  background-color: #D3D3D3;
+
+  .dx-toolbar-items-container {
+    height: @inlineToolbarHeight;
+  }
+}
+
+.t--toolbar,
+.dx-popup-wrapper:not(.dx-dialog) > .dx-popup-normal {
+  &.dx-popup-normal {
+    .dx-toolbar {
+      margin: @padding;
+      width:~"calc(100% - @{padding} * 2)";
+      box-sizing: content-box;
+    }
+  }
   .dx-toolbar {
+    padding: 0;
     height: @toolbarHeight;
-    background-color: transparent;
+    background-color: #808080;
+    color: white;
+   
+    .dx-toolbar-items-container {
+      height: @toolbarHeight;
+    }
   }
-  .dx-toolbar .dx-toolbar-items-container {
-    height: @toolbarHeight;
-  }
+  
   .dx-state-disabled {
     .t--toolbar-item {
       cursor: default;

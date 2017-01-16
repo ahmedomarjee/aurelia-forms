@@ -3,5 +3,6 @@ import { FrameworkConfiguration } from "aurelia-framework";
 export function configure(config: FrameworkConfiguration) {
   config
     .globalResources("./styles/styles.css")
-    .globalResources("./styles/toolbar.css");
+    .globalResources("./styles/toolbar.css")
+    .globalResources("./styles/popup.css");
 }

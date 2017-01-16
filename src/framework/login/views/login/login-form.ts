@@ -6,9 +6,10 @@ import {
 @fwx.autoinject
 export class LoginForm extends fwx.FormBase {
     constructor(
+        element: Element,
         formBaseImport: fwx.FormBaseImport,
         private $f: LoginFuncs) {
-        super(formBaseImport);
+        super(element, formBaseImport);
         this.id = "login-form";
         this.title = "login-form.login-form_caption";
         this.addModel({

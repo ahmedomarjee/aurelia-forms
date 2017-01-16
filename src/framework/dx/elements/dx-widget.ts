@@ -21,6 +21,7 @@ export class DxWidget {
   @bindable options: any;
   @bindable validator: any;
 
+  owningView: any;
   instance: any;
   templates = {};
   bindingContext: any;
@@ -34,6 +35,8 @@ export class DxWidget {
   }
 
   created(owningView: any, myView: any) {
+    this.owningView = owningView;
+
     this.extractTemplates();
   }
   bind(bindingContext: any, overrideContext: OverrideContext) {
@@ -87,29 +90,19 @@ export class DxWidget {
 
         this.templates[name] = {
           render: (renderData) => {
-            const newItem = item.cloneNode(true)
-            const newElement = $(newItem).appendTo(renderData.container);
-
-            let model: any = null;
-            if (renderData.model) {
-              model = {};
-              model[alias] = renderData.model;
-            }
-
-            const result = this.templatingEngine.enhance({
-              element: newElement.get(0),
-              bindingContext: this.bindingContext,
-              overrideContext: model
-            });
-            result.attached();
-
-            return $(newElement);
+            return this.dxTemplate.render(
+              item,
+              renderData.container,
+              this.owningView.resources,
+              this.bindingContext,
+              renderData.model
+            );
           }
         };
         $(item).remove();
       });
 
-      Object.assign(this.templates, this.dxTemplate.getTemplates(this.bindingContext));
+      Object.assign(this.templates, this.dxTemplate.getTemplates(this.bindingContext, this.owningView.resources));
   }
   private registerBindings(): void {
     if (!this.options.bindingOptions) {

@@ -4,6 +4,7 @@ export * from "./accordion-options";
 export * from "./calendar-options";
 export * from "./check-box-options";
 export * from "./color-box-options";
+export * from "./command-element-options";
 export * from "./command-options";
 export * from "./data-grid-options";
 export * from "./data-grid-column-options";

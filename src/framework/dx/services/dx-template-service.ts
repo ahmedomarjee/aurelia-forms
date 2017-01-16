@@ -15,34 +15,54 @@ export class DxTemplateService {
     this.templates[key] = template;
   }
 
-  getTemplates(bindingContext: any): any {
+  getTemplates(bindingContext: any, resources: any): any {
     const result = {};
 
     for (let templateKey in this.templates) {
       result[templateKey] = {
         render: (renderData) => {
-          const newItem = document.createElement("div");
-          newItem.innerHTML = this.templates[templateKey];
-          const newElement = $(newItem).appendTo(renderData.container);
-
-          let model: any = null;
-          if (renderData.model) {
-            model = {};
-            model["data"] = renderData.model;
-          }
-
-          const result = this.templatingEngine.enhance({
-            element: newElement.get(0),
-            bindingContext: bindingContext,
-            overrideContext: model
-          });
-          result.attached();
-
-          return $(newElement);
+          return this.render(
+            this.templates[templateKey],
+            renderData.container,
+            resources,
+            bindingContext,
+            renderData.model
+          );
         }
       };
     }
 
     return result;
+  }
+
+  render(template: string | Element, container: any, resources: any, bindingContext: any, model?: any): any {
+    let newItem: Element | Node;
+
+    if (typeof template === "string") {
+      newItem = document.createElement("div");
+      (<Element>newItem).innerHTML = template;
+    } else {
+      newItem = template.cloneNode(true)
+    }
+    
+    const newElement = $(newItem).appendTo(container);
+
+    if (model) {
+      model = {
+        data: model
+      };
+    } else {
+      model = {};
+    }
+
+    const result = this.templatingEngine.enhance({
+      element: newElement.get(0),
+      bindingContext: bindingContext,
+      overrideContext: model,
+      resources: resources
+    });
+    result.attached();
+
+    return $(newElement);
   }
 }

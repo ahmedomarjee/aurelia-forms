@@ -8,13 +8,6 @@
     transform: translateX(0);
   }
 }
-.t--container .dx-toolbar {
-  height: 32px;
-  background-color: #D3D3D3;
-}
-.dx-toolbar .dx-toolbar-items-container {
-  height: 32px;
-}
 .t--toolbar-title {
   font-size: 16px;
   font-weight: 100;
@@ -41,30 +34,46 @@
   display: flex;
   flex-direction: row;
 }
-.dx-state-disabled .t--toolbar-item {
-  cursor: default;
-  color: lightgray;
+.t--container .dx-toolbar {
+  height: 32px;
+  background-color: #D3D3D3;
 }
-.dx-state-disabled .t--toolbar-item:hover {
-  background-color: inherit;
+.t--container .dx-toolbar .dx-toolbar-items-container {
+  height: 32px;
 }
-.t--toolbar {
+.t--toolbar.dx-popup-normal .dx-toolbar,
+.dx-popup-wrapper:not(.dx-dialog) > .dx-popup-normal.dx-popup-normal .dx-toolbar {
+  margin: 12px;
+  width: calc(100% - 12px * 2);
+  box-sizing: content-box;
+}
+.t--toolbar .dx-toolbar,
+.dx-popup-wrapper:not(.dx-dialog) > .dx-popup-normal .dx-toolbar {
+  padding: 0;
   height: 60px;
   background-color: #808080;
   color: white;
 }
-.t--toolbar .dx-toolbar {
-  height: 60px;
-  background-color: transparent;
-}
-.t--toolbar .dx-toolbar .dx-toolbar-items-container {
+.t--toolbar .dx-toolbar .dx-toolbar-items-container,
+.dx-popup-wrapper:not(.dx-dialog) > .dx-popup-normal .dx-toolbar .dx-toolbar-items-container {
   height: 60px;
 }
-.t--toolbar .t--toolbar-title {
+.t--toolbar .dx-state-disabled .t--toolbar-item,
+.dx-popup-wrapper:not(.dx-dialog) > .dx-popup-normal .dx-state-disabled .t--toolbar-item {
+  cursor: default;
+  color: lightgray;
+}
+.t--toolbar .dx-state-disabled .t--toolbar-item:hover,
+.dx-popup-wrapper:not(.dx-dialog) > .dx-popup-normal .dx-state-disabled .t--toolbar-item:hover {
+  background-color: inherit;
+}
+.t--toolbar .t--toolbar-title,
+.dx-popup-wrapper:not(.dx-dialog) > .dx-popup-normal .t--toolbar-title {
   font-size: 26px;
   color: white;
 }
-.t--toolbar .t--toolbar-item {
+.t--toolbar .t--toolbar-item,
+.dx-popup-wrapper:not(.dx-dialog) > .dx-popup-normal .t--toolbar-item {
   height: 60px;
   flex-direction: column;
   justify-content: center;
@@ -72,9 +81,11 @@
   text-align: center;
   color: white;
 }
-.t--toolbar .t--toolbar-item:hover {
+.t--toolbar .t--toolbar-item:hover,
+.dx-popup-wrapper:not(.dx-dialog) > .dx-popup-normal .t--toolbar-item:hover {
   background-color: #4F4F4F;
 }
-.t--toolbar .t--toolbar-item-content {
+.t--toolbar .t--toolbar-item-content,
+.dx-popup-wrapper:not(.dx-dialog) > .dx-popup-normal .t--toolbar-item-content {
   flex-direction: column;
 }

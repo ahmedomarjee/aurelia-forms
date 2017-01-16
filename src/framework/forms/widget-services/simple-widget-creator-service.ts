@@ -8,6 +8,9 @@ import {
   ToolbarService
 } from "../services/toolbar-service";
 import {
+  DefaultCommandsService
+} from "../services/default-commands-service";
+import {
   DataSourceService,
   GlobalizationService,
   LocalizationService
@@ -27,7 +30,8 @@ export class SimpleWidgetCreatorService {
     private dataSource: DataSourceService,
     private globalization: GlobalizationService,
     private localization: LocalizationService,
-    private toolbar: ToolbarService
+    private toolbar: ToolbarService,
+    private defaultCommands: DefaultCommandsService
   ) { }
 
   addAccordion(form: FormBase, options: WidgetOptions.IAccordionOptions): DevExpress.ui.dxAccordionOptions {
@@ -63,7 +67,7 @@ export class SimpleWidgetCreatorService {
 
     return editorOptions;
   }
-  addCommand(form: FormBase, options: WidgetOptions.ICommandOptions): DevExpress.ui.dxButtonOptions {
+  addCommand(form: FormBase, options: WidgetOptions.ICommandElementOptions): DevExpress.ui.dxButtonOptions {
     let command: ICommandData;
 
     if (options.binding.dataContext) {
@@ -145,7 +149,30 @@ export class SimpleWidgetCreatorService {
     return widgetOptions;
   }
   addPopup(form: FormBase, options: WidgetOptions.IPopupOptions): DevExpress.ui.dxPopupOptions {
-    const widgetOptions: DevExpress.ui.dxPopoverOptions = this.baseWidgetCreator.createWidgetOptions(form, options);
+    const widgetOptions: DevExpress.ui.dxPopupOptions = this.baseWidgetCreator.createWidgetOptions(form, options);
+
+    widgetOptions.showCloseButton = false;
+    widgetOptions.contentTemplate = "contentTemplate";
+
+    widgetOptions.animation = {
+        show: {
+            type: "slide",
+            from: { opacity: 0, left: "+=30" },
+            to: { opacity: 1 },
+            duration: 300,
+            easing: "cubic-bezier(.62,.28,.23,.99)"
+        }
+    };
+
+    widgetOptions.onShowing = (e) => {
+      form.popupStack.push(e.component);
+    };
+    widgetOptions.onHidden = (e) => {
+      const index = form.popupStack.indexOf(e.component);
+      if (index >= 0) {
+        form.popupStack.splice(index, 1);
+      }
+    };
 
     if (options.height) {
       widgetOptions.height = options.height;
@@ -154,7 +181,20 @@ export class SimpleWidgetCreatorService {
       widgetOptions.maxWidth = options.maxWidth;
     }
 
-    widgetOptions.toolbarItems = this.toolbar.createToolbarOptions(form.expressions, options.caption, []).items;
+    var commands: ICommandData[] = [];
+    commands.push(this.defaultCommands.getCloseCommand(() => {
+      (<DevExpress.ui.dxPopover>form[options.id].instance).hide();
+    }));
+    commands.push(...options.commands.map(c => {
+      const cmd = form.expressions.evaluateExpression(c.binding.bindToFQ);
+      if (!cmd) {
+        throw new Error(`No command for ${c.binding.bindToFQ} found`);
+      }
+
+      return cmd;
+    }));
+
+    widgetOptions.toolbarItems = this.toolbar.createToolbarOptions(form, form.expressions, options.caption, commands).items;
 
     return widgetOptions;
   }

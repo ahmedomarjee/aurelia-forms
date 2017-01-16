@@ -1,7 +1,6 @@
 import {
   autoinject,
-  singleton,
-  Container
+  singleton
 } from "aurelia-framework";
 import {
   RestService, CustomEvent

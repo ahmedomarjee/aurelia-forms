@@ -1,5 +1,6 @@
 import * as Interfaces from "../interfaces/export";
 import {
+  bindable,
   BindingEngine,
   Expression,
   Container,
@@ -20,6 +21,9 @@ import {
 import {
   NestedForms
 } from "./nested-forms";
+import {
+  EditPopups
+} from "./edit-popups";
 import {
   CommandServerData
 } from "./command-server-data";
@@ -51,14 +55,21 @@ import {
 
 export class FormBase {
   constructor(
+    private element: Element,
     private formBaseImport: FormBaseImport
   ) {
+    this.isEditForm = element.getAttribute("is-edit-form") === "true";
+    this.isNestedForm = element.getAttribute("is-nested-form") === "true";
+    
+    this.popupStack = [];
+
     this.widgetCreator = formBaseImport.widgetCreator;
     this.command = formBaseImport.command;
     this.toolbar = formBaseImport.toolbar;
     this.models = formBaseImport.models;
     this.variables = formBaseImport.variables;
     this.nestedForms = formBaseImport.nestedForms;
+    this.editPopups = formBaseImport.editPopups;
     this.functions = formBaseImport.functions;
     this.expressions = formBaseImport.expressions;
     this.commands = formBaseImport.commands;
@@ -74,11 +85,18 @@ export class FormBase {
     this.functions.registerForm(this);
     this.commands.registerForm(this);
     this.expressions.registerForm(this);
+    this.nestedForms.registerForm(this);
+    this.editPopups.registerForm(this);
   }
 
   toolbarOptions: DevExpress.ui.dxToolbarOptions;
   id: string;
   title: string;
+
+  isEditForm: boolean;
+  isNestedForm: boolean;
+
+  popupStack: DevExpress.ui.dxPopup[];
 
   widgetCreator: WidgetCreatorService;
   command: CommandService;
@@ -86,6 +104,7 @@ export class FormBase {
   models: Models;
   variables: Variables;
   nestedForms: NestedForms;
+  editPopups: EditPopups;
   functions: Functions;
   commands: Commands;
   expressions: Expressions;
@@ -96,6 +115,12 @@ export class FormBase {
   onFormReady: CustomEvent<IFormReadyEventArgs>;
   onFormReactivated: CustomEvent<IFormReadyEventArgs>;
 
+  owningView: any;
+
+  created(owningView: any, myView: any) {
+    this.owningView = owningView;
+    this.toolbarOptions = this.toolbar.createFormToolbarOptions(this);
+  }
   attached() {
     const promise = this.onFormAttached.fire({
       form: this
@@ -128,6 +153,15 @@ export class FormBase {
     return [this, ...this.nestedForms.getNestedForms()];
   }
 
+  showPopup(id: string) {
+    if (!this[id]) {
+      throw new Error(`No popup with id ${id} found`);
+    }
+
+    const popup: DevExpress.ui.dxPopup = this[id].instance;
+    popup.show();
+  }
+
   executeCommand(id: string) {
     const command = this.commands
       .getCommands()
@@ -139,7 +173,36 @@ export class FormBase {
 
     this.command.execute(this.expressions, command);
   }
+  canSave(): boolean {
+    return this
+      .getFormsInclOwn()
+      .some(i => i.models.getModels().some(m => {
+        if (!m.postOnSave) {
+          return false;
+        }
+
+        return true;
+      }));
+  }
+  canSaveNow(): boolean {
+    return this
+      .getFormsInclOwn()
+      .some(i => i.models.getModels().some(m => {
+        if (!m.postOnSave) {
+          return false;
+        }
+        if (!this.models.data[m.id] || this.models.data[m.id][m.keyProperty] === undefined) {
+          return false;
+        }
+
+        return true;
+      }));
+  }  
   save(): Promise<any> {
+    if (!this.canSave() || !this.canSaveNow()) {
+      return Promise.resolve();
+    }
+
     return this.models.save()
       .then(() => {
         DevExpress.ui.notify("Daten wurden erfolgreich gespeichert", "SUCCESS", 3000);
@@ -148,7 +211,26 @@ export class FormBase {
         this.formBaseImport.error.showAndLogError(r);
       });
   }
+
+  canDeleteNow(): boolean {
+    return this
+      .getFormsInclOwn()
+      .some(i => i.models.getModels().some(m => {
+        if (!m.postOnSave) {
+          return false;
+        }
+        if (!this.models.data[m.id] || !this.models.data[m.id][m.keyProperty]) {
+          return false;
+        }
+
+        return true;
+      }));
+  }
   delete(): Promise<any> {
+    if (!this.canSave() || !this.canDeleteNow()) {
+      return Promise.resolve();
+    }
+
     return this.models.delete()
       .then(() => {
         history.back();
@@ -157,6 +239,7 @@ export class FormBase {
         this.formBaseImport.error.showAndLogError(r);
       });
   }
+
   translate(key: string): string {
     return this.localization.translate(this.expressions, key);
   }
@@ -180,7 +263,7 @@ export class FormBase {
     this.nestedForms.addInfo(id);
   }
   protected addEditPopup(editPopup: Interfaces.IEditPopup): void {
-
+    this.editPopups.addInfo(editPopup);
   }
   protected addMapping(mapping: Interfaces.IMapping): void {
 
@@ -194,10 +277,18 @@ export class FormBase {
     this.command.execute(this.expressions, command);
   }
   protected onConstructionFinished(): void {
-    this.commands.addCommand(this.formBaseImport.defaultCommands.getGoBackCommand(this));
-    this.commands.addCommand(this.formBaseImport.defaultCommands.getSaveCommand(this));
-    this.commands.addCommand(this.formBaseImport.defaultCommands.getDeleteCommand(this));
+    if (!this.isNestedForm) {
+      this.commands.addCommand(this.formBaseImport.defaultCommands.getFormGoBackCommand(this));
+      this.commands.addCommand(this.formBaseImport.defaultCommands.getFormSaveCommand(this));
+      this.commands.addCommand(this.formBaseImport.defaultCommands.getFormDeleteCommand(this));
+    }
 
-    this.toolbarOptions = this.toolbar.createFormToolbarOptions(this);
+    if (this.isEditForm) {
+      this.commands.addCommand(this.formBaseImport.defaultCommands.getCloseCommand(() => {
+        const index = this.owningView.bindingContext.popupStack.length - 1;
+        const current: DevExpress.ui.dxPopup = this.owningView.bindingContext.popupStack[index];
+        current.hide();
+      }));
+    }
   }
 }

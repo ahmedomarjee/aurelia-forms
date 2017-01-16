@@ -3,8 +3,9 @@ import * as fwx from "../../../forms/form-export";
 @fwx.autoinject
 export class AuthgroupListForm extends fwx.FormBase {
     constructor(
+        element: Element,
         formBaseImport: fwx.FormBaseImport) {
-        super(formBaseImport);
+        super(element, formBaseImport);
         this.id = "authgroup-list";
         this.title = "authgroup-list.authgroup-list_caption";
         this.addModel({
@@ -15,6 +16,15 @@ export class AuthgroupListForm extends fwx.FormBase {
             },
             "keyProperty": "Id",
             "filters": []
+        });
+        this.addEditPopup({
+            "idContent": "editContent",
+            "commands": [],
+            "id": "edit",
+            "options": {
+                "optionsName": "editOptions",
+                "optionsNameFQ": "editOptions"
+            }
         });
         this.widgetCreator.addDataGrid(this, {
             "columns": [{
@@ -37,7 +47,7 @@ export class AuthgroupListForm extends fwx.FormBase {
                 "bindToFQ": "models.data.$m_A."
             },
             "dataModel": "$m_A",
-            "editUrl": "security/authgroup",
+            "idEditPopup": "edit",
             "addShortscuts": true,
             "isMainList": true,
             "edits": [],

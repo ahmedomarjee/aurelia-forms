@@ -114,6 +114,11 @@ export class DataGridWidgetCreatorService {
         });
       }
     }
+    if (options.idEditPopup) {
+      clickActions.push(e => {
+        form.editPopups.show(options.idEditPopup);
+      });
+    }
 
     if (clickActions.length > 0) {
       dataGridOptions.onRowClick = (e) => {
@@ -150,7 +155,7 @@ export class DataGridWidgetCreatorService {
       const commands = this.defaultCommands.getListCommands(form, options);
 
       if (options.createToolbar) {
-        form[options.optionsToolbar.optionsName] = this.toolbar.createToolbarOptions(form.expressions, options.caption, commands);
+        form[options.optionsToolbar.optionsName] = this.toolbar.createToolbarOptions(form, form.expressions, options.caption, commands);
       } else if (options.isMainList) {
         commands.forEach(c => form.commands.addCommand(c));
       }
