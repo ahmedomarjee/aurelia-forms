@@ -7,4 +7,5 @@ export interface IEditPopup extends IPopupOptions {
   idContent: string;
   height?: string;
   maxWidth?: string;
+  isInitialized?: boolean;
 }

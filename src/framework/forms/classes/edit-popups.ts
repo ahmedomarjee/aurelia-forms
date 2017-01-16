@@ -26,13 +26,6 @@ export class EditPopups {
 
   addInfo(editPopup: Interfaces.IEditPopup) {
     this.editPopups.push(editPopup);
-
-    //TODO Animation funktioniert so nicht.
-    this.form.expressions.createObserver(editPopup.idContent, (newValue: FormBase) => {
-      const popup: DevExpress.ui.dxPopup = this.form[editPopup.id].instance;
-      popup.option("toolbarItems", this.toolbar.createFormToolbarOptions(newValue).items);
-    });
-
     this.createOptions(editPopup);
   }
   show(id: string) {
@@ -42,7 +35,18 @@ export class EditPopups {
       throw new Error(`No edit popup with id ${id} found`);
     }
 
-    (<DevExpress.ui.dxPopup>this.form[editPopup.id].instance).show();
+    const instance: DevExpress.ui.dxPopup = this.form[editPopup.id].instance;
+
+    if (!editPopup.isInitialized) {
+      editPopup.isInitialized = true;
+
+      instance.option("deferRendering", false);
+
+      const popup: DevExpress.ui.dxPopup = this.form[editPopup.id].instance;
+      popup.option("toolbarItems", this.toolbar.createFormToolbarOptions(this.form[editPopup.idContent]).items);
+    }
+
+    instance.show();
   }
 
   registerForm(form: FormBase) {

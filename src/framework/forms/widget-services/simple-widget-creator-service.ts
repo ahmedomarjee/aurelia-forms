@@ -155,13 +155,13 @@ export class SimpleWidgetCreatorService {
     widgetOptions.contentTemplate = "contentTemplate";
 
     widgetOptions.animation = {
-        show: {
-            type: "slide",
-            from: { opacity: 0, left: "+=30" },
-            to: { opacity: 1 },
-            duration: 300,
-            easing: "cubic-bezier(.62,.28,.23,.99)"
-        }
+      show: {
+        type: "slide",
+        from: { opacity: 0, left: "+=30" },
+        to: { opacity: 1 },
+        duration: 300,
+        easing: "cubic-bezier(.62,.28,.23,.99)"
+      }
     };
 
     widgetOptions.onShowing = (e) => {
