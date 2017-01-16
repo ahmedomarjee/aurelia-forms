@@ -24,7 +24,17 @@ export class AuthgroupListForm extends fwx.FormBase {
             "options": {
                 "optionsName": "editOptions",
                 "optionsNameFQ": "editOptions"
-            }
+            },
+            "mappings": [
+                {
+                    binding: {
+                        bindToFQ: "models.data.$m_A.Id",
+                        bindTo: "Id",
+                        dataContext: "$m_A"
+                    },
+                    to: "$id"
+                }
+            ]
         });
         this.widgetCreator.addDataGrid(this, {
             "columns": [{

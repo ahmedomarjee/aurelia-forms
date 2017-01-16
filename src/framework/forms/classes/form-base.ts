@@ -50,6 +50,9 @@ import {
   FormBaseImport
 } from "./form-base-import";
 import {
+  IPopupInfo
+} from "../interfaces/export";
+import {
   Expressions
 } from "./expressions";
 
@@ -60,7 +63,7 @@ export class FormBase {
   ) {
     this.isEditForm = element.getAttribute("is-edit-form") === "true";
     this.isNestedForm = element.getAttribute("is-nested-form") === "true";
-    
+
     this.popupStack = [];
 
     this.widgetCreator = formBaseImport.widgetCreator;
@@ -96,26 +99,29 @@ export class FormBase {
   isEditForm: boolean;
   isNestedForm: boolean;
 
-  popupStack: DevExpress.ui.dxPopup[];
+  popupStack: IPopupInfo[];
 
   widgetCreator: WidgetCreatorService;
   command: CommandService;
   toolbar: ToolbarService;
+  expressions: Expressions;
+  globalization: GlobalizationService;
+  localization: LocalizationService;
+
   models: Models;
   variables: Variables;
   nestedForms: NestedForms;
   editPopups: EditPopups;
   functions: Functions;
   commands: Commands;
-  expressions: Expressions;
-  globalization: GlobalizationService;
-  localization: LocalizationService;
   commandServerData: CommandServerData;
+
   onFormAttached: CustomEvent<IFormAttachedEventArgs>;
   onFormReady: CustomEvent<IFormReadyEventArgs>;
   onFormReactivated: CustomEvent<IFormReadyEventArgs>;
 
   owningView: any;
+  parent: FormBase;
 
   created(owningView: any, myView: any) {
     this.owningView = owningView;
@@ -132,7 +138,10 @@ export class FormBase {
       });
     });
 
-    return promise;    
+    return promise;
+  }
+  bind() {
+    this.parent = this.owningView.bindingContext;
   }
   activate(routeInfo: any) {
     if (routeInfo && routeInfo.parameters && routeInfo.parameters.id) {
@@ -145,7 +154,6 @@ export class FormBase {
     });
   }
 
-
   getFileDownloadUrl(key: string): string {
     return this.expressions.evaluateExpression(key);
   }
@@ -153,26 +161,36 @@ export class FormBase {
     return [this, ...this.nestedForms.getNestedForms()];
   }
 
-  showPopup(id: string) {
-    if (!this[id]) {
-      throw new Error(`No popup with id ${id} found`);
+  closeCurrentPopup() {
+    if (this.popupStack.length > 0) {
+      const index = this.popupStack.length - 1;
+      const current = this.popupStack[index];
+      current.popup.hide();
+    } else {
+      if (this.parent && this.parent.closeCurrentPopup) {
+        this.parent.closeCurrentPopup();
+      }
     }
-
-    const popup: DevExpress.ui.dxPopup = this[id].instance;
-    popup.show();
   }
 
   executeCommand(id: string) {
-    const command = this.commands
-      .getCommands()
-      .find(i => i.id == id);
+    const context = this.getCurrentForm();
 
-    if (!command) {
-      return;
+    if (context === this) {
+      const command = this.commands
+        .getCommands()
+        .find(i => i.id == id);
+
+      if (!command) {
+        return;
+      }
+
+      this.command.execute(this.expressions, command);
+    } else {
+      context.executeCommand(id);
     }
-
-    this.command.execute(this.expressions, command);
   }
+
   canSave(): boolean {
     return this
       .getFormsInclOwn()
@@ -197,7 +215,7 @@ export class FormBase {
 
         return true;
       }));
-  }  
+  }
   save(): Promise<any> {
     if (!this.canSave() || !this.canSaveNow()) {
       return Promise.resolve();
@@ -284,11 +302,23 @@ export class FormBase {
     }
 
     if (this.isEditForm) {
-      this.commands.addCommand(this.formBaseImport.defaultCommands.getCloseCommand(() => {
-        const index = this.owningView.bindingContext.popupStack.length - 1;
-        const current: DevExpress.ui.dxPopup = this.owningView.bindingContext.popupStack[index];
-        current.hide();
-      }));
+      this.commands.addCommand(this.formBaseImport.defaultCommands.getClosePopupCommand(this));
     }
+  }
+
+  private getCurrentForm(): FormBase {
+    if (this.popupStack.length === 0) {
+      return this;
+    }
+
+    const index = this.popupStack.length - 1;
+    const current = this.popupStack[index];
+
+    const editPopup = this.editPopups.getInfo(current.id);
+    if (!editPopup) {
+      return this;
+    }
+
+    return this[editPopup.idContent];
   }
 }

@@ -28,6 +28,9 @@ export class EditPopups {
     this.editPopups.push(editPopup);
     this.createOptions(editPopup);
   }
+  getInfo(id: string): Interfaces.IEditPopup {
+    return this.editPopups.find(c => c.id === id);
+  }
   show(id: string) {
     const editPopup = this.editPopups.find(c => c.id === id);
 
@@ -38,12 +41,7 @@ export class EditPopups {
     const instance: DevExpress.ui.dxPopup = this.form[editPopup.id].instance;
 
     if (!editPopup.isInitialized) {
-      editPopup.isInitialized = true;
-
-      instance.option("deferRendering", false);
-
-      const popup: DevExpress.ui.dxPopup = this.form[editPopup.id].instance;
-      popup.option("toolbarItems", this.toolbar.createFormToolbarOptions(this.form[editPopup.idContent]).items);
+      this.initializeContent(instance, editPopup);
     }
 
     instance.show();
@@ -60,5 +58,27 @@ export class EditPopups {
   private createOptions(editPopup: Interfaces.IEditPopup) {
     const widgetOptions: DevExpress.ui.dxPopupOptions = this.simpleWidgetCreator.addPopup(this.form, editPopup);
 
+  }
+  private initializeContent(instance: DevExpress.ui.dxPopup, editPopup: Interfaces.IEditPopup) {
+    editPopup.isInitialized = true;
+
+    instance.option("deferRendering", false);
+
+    const popup: DevExpress.ui.dxPopup = this.form[editPopup.id].instance;
+    const content: FormBase = this.form[editPopup.idContent];
+    popup.option("toolbarItems", this.toolbar.createFormToolbarOptions(content).items);
+
+    editPopup.mappings.forEach(m => {
+      this.form.expressions.createObserver(
+        m.binding.bindToFQ,
+        (newValue) => {
+          content.variables.data[m.to] = newValue;
+        }
+      );
+
+      content.variables.data[m.to] = this.form.expressions.evaluateExpression(
+        m.binding.bindToFQ
+      );
+    });
   }
 }

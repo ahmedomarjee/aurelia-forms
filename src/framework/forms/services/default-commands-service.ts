@@ -45,6 +45,26 @@ export class DefaultCommandsService {
 
     return cmd;
   }
+  getEditPopupSaveCommand(form: FormBase): Interfaces.ICommandData {
+    const cmd: Interfaces.ICommandData = {
+      id: "$save",
+      icon: "floppy-o",
+      title: "base.save",
+      isVisible: form.canSave(),
+      isEnabled: form.canSaveNow(),
+      execute() {
+        form.save();
+        form.closeCurrentPopup();
+      }
+    };
+
+    form.models.onLoaded.register(() => {
+      cmd.isEnabled = form.canSaveNow();
+      return Promise.resolve();
+    });
+
+    return cmd;
+  }
   getFormDeleteCommand(form: FormBase): Interfaces.ICommandData {
     const cmd: Interfaces.ICommandData = {
       id: "$delete",
@@ -121,13 +141,13 @@ export class DefaultCommandsService {
 
     return result;
   }
-  getCloseCommand(action: {(): void}) {
+  getClosePopupCommand(form: FormBase) {
     const cmd: Interfaces.ICommandData = {
       id: "$close",
       icon: "times",
       location: "after",
       execute() {
-        action();
+        form.closeCurrentPopup();
       }
     }
 

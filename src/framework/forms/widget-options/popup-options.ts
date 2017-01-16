@@ -5,5 +5,5 @@ export interface IPopupOptions extends IWidgetOptions {
     caption?: string;
     height?: string;
     maxWidth?: string;
-    commands?: ICommandOptions[];
+    commands: ICommandOptions[];
 }

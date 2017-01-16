@@ -5,4 +5,5 @@ export * from "./edit-popup";
 export * from "./function";
 export * from "./mapping";
 export * from "./model";
+export * from "./popup-info";
 export * from "./variable";

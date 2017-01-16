@@ -1960,8 +1960,12 @@ define('framework/forms/interfaces/variable',["require", "exports"], function (r
     "use strict";
 });
 
-define('framework/forms/interfaces/export',["require", "exports"], function (require, exports) {
+define('framework/forms/interfaces/export',["require", "exports", "./popup-info"], function (require, exports, popup_info_1) {
     "use strict";
+    function __export(m) {
+        for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+    }
+    __export(popup_info_1);
 });
 
 define('framework/forms/event-args/model-loaded',["require", "exports"], function (require, exports) {
@@ -2540,6 +2544,24 @@ define('framework/forms/services/default-commands-service',["require", "exports"
             });
             return cmd;
         };
+        DefaultCommandsService.prototype.getEditPopupSaveCommand = function (form) {
+            var cmd = {
+                id: "$save",
+                icon: "floppy-o",
+                title: "base.save",
+                isVisible: form.canSave(),
+                isEnabled: form.canSaveNow(),
+                execute: function () {
+                    form.save();
+                    form.closeCurrentPopup();
+                }
+            };
+            form.models.onLoaded.register(function () {
+                cmd.isEnabled = form.canSaveNow();
+                return Promise.resolve();
+            });
+            return cmd;
+        };
         DefaultCommandsService.prototype.getFormDeleteCommand = function (form) {
             var _this = this;
             var cmd = {
@@ -2608,13 +2630,13 @@ define('framework/forms/services/default-commands-service',["require", "exports"
             }
             return result;
         };
-        DefaultCommandsService.prototype.getCloseCommand = function (action) {
+        DefaultCommandsService.prototype.getClosePopupCommand = function (form) {
             var cmd = {
                 id: "$close",
                 icon: "times",
                 location: "after",
                 execute: function () {
-                    action();
+                    form.closeCurrentPopup();
                 }
             };
             return cmd;
@@ -2788,7 +2810,10 @@ define('framework/forms/widget-services/simple-widget-creator-service',["require
                 }
             };
             widgetOptions.onShowing = function (e) {
-                form.popupStack.push(e.component);
+                form.popupStack.push({
+                    id: options.id,
+                    popup: e.component
+                });
             };
             widgetOptions.onHidden = function (e) {
                 var index = form.popupStack.indexOf(e.component);
@@ -2803,9 +2828,7 @@ define('framework/forms/widget-services/simple-widget-creator-service',["require
                 widgetOptions.maxWidth = options.maxWidth;
             }
             var commands = [];
-            commands.push(this.defaultCommands.getCloseCommand(function () {
-                form[options.id].instance.hide();
-            }));
+            commands.push(this.defaultCommands.getClosePopupCommand(form));
             commands.push.apply(commands, options.commands.map(function (c) {
                 var cmd = form.expressions.evaluateExpression(c.binding.bindToFQ);
                 if (!cmd) {
@@ -2950,6 +2973,9 @@ define('framework/forms/classes/edit-popups',["require", "exports", "tslib", "au
             this.editPopups.push(editPopup);
             this.createOptions(editPopup);
         };
+        EditPopups.prototype.getInfo = function (id) {
+            return this.editPopups.find(function (c) { return c.id === id; });
+        };
         EditPopups.prototype.show = function (id) {
             var editPopup = this.editPopups.find(function (c) { return c.id === id; });
             if (!editPopup) {
@@ -2957,10 +2983,7 @@ define('framework/forms/classes/edit-popups',["require", "exports", "tslib", "au
             }
             var instance = this.form[editPopup.id].instance;
             if (!editPopup.isInitialized) {
-                editPopup.isInitialized = true;
-                instance.option("deferRendering", false);
-                var popup = this.form[editPopup.id].instance;
-                popup.option("toolbarItems", this.toolbar.createFormToolbarOptions(this.form[editPopup.idContent]).items);
+                this.initializeContent(instance, editPopup);
             }
             instance.show();
         };
@@ -2972,6 +2995,20 @@ define('framework/forms/classes/edit-popups',["require", "exports", "tslib", "au
         };
         EditPopups.prototype.createOptions = function (editPopup) {
             var widgetOptions = this.simpleWidgetCreator.addPopup(this.form, editPopup);
+        };
+        EditPopups.prototype.initializeContent = function (instance, editPopup) {
+            var _this = this;
+            editPopup.isInitialized = true;
+            instance.option("deferRendering", false);
+            var popup = this.form[editPopup.id].instance;
+            var content = this.form[editPopup.idContent];
+            popup.option("toolbarItems", this.toolbar.createFormToolbarOptions(content).items);
+            editPopup.mappings.forEach(function (m) {
+                _this.form.expressions.createObserver(m.binding.bindToFQ, function (newValue) {
+                    content.variables.data[m.to] = newValue;
+                });
+                content.variables.data[m.to] = _this.form.expressions.evaluateExpression(m.binding.bindToFQ);
+            });
         };
         return EditPopups;
     }());
@@ -3321,6 +3358,9 @@ define('framework/forms/classes/form-base',["require", "exports"], function (req
             });
             return promise;
         };
+        FormBase.prototype.bind = function () {
+            this.parent = this.owningView.bindingContext;
+        };
         FormBase.prototype.activate = function (routeInfo) {
             if (routeInfo && routeInfo.parameters && routeInfo.parameters.id) {
                 this.variables.data.$id = routeInfo.parameters.id;
@@ -3337,21 +3377,32 @@ define('framework/forms/classes/form-base',["require", "exports"], function (req
         FormBase.prototype.getFormsInclOwn = function () {
             return [this].concat(this.nestedForms.getNestedForms());
         };
-        FormBase.prototype.showPopup = function (id) {
-            if (!this[id]) {
-                throw new Error("No popup with id " + id + " found");
+        FormBase.prototype.closeCurrentPopup = function () {
+            if (this.popupStack.length > 0) {
+                var index = this.popupStack.length - 1;
+                var current = this.popupStack[index];
+                current.popup.hide();
             }
-            var popup = this[id].instance;
-            popup.show();
+            else {
+                if (this.parent && this.parent.closeCurrentPopup) {
+                    this.parent.closeCurrentPopup();
+                }
+            }
         };
         FormBase.prototype.executeCommand = function (id) {
-            var command = this.commands
-                .getCommands()
-                .find(function (i) { return i.id == id; });
-            if (!command) {
-                return;
+            var context = this.getCurrentForm();
+            if (context === this) {
+                var command = this.commands
+                    .getCommands()
+                    .find(function (i) { return i.id == id; });
+                if (!command) {
+                    return;
+                }
+                this.command.execute(this.expressions, command);
             }
-            this.command.execute(this.expressions, command);
+            else {
+                context.executeCommand(id);
+            }
         };
         FormBase.prototype.canSave = function () {
             return this
@@ -3451,19 +3502,26 @@ define('framework/forms/classes/form-base',["require", "exports"], function (req
             this.command.execute(this.expressions, command);
         };
         FormBase.prototype.onConstructionFinished = function () {
-            var _this = this;
             if (!this.isNestedForm) {
                 this.commands.addCommand(this.formBaseImport.defaultCommands.getFormGoBackCommand(this));
                 this.commands.addCommand(this.formBaseImport.defaultCommands.getFormSaveCommand(this));
                 this.commands.addCommand(this.formBaseImport.defaultCommands.getFormDeleteCommand(this));
             }
             if (this.isEditForm) {
-                this.commands.addCommand(this.formBaseImport.defaultCommands.getCloseCommand(function () {
-                    var index = _this.owningView.bindingContext.popupStack.length - 1;
-                    var current = _this.owningView.bindingContext.popupStack[index];
-                    current.hide();
-                }));
+                this.commands.addCommand(this.formBaseImport.defaultCommands.getClosePopupCommand(this));
             }
+        };
+        FormBase.prototype.getCurrentForm = function () {
+            if (this.popupStack.length === 0) {
+                return this;
+            }
+            var index = this.popupStack.length - 1;
+            var current = this.popupStack[index];
+            var editPopup = this.editPopups.getInfo(current.id);
+            if (!editPopup) {
+                return this;
+            }
+            return this[editPopup.idContent];
         };
         return FormBase;
     }());
@@ -4305,7 +4363,17 @@ define('framework/security/views/authgroup/authgroup-list-form',["require", "exp
                 "options": {
                     "optionsName": "editOptions",
                     "optionsNameFQ": "editOptions"
-                }
+                },
+                "mappings": [
+                    {
+                        binding: {
+                            bindToFQ: "models.data.$m_A.Id",
+                            bindTo: "Id",
+                            dataContext: "$m_A"
+                        },
+                        to: "$id"
+                    }
+                ]
             });
             _this.widgetCreator.addDataGrid(_this, {
                 "columns": [{
@@ -4489,6 +4557,10 @@ define('framework/stack-router/views/view/view',["require", "exports", "tslib", 
             aurelia_framework_1.TaskQueue])
     ], View);
     exports.View = View;
+});
+
+define('framework/forms/interfaces/popup-info',["require", "exports"], function (require, exports) {
+    "use strict";
 });
 
 define('text!app.html', ['module'], function(module) { module.exports = "<template>\n  <require from=\"./framework/default-ui/views/container/container\"></require>\n  <container></container>\n</template>\n"; });

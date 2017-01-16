@@ -165,7 +165,10 @@ export class SimpleWidgetCreatorService {
     };
 
     widgetOptions.onShowing = (e) => {
-      form.popupStack.push(e.component);
+      form.popupStack.push({
+        id: options.id,
+        popup: e.component
+      });
     };
     widgetOptions.onHidden = (e) => {
       const index = form.popupStack.indexOf(e.component);
@@ -182,9 +185,7 @@ export class SimpleWidgetCreatorService {
     }
 
     var commands: ICommandData[] = [];
-    commands.push(this.defaultCommands.getCloseCommand(() => {
-      (<DevExpress.ui.dxPopover>form[options.id].instance).hide();
-    }));
+    commands.push(this.defaultCommands.getClosePopupCommand(form));
     commands.push(...options.commands.map(c => {
       const cmd = form.expressions.evaluateExpression(c.binding.bindToFQ);
       if (!cmd) {
