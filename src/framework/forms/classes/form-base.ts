@@ -249,13 +249,7 @@ export class FormBase {
       return Promise.resolve();
     }
 
-    return this.models.delete()
-      .then(() => {
-        history.back();
-      })
-      .catch(r => {
-        this.formBaseImport.error.showAndLogError(r);
-      });
+    return this.models.delete();
   }
 
   translate(key: string): string {
@@ -297,12 +291,13 @@ export class FormBase {
   protected onConstructionFinished(): void {
     if (!this.isNestedForm) {
       this.commands.addCommand(this.formBaseImport.defaultCommands.getFormGoBackCommand(this));
-      this.commands.addCommand(this.formBaseImport.defaultCommands.getFormDeleteCommand(this));
 
       if (this.isEditForm) {
         this.commands.addCommand(this.formBaseImport.defaultCommands.getEditPopupSaveCommand(this));
+        this.commands.addCommand(this.formBaseImport.defaultCommands.getEditPopupDeleteCommand(this));
       } else {
         this.commands.addCommand(this.formBaseImport.defaultCommands.getFormSaveCommand(this));
+        this.commands.addCommand(this.formBaseImport.defaultCommands.getFormDeleteCommand(this));
       }
     }
 

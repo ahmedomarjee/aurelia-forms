@@ -47,23 +47,13 @@ export class DefaultCommandsService {
     return cmd;
   }
   getEditPopupSaveCommand(form: FormBase): Interfaces.ICommandData {
-    const cmd: Interfaces.ICommandData = {
-      id: "$save",
-      icon: "floppy-o",
-      title: "base.save",
-      sort: 10,
-      isVisible: form.canSave(),
-      isEnabled: form.canSaveNow(),
-      execute() {
-        form.save();
+    const cmd = this.getFormSaveCommand(form);
+    
+    cmd.execute = () => {
+      form.save().then(() => {
         form.closeCurrentPopup();
-      }
-    };
-
-    form.models.onLoaded.register(() => {
-      cmd.isEnabled = form.canSaveNow();
-      return Promise.resolve();
-    });
+      });
+    }
 
     return cmd;
   }
@@ -81,9 +71,11 @@ export class DefaultCommandsService {
           this.localization.translate(form.expressions, "base.question"))
           .then(r => {
             if (r) {
-              form.delete();
+              form.delete().then(() => {
+                history.back();
+              });
             }
-          })
+          });
       }
     };
 
@@ -92,6 +84,24 @@ export class DefaultCommandsService {
       cmd.isEnabled = form.canDeleteNow();
       return Promise.resolve();
     });
+
+    return cmd;
+  }
+  getEditPopupDeleteCommand(form: FormBase): Interfaces.ICommandData {
+    const cmd = this.getFormDeleteCommand(form);
+
+    cmd.execute = () => {
+      DevExpress.ui.dialog.confirm(
+          this.localization.translate(form.expressions, "base.sure_delete_question"),
+          this.localization.translate(form.expressions, "base.question"))
+          .then(r => {
+            if (r) {
+              form.delete().then(() => {
+                form.closeCurrentPopup();
+              });
+            }
+          });
+    };
 
     return cmd;
   }

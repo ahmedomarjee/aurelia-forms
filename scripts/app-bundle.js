@@ -2571,22 +2571,12 @@ define('framework/forms/services/default-commands-service',["require", "exports"
             return cmd;
         };
         DefaultCommandsService.prototype.getEditPopupSaveCommand = function (form) {
-            var cmd = {
-                id: "$save",
-                icon: "floppy-o",
-                title: "base.save",
-                sort: 10,
-                isVisible: form.canSave(),
-                isEnabled: form.canSaveNow(),
-                execute: function () {
-                    form.save();
+            var cmd = this.getFormSaveCommand(form);
+            cmd.execute = function () {
+                form.save().then(function () {
                     form.closeCurrentPopup();
-                }
+                });
             };
-            form.models.onLoaded.register(function () {
-                cmd.isEnabled = form.canSaveNow();
-                return Promise.resolve();
-            });
             return cmd;
         };
         DefaultCommandsService.prototype.getFormDeleteCommand = function (form) {
@@ -2602,7 +2592,9 @@ define('framework/forms/services/default-commands-service',["require", "exports"
                     DevExpress.ui.dialog.confirm(_this.localization.translate(form.expressions, "base.sure_delete_question"), _this.localization.translate(form.expressions, "base.question"))
                         .then(function (r) {
                         if (r) {
-                            form.delete();
+                            form.delete().then(function () {
+                                history.back();
+                            });
                         }
                     });
                 }
@@ -2612,6 +2604,21 @@ define('framework/forms/services/default-commands-service',["require", "exports"
                 cmd.isEnabled = form.canDeleteNow();
                 return Promise.resolve();
             });
+            return cmd;
+        };
+        DefaultCommandsService.prototype.getEditPopupDeleteCommand = function (form) {
+            var _this = this;
+            var cmd = this.getFormDeleteCommand(form);
+            cmd.execute = function () {
+                DevExpress.ui.dialog.confirm(_this.localization.translate(form.expressions, "base.sure_delete_question"), _this.localization.translate(form.expressions, "base.question"))
+                    .then(function (r) {
+                    if (r) {
+                        form.delete().then(function () {
+                            form.closeCurrentPopup();
+                        });
+                    }
+                });
+            };
             return cmd;
         };
         DefaultCommandsService.prototype.getFormGoBackCommand = function (form) {
@@ -3509,17 +3516,10 @@ define('framework/forms/classes/form-base',["require", "exports"], function (req
             }); });
         };
         FormBase.prototype.delete = function () {
-            var _this = this;
             if (!this.canSave() || !this.canDeleteNow()) {
                 return Promise.resolve();
             }
-            return this.models.delete()
-                .then(function () {
-                history.back();
-            })
-                .catch(function (r) {
-                _this.formBaseImport.error.showAndLogError(r);
-            });
+            return this.models.delete();
         };
         FormBase.prototype.translate = function (key) {
             return this.localization.translate(this.expressions, key);
@@ -3557,12 +3557,13 @@ define('framework/forms/classes/form-base',["require", "exports"], function (req
         FormBase.prototype.onConstructionFinished = function () {
             if (!this.isNestedForm) {
                 this.commands.addCommand(this.formBaseImport.defaultCommands.getFormGoBackCommand(this));
-                this.commands.addCommand(this.formBaseImport.defaultCommands.getFormDeleteCommand(this));
                 if (this.isEditForm) {
                     this.commands.addCommand(this.formBaseImport.defaultCommands.getEditPopupSaveCommand(this));
+                    this.commands.addCommand(this.formBaseImport.defaultCommands.getEditPopupDeleteCommand(this));
                 }
                 else {
                     this.commands.addCommand(this.formBaseImport.defaultCommands.getFormSaveCommand(this));
+                    this.commands.addCommand(this.formBaseImport.defaultCommands.getFormDeleteCommand(this));
                 }
             }
             if (this.isEditForm) {
