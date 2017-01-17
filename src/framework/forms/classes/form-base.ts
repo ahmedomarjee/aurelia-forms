@@ -297,8 +297,13 @@ export class FormBase {
   protected onConstructionFinished(): void {
     if (!this.isNestedForm) {
       this.commands.addCommand(this.formBaseImport.defaultCommands.getFormGoBackCommand(this));
-      this.commands.addCommand(this.formBaseImport.defaultCommands.getFormSaveCommand(this));
       this.commands.addCommand(this.formBaseImport.defaultCommands.getFormDeleteCommand(this));
+
+      if (this.isEditForm) {
+        this.commands.addCommand(this.formBaseImport.defaultCommands.getEditPopupSaveCommand(this));
+      } else {
+        this.commands.addCommand(this.formBaseImport.defaultCommands.getFormSaveCommand(this));
+      }
     }
 
     if (this.isEditForm) {

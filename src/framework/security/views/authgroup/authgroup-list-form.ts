@@ -17,24 +17,26 @@ export class AuthgroupListForm extends fwx.FormBase {
             "keyProperty": "Id",
             "filters": []
         });
+        this.addModel({
+            "id": "$m_A_Edit",
+            "filters": []
+        });
         this.addEditPopup({
             "idContent": "editContent",
+            "mappings": [{
+                "to": "$id",
+                "binding": {
+                    "dataContext": "$m_A_Edit",
+                    "bindTo": "Id",
+                    "bindToFQ": "models.data.$m_A_Edit.Id"
+                }
+            }],
             "commands": [],
             "id": "edit",
             "options": {
                 "optionsName": "editOptions",
                 "optionsNameFQ": "editOptions"
-            },
-            "mappings": [
-                {
-                    binding: {
-                        bindToFQ: "models.data.$m_A.Id",
-                        bindTo: "Id",
-                        dataContext: "$m_A"
-                    },
-                    to: "$id"
-                }
-            ]
+            }
         });
         this.widgetCreator.addDataGrid(this, {
             "columns": [{
@@ -57,6 +59,7 @@ export class AuthgroupListForm extends fwx.FormBase {
                 "bindToFQ": "models.data.$m_A."
             },
             "dataModel": "$m_A",
+            "editDataContext": "$m_A_Edit",
             "idEditPopup": "edit",
             "addShortscuts": true,
             "isMainList": true,

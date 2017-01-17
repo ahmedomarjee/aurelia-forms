@@ -31,6 +31,7 @@ export class DefaultCommandsService {
       id: "$save",
       icon: "floppy-o",
       title: "base.save",
+      sort: 10,
       isVisible: form.canSave(),
       isEnabled: form.canSaveNow(),
       execute() {
@@ -50,6 +51,7 @@ export class DefaultCommandsService {
       id: "$save",
       icon: "floppy-o",
       title: "base.save",
+      sort: 10,
       isVisible: form.canSave(),
       isEnabled: form.canSaveNow(),
       execute() {
@@ -70,6 +72,7 @@ export class DefaultCommandsService {
       id: "$delete",
       icon: "times",
       title: "base.delete",
+      sort: 20,
       isVisible: form.canSave(),
       isEnabled: form.canDeleteNow(),
       execute: () => {
@@ -96,6 +99,7 @@ export class DefaultCommandsService {
     const cmd: Interfaces.ICommandData = {
       id: "$goBack",
       icon: "arrow-left",
+      sort: 0,
       isVisible: this.router.viewStack.length > 1,
       execute() {
         history.back();
@@ -109,6 +113,7 @@ export class DefaultCommandsService {
       id: "$add",
       icon: "plus",
       title: "base.add",
+      sort: 5,
       isVisible: false,
       isEnabled: true,
       execute: () => {
@@ -145,6 +150,7 @@ export class DefaultCommandsService {
     const cmd: Interfaces.ICommandData = {
       id: "$close",
       icon: "times",
+      sort: 999,
       location: "after",
       execute() {
         form.closeCurrentPopup();

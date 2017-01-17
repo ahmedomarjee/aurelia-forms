@@ -66,8 +66,16 @@ export class EditPopups {
 
     const popup: DevExpress.ui.dxPopup = this.form[editPopup.id].instance;
     const content: FormBase = this.form[editPopup.idContent];
-    popup.option("toolbarItems", this.toolbar.createFormToolbarOptions(content).items);
+    popup.option("toolbarItems", this.toolbar.createToolbarItems(content, content.expressions, {
+      getItems: () => {
+        return popup.option("toolbarItems");
+      },
+      setItemProperty: (index, property, value) => {
+        popup.option(`toolbarItems[${index}].${property}`, value);
+      }
+    }, content.title, content.commands.getCommands()));
 
+    //TODO - wenn 2x das gleiche geöffnet wird, muss ein Refresh passieren!
     editPopup.mappings.forEach(m => {
       this.form.expressions.createObserver(
         m.binding.bindToFQ,

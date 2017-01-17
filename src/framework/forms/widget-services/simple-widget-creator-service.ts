@@ -195,7 +195,24 @@ export class SimpleWidgetCreatorService {
       return cmd;
     }));
 
-    widgetOptions.toolbarItems = this.toolbar.createToolbarOptions(form, form.expressions, options.caption, commands).items;
+    widgetOptions.toolbarItems = this.toolbar.createToolbarItems(form, form.expressions, {
+      getItems: () => {
+        const popup: DevExpress.ui.dxPopup = form[options.id];
+        if (!popup) {
+          return widgetOptions.toolbarItems;
+        }
+
+        return popup.option("toolbarItems");
+      },
+      setItemProperty: (index, property, value) => {
+        const popup: DevExpress.ui.dxPopup = form[options.id];
+        if (!popup) {
+          return [];
+        }
+
+        popup.option(`toolbarItems[${index}].${property}`, value);
+      }
+    }, options.caption, commands);
 
     return widgetOptions;
   }
