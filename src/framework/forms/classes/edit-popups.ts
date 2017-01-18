@@ -82,7 +82,7 @@ export class EditPopups {
       }
     }, content.title, content.commands.getCommands()));
 
-    //TODO - DX
+    //DX-TODO
     (<any>popup).on({
       showing: () => {
         editPopup.mappings.forEach(m => {
