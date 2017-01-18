@@ -27,6 +27,13 @@ export class ShortcutService {
     mousetrap.bindGlobal("f7", e => this.fire(Shortcuts.new));
   }
   private fire(shortcut: Shortcuts) {
+    if (document.activeElement) {
+      const activeElement = (<any>document.activeElement);
+      if (activeElement.blur) {
+        activeElement.blur();
+      }
+    }
+
     this.onShortcutExecute.fire({
       shortcut: shortcut
     });

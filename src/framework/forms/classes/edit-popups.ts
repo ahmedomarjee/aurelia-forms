@@ -11,6 +11,12 @@ import {
 import {
   SimpleWidgetCreatorService
 } from "../widget-services/simple-widget-creator-service";
+import {
+  IEditPopupHiddenEventArgs
+} from "../event-args/edit-popup-hidden";
+import {
+  CustomEvent
+} from "../../base/classes/custom-event";
 import * as Interfaces from "../interfaces/export";
 
 @autoinject
@@ -21,7 +27,8 @@ export class EditPopups {
 
   constructor(
     private simpleWidgetCreator: SimpleWidgetCreatorService,
-    private toolbar: ToolbarService
+    private toolbar: ToolbarService,
+    public onEditPopupHidden: CustomEvent<IEditPopupHiddenEventArgs>
   ) {}
 
   addInfo(editPopup: Interfaces.IEditPopup) {
@@ -75,18 +82,24 @@ export class EditPopups {
       }
     }, content.title, content.commands.getCommands()));
 
-    //TODO - wenn 2x das gleiche geöffnet wird, muss ein Refresh passieren!
-    editPopup.mappings.forEach(m => {
-      this.form.expressions.createObserver(
-        m.binding.bindToFQ,
-        (newValue) => {
-          content.variables.data[m.to] = newValue;
-        }
-      );
+    //TODO - DX
+    (<any>popup).on({
+      showing: () => {
+        editPopup.mappings.forEach(m => {
+          content.variables.data[m.to] = this.form.expressions.evaluateExpression(
+            m.binding.bindToFQ
+          );
+        });
+      },
+      hidden: () => {
+        editPopup.mappings.forEach(m => {
+          content.variables.data[m.to] = null;
+        });
 
-      content.variables.data[m.to] = this.form.expressions.evaluateExpression(
-        m.binding.bindToFQ
-      );
+        this.onEditPopupHidden.fire({
+          editPopup: editPopup
+        });
+      }
     });
   }
 }

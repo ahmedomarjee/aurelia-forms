@@ -42,25 +42,8 @@ export class Models {
 
     this.onLoadRequired.register((args) => {
       if (args.model.key || args.model.autoLoad) {
-        const getOptions = this.dataSource.createGetOptions(this.expressions, args.model);
-
-        return this.rest.get({
-          url: this.rest.getWebApiUrl(`${args.model.webApiAction}/${this.expressions.evaluateExpression(args.model.key)}`),
-          getOptions,
-          increaseLoadingCount: true
-        }).then(r => {
-          this.onLoadedInterceptor.fire({
-            model: args.model,
-            data: r
-          });
-
-          this.data[args.model.id] = r;
-
-          this.onLoaded.fire({
-            model: args.model,
-            data: r
-          });
-        });
+        const key = this.expressions.evaluateExpression(args.model.key);
+        return this.loadModel(args.model, key);
       }
 
       return Promise.resolve();
@@ -70,9 +53,18 @@ export class Models {
   data: any;
 
   addInfo(model: Interfaces.IModel) {
+    model.keyProperty = model.keyProperty || "Id";
+
     this.info[model.id] = model;
 
     this.addObservers(model);
+  }
+  createNewModelData(model: Interfaces.IModel): any {
+    const data = {};
+
+    data[model.keyProperty] = 0;
+
+    return data;
   }
   getInfo(id: string): Interfaces.IModel {
     const model = this.info[id];
@@ -91,6 +83,36 @@ export class Models {
 
     return arr;
   }
+  loadModel(model: Interfaces.IModel, key: any): Promise<any> {
+    const getOptions = this.dataSource.createGetOptions(this.expressions, model);
+
+    if (key == void (0)) {
+      this.data[model.id] = null;
+
+      this.onLoaded.fire({
+        model: model,
+        data: null
+      })
+    } else {
+      return this.rest.get({
+        url: this.rest.getWebApiUrl(`${model.webApiAction}/${key}`),
+        getOptions,
+        increaseLoadingCount: true
+      }).then(r => {
+        this.onLoadedInterceptor.fire({
+          model: model,
+          data: r
+        });
+
+        this.data[model.id] = r;
+
+        this.onLoaded.fire({
+          model: model,
+          data: r
+        });
+      });
+    }
+  }
   registerForm(form: FormBase) {
     if (this.form) {
       throw new Error("Form was already registered");
@@ -104,7 +126,7 @@ export class Models {
     const promiseArr = this.getModels()
       .filter(m => m.postOnSave && this.data[m.id])
       .map(m => {
-        
+
         let method = "post";
 
         if (!this.data[m.id][m.keyProperty]) {
@@ -112,17 +134,17 @@ export class Models {
         }
 
         const promise = this.rest[method]({
-            url: this.rest.getWebApiUrl(m.webApiAction),
-            data: this.data[m.id],
-            increaseLoadingCount: true,
-            getOptions: this.dataSource.createGetOptions(this.expressions, m)
-          }).then(r => {
-            this.data[m.id] = r;
-            this.onLoaded.fire({
-              model: m,
-              data: r
-            });
+          url: this.rest.getWebApiUrl(m.webApiAction),
+          data: this.data[m.id],
+          increaseLoadingCount: true,
+          getOptions: this.dataSource.createGetOptions(this.expressions, m)
+        }).then(r => {
+          this.data[m.id] = r;
+          this.onLoaded.fire({
+            model: m,
+            data: r
           });
+        });
 
         return promise;
       });
@@ -138,10 +160,10 @@ export class Models {
       .filter(m => m.postOnSave && this.data[m.id] && this.data[m.id][m.keyProperty])
       .map(m => {
         const promise = this.rest.delete({
-            url: this.rest.getWebApiUrl(m.webApiAction),
-            id: this.data[m.id][m.keyProperty],
-            increaseLoadingCount: true
-          });
+          url: this.rest.getWebApiUrl(m.webApiAction),
+          id: this.data[m.id][m.keyProperty],
+          increaseLoadingCount: true
+        });
 
         return promise;
       });

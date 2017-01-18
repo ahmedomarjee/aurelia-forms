@@ -115,6 +115,19 @@ export class DataGridWidgetCreatorService {
       }
     }
     if (options.idEditPopup) {
+      form.editPopups.onEditPopupHidden.register(a => {
+        if (a.editPopup.id === options.idEditPopup) {
+          const dataGrid = form[options.id];
+          if (!dataGrid) {
+            return;
+          }
+
+          dataGrid.instance.refresh();
+        };
+
+        return Promise.resolve();
+      });
+
       clickActions.push(e => {
         form.editPopups.show(options.idEditPopup);
       });

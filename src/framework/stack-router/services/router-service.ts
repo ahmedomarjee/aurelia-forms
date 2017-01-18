@@ -304,6 +304,10 @@ export class RouterService {
           currentViewModel.executeCommand("$new");
           break;
         }
+        case Shortcuts.delete: {
+          currentViewModel.executeCommand("$delete");
+          break;
+        }
         default: {
           break;
         }

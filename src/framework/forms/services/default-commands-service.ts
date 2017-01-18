@@ -127,10 +127,16 @@ export class DefaultCommandsService {
       isVisible: false,
       isEnabled: true,
       execute: () => {
+        if (options.editDataContext) {
+          const model = form.models.getInfo(options.editDataContext);
+          form.models.data[options.editDataContext] = form.models.createNewModelData(model);
+        }
+
         if (options.editUrl) {
           this.location.goTo(options.editUrl + "/0", form);
+        } else if (options.idEditPopup) {
+          form.editPopups.show(options.idEditPopup);
         }
-        //TODO
       }
     }
 

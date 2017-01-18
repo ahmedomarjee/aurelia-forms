@@ -18,7 +18,7 @@ export class StyleService {
     styleTag.id = key;
 
     styleTag.appendChild(
-      document.createTextNode(this.getCssString(styleClasses))
+      document.createTextNode(this.getCssClasses(styleClasses))
     );
 
     document.head.appendChild(styleTag);
@@ -31,12 +31,12 @@ export class StyleService {
     }
   }
 
-  private getCssString(styleClasses: IStyleClass[]): string {
+  private getCssClasses(styleClasses: IStyleClass[]): string {
     return styleClasses
-    .map(c => `\n${c.name} {\n ${this.addCssRule(c.properties)} }\n`)
+    .map(c => `\n${c.name} {\n ${this.getCssClass(c.properties)} }\n`)
     .join("");
   }
-  private addCssRule(properties: IStyleProperty[]): string {
+  private getCssClass(properties: IStyleProperty[]): string {
     return properties
       .map(c => `${c.propertyName}: ${c.value};\n`)
       .join("")
