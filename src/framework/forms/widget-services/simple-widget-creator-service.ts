@@ -276,7 +276,59 @@ export class SimpleWidgetCreatorService {
   addTagBox(form: FormBase, options: WidgetOptions.ITagBoxOptions): DevExpress.ui.dxTagBoxOptions {
     const widgetOptions: DevExpress.ui.dxTagBoxOptions = this.baseWidgetCreator.createWidgetOptions(form, options);
 
-    //TODO
+    widgetOptions.valueExpr = options.itemsValueExpr;
+    widgetOptions.displayExpr = options.itemsDisplayExpr;
+
+    const model = form.models.getInfo(options.itemsDataContext);
+    const dataSource = this.dataSource.createDataSource(form.expressions, model);
+    widgetOptions.dataSource = dataSource;
+
+    widgetOptions.onSelectionChanged = (e) => {
+      const addedItems: any[] = e.addedItems;
+      const removedItems: any[] = e.addedItems;
+
+      const list: any[] = form.expressions.evaluateExpression(options.relationBinding.bindToFQ)
+        || [];
+
+      addedItems.forEach(c => {
+        const exists = list.some(d => d[options.relationProperty] = c);
+        if (c) {
+          return;
+        }
+
+        const newObj = {};
+        newObj[options.relationProperty] = c;
+        list.push(newObj);
+      });
+      removedItems.forEach(c => {
+        const existsList = list.filter(d => d[options.relationProperty] = c);
+        
+        existsList.forEach(d => {
+          const index = list.indexOf(d);
+          list.splice(index, 1);
+        })
+      });
+    };
+
+    form.models.onLoaded.register(a => {
+      if (a.model.id !== options.dataContext) {
+        return;
+      }
+
+      const list: any[] = form.expressions.evaluateExpression(options.relationBinding.bindToFQ)
+        || [];
+
+      const data = list.map(c => c[options.relationProperty]);
+
+      if (form[options.id]) {
+        const instance: DevExpress.ui.dxTagBox = form[options.id].instance;
+        instance.option("value", data);
+      } else {
+        widgetOptions.value = data;
+      }
+
+      return Promise.resolve();
+    });
 
     return widgetOptions;
   }

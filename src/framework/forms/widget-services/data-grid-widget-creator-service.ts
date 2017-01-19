@@ -100,23 +100,45 @@ export class DataGridWidgetCreatorService {
         form.expressions.evaluateExpression(options.onItemClick, { e })
       });
     }
-    if (options.editDataContext) {
-      clickActions.push(e => {
-        form.models.data[options.editDataContext] = e.data;
-      });
-    }
-    if (options.editUrl && options.dataModel) {
-      const model = form.models.getInfo(options.dataModel);
-
-      if (model) {
+    if (options.editDataContext || options.edits.length > 0) {
+      if (options.edits.length > 0) {
         clickActions.push(e => {
-          this.location.goTo(`#${options.editUrl}/${e.data[model.keyProperty]}`, form);
+          const edit = options.edits.find(c => c.typeName === e.data.ObjectTypeName);
+          if (!edit) {
+            return;
+          }
+
+          form.models.data[edit.editDataContext] = e.data;
+        });
+      } else {
+        clickActions.push(e => {
+          form.models.data[options.editDataContext] = e.data;
         });
       }
     }
-    if (options.idEditPopup) {
+    if ((options.editUrl || options.edits.length > 0) && options.dataModel) {
+      const model = form.models.getInfo(options.dataModel);
+
+      if (model) {
+        if (options.edits.length > 0) {
+          clickActions.push(e => {
+            const edit = options.edits.find(c => c.typeName === e.data.ObjectTypeName);
+            if (!edit) {
+              return;
+            }
+
+            this.location.goTo(`#${edit.editUrl}/${e.data[model.keyProperty]}`, form);
+          });
+        } else {
+          clickActions.push(e => {
+            this.location.goTo(`#${options.editUrl}/${e.data[model.keyProperty]}`, form);
+          });
+        }
+      }
+    }
+    if (options.idEditPopup || options.edits.length > 0) {
       form.editPopups.onEditPopupHidden.register(a => {
-        if (a.editPopup.id === options.idEditPopup) {
+        if (a.editPopup.id === options.idEditPopup || options.edits.some(c => c.idEditPopup === a.editPopup.id)) {
           const dataGrid = form[options.id];
           if (!dataGrid) {
             return;
@@ -128,9 +150,20 @@ export class DataGridWidgetCreatorService {
         return Promise.resolve();
       });
 
-      clickActions.push(e => {
-        form.editPopups.show(options.idEditPopup);
-      });
+      if (options.edits.length > 0) {
+        clickActions.push(e => {
+          const edit = options.edits.find(c => c.typeName === e.data.ObjectTypeName);
+          if (!edit) {
+            return;
+          }
+
+          form.editPopups.show(edit.idEditPopup);
+        });
+      } else {
+        clickActions.push(e => {
+          form.editPopups.show(options.idEditPopup);
+        });
+      }
     }
 
     if (clickActions.length > 0) {

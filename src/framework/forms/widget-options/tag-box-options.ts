@@ -7,6 +7,7 @@ export interface ITagBoxOptions extends IWidgetOptions {
     caption?: string;
     dataContext?: string;
     relationBinding?: IBinding;
+    relationProperty?: string;
     itemsDataContext?: string;
     itemsValueExpr?: string;
     itemsDisplayExpr?: string;

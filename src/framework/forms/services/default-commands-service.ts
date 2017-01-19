@@ -16,6 +16,9 @@ import {
   RouterService
 } from "../../stack-router/services/router-service";
 import * as Interfaces from "../interfaces/export";
+import {
+  ContextMenu
+} from "../classes/context-menu";
 
 @autoinject
 export class DefaultCommandsService {
@@ -127,15 +130,39 @@ export class DefaultCommandsService {
       isVisible: false,
       isEnabled: true,
       execute: () => {
-        if (options.editDataContext) {
-          const model = form.models.getInfo(options.editDataContext);
-          form.models.data[options.editDataContext] = form.models.createNewModelData(model);
-        }
+        if (options.edits.length > 0) {
+          const ctxMenu = new ContextMenu();
 
-        if (options.editUrl) {
-          this.location.goTo(options.editUrl + "/0", form);
-        } else if (options.idEditPopup) {
-          form.editPopups.show(options.idEditPopup);
+          options.edits.forEach(c => {
+            ctxMenu.items.push({
+              text: this.localization.translate(form.expressions, c.caption),
+              execute: () => {
+                if (c.editDataContext) {
+                  const model = form.models.getInfo(c.editDataContext);
+                  form.models.data[c.editDataContext] = form.models.createNewModelData(model);
+                }
+                if (c.editUrl) {
+                  this.location.goTo(c.editUrl + "/0", form);
+                }
+                if (c.idEditPopup) {
+                  form.editPopups.show(c.idEditPopup);
+                }
+              }
+            });
+          });
+          
+          ctxMenu.show(null);
+        } else {
+          if (options.editDataContext) {
+            const model = form.models.getInfo(options.editDataContext);
+            form.models.data[options.editDataContext] = form.models.createNewModelData(model);
+          }
+          if (options.editUrl) {
+            this.location.goTo(options.editUrl + "/0", form);
+          }
+          if (options.idEditPopup) {
+            form.editPopups.show(options.idEditPopup);
+          }
         }
       }
     }

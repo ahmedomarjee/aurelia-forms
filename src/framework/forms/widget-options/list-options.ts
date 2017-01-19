@@ -2,6 +2,7 @@ import {IBinding} from "../interfaces/binding";
 import {IOptions} from "./options";
 import {IWidgetOptions} from "./widget-options";
 import {SelectionModeEnum} from "../enums/selection-mode-enum";
+import {IListEditOptions} from "./list-edit-options";
 
 export interface IListOptions extends IWidgetOptions {
     binding?: IBinding;
@@ -28,7 +29,7 @@ export interface IListOptions extends IWidgetOptions {
 
     selectionMode?: SelectionModeEnum;
 
-    edits: any[];
+    edits: IListEditOptions[];
     filters: any[];
     commands: any[];
 }

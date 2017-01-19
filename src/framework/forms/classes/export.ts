@@ -1,5 +1,6 @@
 export {CommandServerData} from "./command-server-data";
 export {Commands} from "./commands";
+export {ContextMenu} from "./context-menu";
 export {EditPopups} from "./edit-popups";
 export {Expressions} from "./expressions";
 export {FormBase} from "./form-base";

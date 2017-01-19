@@ -84,7 +84,7 @@ export class EditPopups {
 
     //DX-TODO
     (<any>popup).on({
-      showing: () => {
+      shown: () => {
         editPopup.mappings.forEach(m => {
           content.variables.data[m.to] = this.form.expressions.evaluateExpression(
             m.binding.bindToFQ
