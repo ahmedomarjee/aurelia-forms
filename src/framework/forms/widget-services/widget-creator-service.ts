@@ -83,4 +83,7 @@ export class WidgetCreatorService {
   addTextArea(form: FormBase, options: WidgetOptions.ITextAreaOptions): DevExpress.ui.dxTextAreaOptions {
     return this.simpleWidgetCreator.addTextArea(form, options);
   }
+  addValidationGroup(form: FormBase, options: WidgetOptions.IValidationGroupOptions): DevExpress.ui.dxValidationGroupOptions {
+    return this.simpleWidgetCreator.addValidationGroup(form, options);
+  }
 }

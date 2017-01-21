@@ -353,6 +353,24 @@ export class SimpleWidgetCreatorService {
 
     return editorOptions;
   }
+  addValidationGroup(form: FormBase, options: WidgetOptions.IValidationGroupOptions): DevExpress.ui.dxValidationGroupOptions {
+    const validationOptions: DevExpress.ui.dxValidationGroupOptions = {};
+
+    form[options.options.optionsName] = validationOptions;
+
+    form.onValidating.register(r => {
+      const instance: DevExpress.ui.dxValidationGroup = form[options.id].instance;
+      
+      const result = instance.validate();
+      if (result.isValid) {
+        return Promise.resolve();
+      } else {
+        return Promise.reject(result);
+      }
+    });
+
+    return validationOptions;
+  }
 
   private createEditorOptions(form: FormBase, options: WidgetOptions.IEditorOptions): any {
     const editorOptions: DevExpress.ui.EditorOptions = this.baseWidgetCreator.createWidgetOptions(form, options);

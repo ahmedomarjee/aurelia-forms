@@ -53,7 +53,8 @@ import {
 import {
   IFormAttachedEventArgs,
   IFormReadyEventArgs,
-  IFormReactivatedEventArgs
+  IFormReactivatedEventArgs,
+  IFormValidatingEventArgs
 } from "../event-args/export";
 
 @transient()
@@ -77,8 +78,9 @@ export class FormBaseImport {
     public globalization: GlobalizationService,
     public localization: LocalizationService,
     public commandServerData: CommandServerData,
-    public onFormAttached: CustomEvent<IFormAttachedEventArgs>,
-    public onFormReady: CustomEvent<IFormAttachedEventArgs>,
-    public onFormReactivated: CustomEvent<IFormReadyEventArgs>
+    public onAttached: CustomEvent<IFormAttachedEventArgs>,
+    public onReady: CustomEvent<IFormAttachedEventArgs>,
+    public onReactivated: CustomEvent<IFormReadyEventArgs>,
+    public onValidating: CustomEvent<IFormValidatingEventArgs>
   ) { }
 } 

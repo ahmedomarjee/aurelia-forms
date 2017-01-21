@@ -48,7 +48,7 @@ export class DataGridWidgetCreatorService {
         sorting: true
       }
 
-      form.onFormReactivated.register(e => {
+      form.onReactivated.register(e => {
         dataSource.reload();
         return Promise.resolve();
       });

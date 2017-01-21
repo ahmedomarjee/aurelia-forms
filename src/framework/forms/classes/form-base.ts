@@ -44,7 +44,8 @@ import {
 import {
   IFormAttachedEventArgs,
   IFormReadyEventArgs,
-  IFormReactivatedEventArgs
+  IFormReactivatedEventArgs,
+  IFormValidatingEventArgs
 } from "../event-args/export";
 import {
   FormBaseImport
@@ -79,9 +80,11 @@ export class FormBase {
     this.globalization = formBaseImport.globalization;
     this.localization = formBaseImport.localization;
     this.commandServerData = formBaseImport.commandServerData;
-    this.onFormAttached = formBaseImport.onFormAttached;
-    this.onFormReady = formBaseImport.onFormReady;
-    this.onFormReactivated = formBaseImport.onFormReactivated;
+
+    this.onAttached = formBaseImport.onAttached;
+    this.onReady = formBaseImport.onReady;
+    this.onReactivated = formBaseImport.onReactivated;
+    this.onValidating = formBaseImport.onValidating;
 
     this.models.registerForm(this);
     this.variables.registerForm(this);
@@ -116,9 +119,10 @@ export class FormBase {
   commands: Commands;
   commandServerData: CommandServerData;
 
-  onFormAttached: CustomEvent<IFormAttachedEventArgs>;
-  onFormReady: CustomEvent<IFormReadyEventArgs>;
-  onFormReactivated: CustomEvent<IFormReadyEventArgs>;
+  onAttached: CustomEvent<IFormAttachedEventArgs>;
+  onReady: CustomEvent<IFormReadyEventArgs>;
+  onReactivated: CustomEvent<IFormReadyEventArgs>;
+  onValidating: CustomEvent<IFormValidatingEventArgs>;
 
   owningView: any;
   parent: FormBase;
@@ -128,12 +132,12 @@ export class FormBase {
     this.toolbarOptions = this.toolbar.createFormToolbarOptions(this);
   }
   attached() {
-    const promise = this.onFormAttached.fire({
+    const promise = this.onAttached.fire({
       form: this
     });
 
     this.formBaseImport.taskQueue.queueTask(() => {
-      this.onFormReady.fire({
+      this.onReady.fire({
         form: this,
       });
     });
@@ -149,7 +153,7 @@ export class FormBase {
     }
   }
   reactivate() {
-    this.onFormReactivated.fire({
+    this.onReactivated.fire({
       form: this
     });
   }
@@ -191,6 +195,12 @@ export class FormBase {
     }
   }
 
+  validate(): Promise<any> {
+    return this.onValidating.fire({
+      form: this
+    });
+  }
+
   canSave(): boolean {
     return this
       .getFormsInclOwn()
@@ -221,13 +231,8 @@ export class FormBase {
       return Promise.resolve();
     }
 
-    return this.models.save()
-      .then(() => {
-        DevExpress.ui.notify("Daten wurden erfolgreich gespeichert", "SUCCESS", 3000);
-      })
-      .catch(r => {
-        this.formBaseImport.error.showAndLogError(r);
-      });
+    return this.validate()
+     .then(c => this.models.save());
   }
 
   canDeleteNow(): boolean {

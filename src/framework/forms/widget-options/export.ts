@@ -25,4 +25,5 @@ export * from "./tag-box-options";
 export * from "./text-box-options";
 export * from "./text-area-options";
 export * from "./validation-rule";
+export * from "./validation-group-options";
 export * from "./widget-options";

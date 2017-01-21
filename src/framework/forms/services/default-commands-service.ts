@@ -8,7 +8,6 @@ import {
   IListOptions
 } from "../widget-options/export";
 import {
-  LocalizationService,
   LocationService,
   PermissionService
 } from "../../base/services/export";
@@ -24,7 +23,6 @@ import {
 export class DefaultCommandsService {
   constructor(
     private router: RouterService,
-    private localization: LocalizationService,
     private location: LocationService,
     private permission: PermissionService
   ) {}
@@ -38,7 +36,15 @@ export class DefaultCommandsService {
       isVisible: form.canSave(),
       isEnabled: form.canSaveNow(),
       execute() {
-        form.save();
+        form.save().then(() => {
+          DevExpress.ui.notify(
+            form.translate("base.save_success"), 
+            "SUCCESS",
+            3000);
+        })
+        .catch(r => {
+          this.formBaseImport.error.showAndLogError(r);
+        });
       }
     };
 
@@ -70,8 +76,8 @@ export class DefaultCommandsService {
       isEnabled: form.canDeleteNow(),
       execute: () => {
         DevExpress.ui.dialog.confirm(
-          this.localization.translate(form.expressions, "base.sure_delete_question"),
-          this.localization.translate(form.expressions, "base.question"))
+          form.translate("base.sure_delete_question"),
+          form.translate("base.question"))
           .then(r => {
             if (r) {
               form.delete().then(() => {
@@ -95,8 +101,8 @@ export class DefaultCommandsService {
 
     cmd.execute = () => {
       DevExpress.ui.dialog.confirm(
-          this.localization.translate(form.expressions, "base.sure_delete_question"),
-          this.localization.translate(form.expressions, "base.question"))
+          form.translate("base.sure_delete_question"),
+          form.translate("base.question"))
           .then(r => {
             if (r) {
               form.delete().then(() => {
@@ -135,7 +141,7 @@ export class DefaultCommandsService {
 
           options.edits.forEach(c => {
             ctxMenu.items.push({
-              text: this.localization.translate(form.expressions, c.caption),
+              text: form.translate(c.caption),
               execute: () => {
                 if (c.editDataContext) {
                   const model = form.models.getInfo(c.editDataContext);

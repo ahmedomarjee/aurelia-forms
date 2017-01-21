@@ -5,3 +5,4 @@ export {IModelLoadRequiredEventArgs} from "./model-load-required";
 export {IFormAttachedEventArgs} from "./form-attached";
 export {IFormReactivatedEventArgs} from "./form-reactivated";
 export {IFormReadyEventArgs} from "./form-ready";
+export {IFormValidatingEventArgs} from "./form-validating";
