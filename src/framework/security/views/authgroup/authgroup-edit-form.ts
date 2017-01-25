@@ -23,7 +23,12 @@ export class AuthgroupEditForm extends fwx.FormBase {
                 "bindTo": "Name",
                 "bindToFQ": "models.data.$m_A.Name"
             },
-            "validationRules": [],
+            "validationRules": [{
+                "item": {
+                    "type": "required",
+                    "parameters": []
+                }
+            }],
             "id": "name",
             "options": {
                 "optionsName": "nameOptions",
@@ -38,7 +43,12 @@ export class AuthgroupEditForm extends fwx.FormBase {
                 "bindTo": "IdMandator",
                 "bindToFQ": "models.data.$m_A.IdMandator"
             },
-            "validationRules": [],
+            "validationRules": [{
+                "item": {
+                    "type": "required",
+                    "parameters": []
+                }
+            }],
             "id": "mandator",
             "options": {
                 "optionsName": "mandatorOptions",
