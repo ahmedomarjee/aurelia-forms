@@ -21,7 +21,7 @@ export class LocalizationService {
     this.neutral = JSON.parse(<any>localizationNeutral);
   }
 
-  translate(expressionProvider: IExpressionProvider, key: string, callback?: {(val: string): void}): string {
+  translate(expressionProvider: IExpressionProvider | string[], key: string, callback?: {(val: string): void}): string {
     if (!key) {
       return null;
     }
@@ -33,7 +33,7 @@ export class LocalizationService {
     }
 
     if (callback) {
-      if (typeof item === "object" && item.parameters.length > 0) {
+      if (!Array.isArray(expressionProvider) && typeof item === "object" && item.parameters.length > 0) {
         item.parameters.forEach((expr, index) => {
           expressionProvider.createObserver(expr, () => {
             callback(this.translateItem(expressionProvider, item))
@@ -63,10 +63,16 @@ export class LocalizationService {
 
     return item;
   }
-  private translateItem(expressionProvider: IExpressionProvider, item: any): string {
+  private translateItem(expressionProvider: IExpressionProvider | string[], item: any): string {
     if (typeof item === "string") {
+      if (Array.isArray(expressionProvider)) {
+        expressionProvider.forEach((val, index) => {
+          item = item.replace(new RegExp("\\{" + index + "\\}", "g"), val);
+        });
+      }
+
       return item;
-    } else if (typeof item === "object") {
+    } else if (!Array.isArray(expressionProvider) && typeof item === "object") {
       let text: string = item.text;
 
       item.parameters.forEach((expr, index) => {

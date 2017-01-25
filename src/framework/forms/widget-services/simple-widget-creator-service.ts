@@ -21,6 +21,9 @@ import {
 import {
   ICommandData
 } from "../interfaces/command-data";
+import {
+  ValidationService
+} from "../services/validation-service";
 import * as WidgetOptions from "../widget-options/export";
 
 @autoinject
@@ -31,7 +34,8 @@ export class SimpleWidgetCreatorService {
     private globalization: GlobalizationService,
     private localization: LocalizationService,
     private toolbar: ToolbarService,
-    private defaultCommands: DefaultCommandsService
+    private defaultCommands: DefaultCommandsService,
+    private validation: ValidationService
   ) { }
 
   addAccordion(form: FormBase, options: WidgetOptions.IAccordionOptions): DevExpress.ui.dxAccordionOptions {
@@ -388,6 +392,21 @@ export class SimpleWidgetCreatorService {
     if (options.placeholder) {
       (<any>editorOptions).placeholder = this.localization.translate(form.expressions, options.placeholder);
     }
+
+    editorOptions["validators"] = options.validationRules.map(v => {
+      if (v.binding) {
+        return form.expressions.evaluateExpression(v.binding.bindToFQ);
+      } else if (v.item) {
+        return this.validation.getValidator(
+          form.expressions,
+          v.item.type,
+          options.caption,
+          v.item.parameters
+        );
+      } else {
+        throw new Error("No binding/item specified");
+      }
+    });
 
     return editorOptions;
   }

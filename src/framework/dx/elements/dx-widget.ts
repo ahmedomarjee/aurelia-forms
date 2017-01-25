@@ -52,15 +52,21 @@ export class DxWidget {
       templates: this.templates
     }
 
-    const element = $(this.element);
+    let element = $(this.element);
     if (!element[this.name]) {
       throw new Error(`Widget ${this.name} does not exist`);
     }
 
-    this.validator ?
-      element[this.name](this.options).dxValidator(this.validator) :
-      element[this.name](this.options)
+    element = element[this.name](this.options);
 
+    if (this.validator) {
+      element.dxValidator(this.validator);
+    } else if (this.options["validators"]) {
+      element.dxValidator({
+        validationRules: this.options["validators"]
+      });
+    }
+    
     this.instance = element[this.name]("instance");
     this.registerBindings();
   }
@@ -77,6 +83,12 @@ export class DxWidget {
           binding.deepObserver = null;
         }
       }
+    }
+  }
+
+  resetValidation() {
+    if (this.instance.option("isValid") === false) {
+      this.instance.option("isValid", true);
     }
   }
 
