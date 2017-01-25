@@ -27,4 +27,5 @@ export * from "./text-area-options";
 export * from "./validation-rule";
 export * from "./validation-rule-item";
 export * from "./validation-rule-item-parameter";
+export * from "./validation-group-options";
 export * from "./widget-options";

@@ -30,7 +30,7 @@ export class LoginFuncs {
 
     this.goToUrlAfterLogin = this.history.lastRequestUrl;
     
-    this.form.onFormReady.register((r) => {
+    this.form.onReady.register((r) => {
       const username: DevExpress.ui.dxTextBox = this.form["username"].instance;
       username.focus();
       return Promise.resolve();

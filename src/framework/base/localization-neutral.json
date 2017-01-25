@@ -6,6 +6,7 @@
     "question": "Frage",
     "information": "Information",
     "sure_delete_question": "Sind Sie sicher, dass sie den aktuellen Datensatz löschen wollen?",
+    "save_success": "Daten wurden erfolgreich gespeichert",
     "login": "Anmelden",
     "logout": "Abmelden"
   }
