@@ -20,7 +20,15 @@ export class AuthorizationService {
     this.bindingEngine
       .expressionObserver(this, "isLoggedIn")    
       .subscribe((newValue, oldValue) => {
-        aurelia.setRoot(newValue ? config.mainApp : config.loginApp);
+        let app = "/";
+
+        if (newValue && config["mainApp"]) {
+          app = config["mainApp"]
+        } else if (!newValue && config["loginApp"]) {
+          app = config["loginApp"]
+        }
+
+        aurelia.setRoot(app);
       });
 
     this.rest.getAuthHeader = this.getAuthorizationHeaders.bind(this);

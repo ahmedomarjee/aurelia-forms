@@ -57,8 +57,8 @@ export class DxTemplateService {
 
     const result = this.templatingEngine.enhance({
       element: newElement.get(0),
-      bindingContext: bindingContext,
-      overrideContext: model,
+      bindingContext: model,
+      overrideContext: bindingContext,
       resources: resources
     });
     result.attached();

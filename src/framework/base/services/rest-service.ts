@@ -68,16 +68,16 @@ export class RestService {
   }
 
   getUrl(suffix: string): string {
-    return `${Config.baseUrl}/${suffix}`;
+    return `${Config["baseUrl"]}/${suffix}`;
   }
   getApiUrl(suffix: string): string {
-    return `${Config.apiUrl}/${suffix}`;
+    return `${Config["apiUrl"]}/${suffix}`;
   }
   getWebApiUrl(suffix: string): string {
-    return `${Config.webApiUrl}/${suffix}`;
+    return `${Config["webApiUrl"]}/${suffix}`;
   }
   getAppUrl(suffix: string): string {
-    return `${Config.appUrl}/${suffix}`;
+    return `${Config["appUrl"]}/${suffix}`;
   }
 
   private createHeaders(options?: Interfaces.IRestGetOptions) {

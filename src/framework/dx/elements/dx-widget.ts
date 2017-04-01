@@ -48,6 +48,7 @@ export class DxWidget {
 
     this.options = this.options || {};
     this.options.onOptionChanged = this.onOptionChanged.bind(this);
+    this.options.modelByElement = DxWidget.modelByElement;
     this.options.integrationOptions = {
       templates: this.templates
     }
@@ -92,6 +93,17 @@ export class DxWidget {
     }
   }
 
+  private static modelByElement(element: any): any {
+    if (element.jquery) {
+      element = element.get(0);
+    }
+
+    if (!element.au || !element.au.controller || !element.au.controller.viewModel) {
+      return null;
+    }
+
+    return element.au.controller.viewModel.bindingContext;
+  }
   private extractTemplates(): void {
     $(this.element)
       .children("dx-template")
@@ -185,6 +197,15 @@ export class DxWidget {
     }
 
     if (!binding.parsed.isAssignable) {
+      return;
+    }
+
+    const currValue = binding.parsed.evaluate({
+      bindingContext: this.bindingContext,
+      overrideContext: null
+    });
+
+    if (currValue === e.value) {
       return;
     }
 
