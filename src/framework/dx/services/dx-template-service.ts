@@ -51,14 +51,12 @@ export class DxTemplateService {
       model = {
         data: model
       };
-    } else {
-      model = {};
     }
 
     const result = this.templatingEngine.enhance({
       element: newElement.get(0),
-      bindingContext: model,
-      overrideContext: bindingContext,
+      bindingContext: model || bindingContext,
+      overrideContext: model ? bindingContext : null,
       resources: resources
     });
     result.attached();

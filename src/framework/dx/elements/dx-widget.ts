@@ -25,6 +25,7 @@ export class DxWidget {
   instance: any;
   templates = {};
   bindingContext: any;
+  overrideContext: any;
 
   constructor(
     private element: Element,
@@ -41,6 +42,15 @@ export class DxWidget {
   }
   bind(bindingContext: any, overrideContext: OverrideContext) {
     this.bindingContext = bindingContext;
+
+    if (overrideContext) {
+      if (overrideContext.parentOverrideContext !== undefined) {
+        this.overrideContext = overrideContext.parentOverrideContext;
+      } else {
+        this.overrideContext = overrideContext;
+      }
+    }
+    
     this.checkBindings();
   }
   attached() {
@@ -144,7 +154,7 @@ export class DxWidget {
 
       const value = binding.parsed.evaluate({
         bindingContext: this.bindingContext,
-        overrideContext: null
+        overrideContext: this.overrideContext
       });
 
       this.instance.option(property, value);
@@ -202,7 +212,7 @@ export class DxWidget {
 
     const currValue = binding.parsed.evaluate({
       bindingContext: this.bindingContext,
-      overrideContext: null
+      overrideContext: this.overrideContext
     });
 
     if (currValue === e.value) {
@@ -211,14 +221,15 @@ export class DxWidget {
 
     binding.parsed.assign({
       bindingContext: this.bindingContext,
-      overrideContext: null
+      overrideContext: this.overrideContext
     }, e.value);
   }
   private renderInline(): void {
     $(this.element).children().each((index, child) => {
       const result = this.templatingEngine.enhance({
         element: child,
-        bindingContext: this.bindingContext
+        bindingContext: this.bindingContext,
+        overrideContext: this.overrideContext
       });
 
       result.attached();

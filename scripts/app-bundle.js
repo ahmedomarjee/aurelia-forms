@@ -1887,17 +1887,6 @@ define('framework/default-ui/index',["require", "exports"], function (require, e
     exports.configure = configure;
 });
 
-define('framework/dx/index',["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    function configure(config) {
-        config
-            .globalResources("devextreme")
-            .globalResources("./elements/dx-widget");
-    }
-    exports.configure = configure;
-});
-
 define('framework/forms/classes/command-server-data',["require", "exports", "tslib", "aurelia-framework"], function (require, exports, tslib_1, aurelia_framework_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -4268,13 +4257,13 @@ define('framework/login/login',["require", "exports", "tslib", "aurelia-framewor
     exports.Login = Login;
 });
 
-define('framework/stack-router/index',["require", "exports"], function (require, exports) {
+define('framework/dx/index',["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     function configure(config) {
         config
-            .globalResources("./views/stack-router/stack-router")
-            .globalResources("./attributes/stack-router-link/stack-router-link");
+            .globalResources("devextreme")
+            .globalResources("./elements/dx-widget");
     }
     exports.configure = configure;
 });
@@ -4283,6 +4272,17 @@ define('framework/security/index',["require", "exports"], function (require, exp
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     function configure(config) {
+    }
+    exports.configure = configure;
+});
+
+define('framework/stack-router/index',["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    function configure(config) {
+        config
+            .globalResources("./views/stack-router/stack-router")
+            .globalResources("./attributes/stack-router-link/stack-router-link");
     }
     exports.configure = configure;
 });
@@ -4647,6 +4647,22 @@ define('framework/default-ui/views/header/header',["require", "exports", "tslib"
     exports.Header = Header;
 });
 
+define('framework/default-ui/views/loading/loading',["require", "exports", "tslib", "aurelia-framework", "../../../base/services/rest-service"], function (require, exports, tslib_1, aurelia_framework_1, rest_service_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var Loading = (function () {
+        function Loading(rest) {
+            this.rest = rest;
+        }
+        return Loading;
+    }());
+    Loading = tslib_1.__decorate([
+        aurelia_framework_1.autoinject,
+        tslib_1.__metadata("design:paramtypes", [rest_service_1.RestService])
+    ], Loading);
+    exports.Loading = Loading;
+});
+
 define('framework/default-ui/views/loading-spinner/loading-spinner',["require", "exports", "tslib", "aurelia-framework"], function (require, exports, tslib_1, aurelia_framework_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -4670,22 +4686,6 @@ define('framework/default-ui/views/loading-spinner/loading-spinner',["require", 
         tslib_1.__metadata("design:paramtypes", [Element])
     ], LoadingSpinner);
     exports.LoadingSpinner = LoadingSpinner;
-});
-
-define('framework/default-ui/views/loading/loading',["require", "exports", "tslib", "aurelia-framework", "../../../base/services/rest-service"], function (require, exports, tslib_1, aurelia_framework_1, rest_service_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var Loading = (function () {
-        function Loading(rest) {
-            this.rest = rest;
-        }
-        return Loading;
-    }());
-    Loading = tslib_1.__decorate([
-        aurelia_framework_1.autoinject,
-        tslib_1.__metadata("design:paramtypes", [rest_service_1.RestService])
-    ], Loading);
-    exports.Loading = Loading;
 });
 
 define('framework/default-ui/views/sidebar/sidebar',["require", "exports", "tslib", "aurelia-framework", "../../services/layout-service", "../../../stack-router/export"], function (require, exports, tslib_1, aurelia_framework_1, layout_service_1, export_1) {
@@ -4901,148 +4901,6 @@ define('framework/login/views/login/login-form',["require", "exports", "tslib", 
     exports.LoginForm = LoginForm;
 });
 
-define('framework/stack-router/attributes/stack-router-link/stack-router-link',["require", "exports", "tslib", "aurelia-framework", "../../services/history-service"], function (require, exports, tslib_1, aurelia_framework_1, history_service_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var StackRouterLinkCustomAttribute = (function () {
-        function StackRouterLinkCustomAttribute(element, history) {
-            this.element = element;
-            this.history = history;
-        }
-        StackRouterLinkCustomAttribute.prototype.bind = function () {
-            var _this = this;
-            this.element.addEventListener("click", function (e) {
-                var event = window.event;
-                if (!event.ctrlKey
-                    && !event.altKey
-                    && !event.shiftKey
-                    && !event.metaKey) {
-                    var href = _this.element.getAttribute("href");
-                    if (href) {
-                        _this.history.navigateByCode(_this.element.getAttribute("href"), _this.clearStack);
-                    }
-                    e.preventDefault();
-                }
-            });
-        };
-        return StackRouterLinkCustomAttribute;
-    }());
-    tslib_1.__decorate([
-        aurelia_framework_1.bindable,
-        tslib_1.__metadata("design:type", Boolean)
-    ], StackRouterLinkCustomAttribute.prototype, "clearStack", void 0);
-    StackRouterLinkCustomAttribute = tslib_1.__decorate([
-        aurelia_framework_1.autoinject,
-        tslib_1.__metadata("design:paramtypes", [Element,
-            history_service_1.HistoryService])
-    ], StackRouterLinkCustomAttribute);
-    exports.StackRouterLinkCustomAttribute = StackRouterLinkCustomAttribute;
-});
-
-define('framework/stack-router/views/stack-router/stack-router',["require", "exports", "tslib", "aurelia-framework", "aurelia-event-aggregator", "../../services/router-service", "../../services/history-service"], function (require, exports, tslib_1, aurelia_framework_1, aurelia_event_aggregator_1, router_service_1, history_service_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var StackRouter = (function () {
-        function StackRouter(history, router, eventAggregator) {
-            this.history = history;
-            this.router = router;
-            this.eventAggregator = eventAggregator;
-            this.createToolbar = true;
-        }
-        StackRouter.prototype.created = function (owningView) {
-            this.owningView = owningView;
-        };
-        StackRouter.prototype.bind = function (bindingContext, overrideContext) {
-            this.bindingContext = bindingContext;
-            this.overrideContext = overrideContext;
-        };
-        StackRouter.prototype.attached = function () {
-            this.history.navigateCurrentOrInPipeline();
-        };
-        return StackRouter;
-    }());
-    tslib_1.__decorate([
-        aurelia_framework_1.bindable,
-        tslib_1.__metadata("design:type", Boolean)
-    ], StackRouter.prototype, "createToolbar", void 0);
-    StackRouter = tslib_1.__decorate([
-        aurelia_framework_1.autoinject,
-        tslib_1.__metadata("design:paramtypes", [history_service_1.HistoryService,
-            router_service_1.RouterService,
-            aurelia_event_aggregator_1.EventAggregator])
-    ], StackRouter);
-    exports.StackRouter = StackRouter;
-});
-
-define('framework/stack-router/views/view/view',["require", "exports", "tslib", "aurelia-framework"], function (require, exports, tslib_1, aurelia_framework_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var View = (function () {
-        function View(element, bindingEngine, taskQueue) {
-            this.element = element;
-            this.bindingEngine = bindingEngine;
-            this.taskQueue = taskQueue;
-            this.createToolbar = true;
-        }
-        Object.defineProperty(View.prototype, "className", {
-            get: function () {
-                if (this.createToolbar) {
-                    return "t--view-with-toolbar";
-                }
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(View.prototype, "toolbarOptions", {
-            get: function () {
-                if (!this.view || !this.view.controller || !this.view.controller.currentViewModel) {
-                    return null;
-                }
-                return this.view.controller.currentViewModel.toolbarOptions;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        View.prototype.bind = function () {
-            $(this.element).find(".t--view-content").removeClass("t--view-content-attached");
-            $(this.element).removeClass("t--view-attached");
-        };
-        View.prototype.attached = function () {
-            var _this = this;
-            setTimeout(function () {
-                $(_this.element).addClass("t--view-attached");
-                $(_this.element).find(".t--view-content").addClass("t--view-content-attached");
-            }, 100);
-        };
-        return View;
-    }());
-    tslib_1.__decorate([
-        aurelia_framework_1.bindable,
-        tslib_1.__metadata("design:type", Boolean)
-    ], View.prototype, "createToolbar", void 0);
-    tslib_1.__decorate([
-        aurelia_framework_1.bindable,
-        tslib_1.__metadata("design:type", Object)
-    ], View.prototype, "view", void 0);
-    tslib_1.__decorate([
-        aurelia_framework_1.computedFrom("createToolbar"),
-        tslib_1.__metadata("design:type", String),
-        tslib_1.__metadata("design:paramtypes", [])
-    ], View.prototype, "className", null);
-    tslib_1.__decorate([
-        aurelia_framework_1.computedFrom("view.controller.currentViewModel.toolbarOptions"),
-        tslib_1.__metadata("design:type", Object),
-        tslib_1.__metadata("design:paramtypes", [])
-    ], View.prototype, "toolbarOptions", null);
-    View = tslib_1.__decorate([
-        aurelia_framework_1.autoinject,
-        tslib_1.__metadata("design:paramtypes", [Element,
-            aurelia_framework_1.BindingEngine,
-            aurelia_framework_1.TaskQueue])
-    ], View);
-    exports.View = View;
-});
-
 define('framework/security/views/authgroup/authgroup-edit-form',["require", "exports", "tslib", "../../../forms/form-export"], function (require, exports, tslib_1, fwx) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -5214,6 +5072,148 @@ define('framework/security/views/authgroup/authgroup-list-form',["require", "exp
     exports.AuthgroupListForm = AuthgroupListForm;
 });
 
+define('framework/stack-router/attributes/stack-router-link/stack-router-link',["require", "exports", "tslib", "aurelia-framework", "../../services/history-service"], function (require, exports, tslib_1, aurelia_framework_1, history_service_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var StackRouterLinkCustomAttribute = (function () {
+        function StackRouterLinkCustomAttribute(element, history) {
+            this.element = element;
+            this.history = history;
+        }
+        StackRouterLinkCustomAttribute.prototype.bind = function () {
+            var _this = this;
+            this.element.addEventListener("click", function (e) {
+                var event = window.event;
+                if (!event.ctrlKey
+                    && !event.altKey
+                    && !event.shiftKey
+                    && !event.metaKey) {
+                    var href = _this.element.getAttribute("href");
+                    if (href) {
+                        _this.history.navigateByCode(_this.element.getAttribute("href"), _this.clearStack);
+                    }
+                    e.preventDefault();
+                }
+            });
+        };
+        return StackRouterLinkCustomAttribute;
+    }());
+    tslib_1.__decorate([
+        aurelia_framework_1.bindable,
+        tslib_1.__metadata("design:type", Boolean)
+    ], StackRouterLinkCustomAttribute.prototype, "clearStack", void 0);
+    StackRouterLinkCustomAttribute = tslib_1.__decorate([
+        aurelia_framework_1.autoinject,
+        tslib_1.__metadata("design:paramtypes", [Element,
+            history_service_1.HistoryService])
+    ], StackRouterLinkCustomAttribute);
+    exports.StackRouterLinkCustomAttribute = StackRouterLinkCustomAttribute;
+});
+
+define('framework/stack-router/views/stack-router/stack-router',["require", "exports", "tslib", "aurelia-framework", "aurelia-event-aggregator", "../../services/router-service", "../../services/history-service"], function (require, exports, tslib_1, aurelia_framework_1, aurelia_event_aggregator_1, router_service_1, history_service_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var StackRouter = (function () {
+        function StackRouter(history, router, eventAggregator) {
+            this.history = history;
+            this.router = router;
+            this.eventAggregator = eventAggregator;
+            this.createToolbar = true;
+        }
+        StackRouter.prototype.created = function (owningView) {
+            this.owningView = owningView;
+        };
+        StackRouter.prototype.bind = function (bindingContext, overrideContext) {
+            this.bindingContext = bindingContext;
+            this.overrideContext = overrideContext;
+        };
+        StackRouter.prototype.attached = function () {
+            this.history.navigateCurrentOrInPipeline();
+        };
+        return StackRouter;
+    }());
+    tslib_1.__decorate([
+        aurelia_framework_1.bindable,
+        tslib_1.__metadata("design:type", Boolean)
+    ], StackRouter.prototype, "createToolbar", void 0);
+    StackRouter = tslib_1.__decorate([
+        aurelia_framework_1.autoinject,
+        tslib_1.__metadata("design:paramtypes", [history_service_1.HistoryService,
+            router_service_1.RouterService,
+            aurelia_event_aggregator_1.EventAggregator])
+    ], StackRouter);
+    exports.StackRouter = StackRouter;
+});
+
+define('framework/stack-router/views/view/view',["require", "exports", "tslib", "aurelia-framework"], function (require, exports, tslib_1, aurelia_framework_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var View = (function () {
+        function View(element, bindingEngine, taskQueue) {
+            this.element = element;
+            this.bindingEngine = bindingEngine;
+            this.taskQueue = taskQueue;
+            this.createToolbar = true;
+        }
+        Object.defineProperty(View.prototype, "className", {
+            get: function () {
+                if (this.createToolbar) {
+                    return "t--view-with-toolbar";
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(View.prototype, "toolbarOptions", {
+            get: function () {
+                if (!this.view || !this.view.controller || !this.view.controller.currentViewModel) {
+                    return null;
+                }
+                return this.view.controller.currentViewModel.toolbarOptions;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        View.prototype.bind = function () {
+            $(this.element).find(".t--view-content").removeClass("t--view-content-attached");
+            $(this.element).removeClass("t--view-attached");
+        };
+        View.prototype.attached = function () {
+            var _this = this;
+            setTimeout(function () {
+                $(_this.element).addClass("t--view-attached");
+                $(_this.element).find(".t--view-content").addClass("t--view-content-attached");
+            }, 100);
+        };
+        return View;
+    }());
+    tslib_1.__decorate([
+        aurelia_framework_1.bindable,
+        tslib_1.__metadata("design:type", Boolean)
+    ], View.prototype, "createToolbar", void 0);
+    tslib_1.__decorate([
+        aurelia_framework_1.bindable,
+        tslib_1.__metadata("design:type", Object)
+    ], View.prototype, "view", void 0);
+    tslib_1.__decorate([
+        aurelia_framework_1.computedFrom("createToolbar"),
+        tslib_1.__metadata("design:type", String),
+        tslib_1.__metadata("design:paramtypes", [])
+    ], View.prototype, "className", null);
+    tslib_1.__decorate([
+        aurelia_framework_1.computedFrom("view.controller.currentViewModel.toolbarOptions"),
+        tslib_1.__metadata("design:type", Object),
+        tslib_1.__metadata("design:paramtypes", [])
+    ], View.prototype, "toolbarOptions", null);
+    View = tslib_1.__decorate([
+        aurelia_framework_1.autoinject,
+        tslib_1.__metadata("design:paramtypes", [Element,
+            aurelia_framework_1.BindingEngine,
+            aurelia_framework_1.TaskQueue])
+    ], View);
+    exports.View = View;
+});
+
 define('text!app.html', ['module'], function(module) { module.exports = "<template>\r\n  <require from=\"./framework/default-ui/views/container/container\"></require>\r\n  <container></container>\r\n</template>\r\n"; });
 define('text!framework/login/login.html', ['module'], function(module) { module.exports = "<template>\r\n  <require from=\"../stack-router/views/stack-router/stack-router\"></require>\r\n  <require from=\"../../framework/default-ui/views/loading/loading\"></require>\r\n  <require from=\"./login.css\"></require>\r\n\r\n  <loading></loading>\r\n  <div class=\"t--login-container\">\r\n    <div class=\"t--login-image\">\r\n      <div class=\"t--login-banner\" tr=\"key.bind: title\">\r\n      </div>\r\n    </div>  \r\n    <div class=\"t--login-data\">\r\n      <stack-router create-toolbar.bind=\"false\"></stack-router>\r\n    </div>\r\n  </div>\r\n</template>"; });
 define('text!framework/dx/elements/dx-widget.html', ['module'], function(module) { module.exports = "<template class=\"dx-widget\">\r\n</template>"; });
@@ -5227,22 +5227,22 @@ define('text!framework/default-ui/views/header/header.html', ['module'], functio
 define('text!framework/base/styles/variables.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n"; });
 define('text!framework/default-ui/views/loading/loading.html', ['module'], function(module) { module.exports = "<template>\r\n  <require from=\"../loading-spinner/loading-spinner\"></require>\r\n\r\n  <loading-spinner if.bind=\"rest.isLoading\"></loading-spinner>\r\n</template>"; });
 define('text!framework/default-ui/styles/popup.css', ['module'], function(module) { module.exports = ".dx-popup-wrapper:not(.dx-dialog) > .dx-popup-normal > .dx-popup-content {\n  padding: 0;\n}\n"; });
-define('text!framework/default-ui/views/loading-spinner/loading-spinner.html', ['module'], function(module) { module.exports = "<template class=\"t--loading\">\r\n  <require from=\"./loading-spinner.css\"></require>\r\n  \r\n  <div class=\"t--loading-spinner\">\r\n    <div class=\"t--loading-rect1\"></div>\r\n    <div class=\"t--loading-rect2\"></div>\r\n    <div class=\"t--loading-rect3\"></div>\r\n    <div class=\"t--loading-rect4\"></div>\r\n    <div class=\"t--loading-rect5\"></div>\r\n  </div>\r\n</template>"; });
 define('text!framework/default-ui/views/sidebar/sidebar.html', ['module'], function(module) { module.exports = "<template class=\"t--sidebar\">\r\n  <require from=\"../sidebar-sub/sidebar-sub\"></require>\r\n  <require from=\"./sidebar.css\"></require>\r\n\r\n  <div class=\"t--sidebar-header\" click.delegate=\"onHeaderClicked()\">\r\n    <div class=\"t--sidebar-header-title\">\r\n      Navigation\r\n    </div>\r\n    <div class=\"t--sidebar-header-icon\">\r\n      <i class=\"fa fa-${headerIcon}\"></i>\r\n    </div>\r\n  </div>\r\n\r\n  <ul>\r\n    <li\r\n      repeat.for=\"route of router.navigationRoutes\">\r\n      <sidebar-sub route.bind=\"route\" if.bind=\"route.sidebarExpanded\"></sidebar-sub>\r\n      <a \r\n        href.bind=\"route.route ? '#' + route.route : ''\" \r\n        class=\"t--sidebar-item\"\r\n        click.delegate=\"onRouteClicked(route)\"\r\n        stack-router-link=\"clear-stack.bind: true\">\r\n        <span class=\"t--sidebar-item-title\" tr=\"key.bind: route.caption\">\r\n        </span>\r\n        <span class=\"t--sidebar-item-icon\" if.bind=\"route.navigation.icon\">\r\n          <i class=\"fa fa-${route.navigation.icon}\"></i>\r\n        </span>\r\n      </a>\r\n    </li>\r\n  </ul>\r\n</template>\r\n"; });
-define('text!framework/default-ui/views/sidebar-sub/sidebar-sub.html', ['module'], function(module) { module.exports = "<template class=\"t--sidebar-sub au-animate\">\r\n  <ul>\r\n    <li repeat.for=\"child of route.children\">\r\n      <a \r\n        href.bind=\"child.route ? '#' + child.route : ''\" \r\n        class=\"t--sidebar-sub-item\"\r\n        stack-router-link=\"clear-stack.bind: true\">\r\n        <span class=\"t--sidebar-sub-item-title\" tr=\"key.bind: route.caption\">\r\n        </span>\r\n      </a>\r\n    </li>\r\n  </ul>\r\n</template>"; });
+define('text!framework/default-ui/views/loading-spinner/loading-spinner.html', ['module'], function(module) { module.exports = "<template class=\"t--loading\">\r\n  <require from=\"./loading-spinner.css\"></require>\r\n  \r\n  <div class=\"t--loading-spinner\">\r\n    <div class=\"t--loading-rect1\"></div>\r\n    <div class=\"t--loading-rect2\"></div>\r\n    <div class=\"t--loading-rect3\"></div>\r\n    <div class=\"t--loading-rect4\"></div>\r\n    <div class=\"t--loading-rect5\"></div>\r\n  </div>\r\n</template>"; });
 define('text!framework/default-ui/styles/styles.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--view-content {\n  opacity: 0;\n  transform: translateX(10px);\n  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n  transition-property: all;\n}\n.t--view-content.t--view-content-attached {\n  opacity: 1;\n  transform: translateX(0);\n}\n"; });
+define('text!framework/default-ui/views/sidebar-sub/sidebar-sub.html', ['module'], function(module) { module.exports = "<template class=\"t--sidebar-sub au-animate\">\r\n  <ul>\r\n    <li repeat.for=\"child of route.children\">\r\n      <a \r\n        href.bind=\"child.route ? '#' + child.route : ''\" \r\n        class=\"t--sidebar-sub-item\"\r\n        stack-router-link=\"clear-stack.bind: true\">\r\n        <span class=\"t--sidebar-sub-item-title\" tr=\"key.bind: route.caption\">\r\n        </span>\r\n      </a>\r\n    </li>\r\n  </ul>\r\n</template>"; });
 define('text!framework/login/views/login/login-form.html', ['module'], function(module) { module.exports = "<template>\r\n    <div class=\"t--margin-top col-xs-12 t--login-logo\">\r\n        <img class=\"t--form-element-image\" src=\"http://2014.erp-future.com/sites/2014.erp-future.com/files/1_business/Logo_U_TIP.png\"></img>\r\n    </div>\r\n    <form submit.delegate=\"submitForm('functions.$f.loginCommand')\">\r\n        <button class=\"t--invisible-submit\" type=\"submit\"></button>\r\n        <div class=\"col-xs-12\">\r\n            <div tr=\"key: login-form.enter_user_password_text; markdown: true; mode: html\"></div>\r\n        </div>\r\n        <div class=\"t--margin-top col-xs-12\">\r\n            <div class=\"t--editor-caption\" tr=\"key: login-form.username_caption\"></div>\r\n            <dx-widget name=\"dxTextBox\" options.bind=\"usernameOptions\" view-model.ref=\"username\"></dx-widget>\r\n        </div>\r\n        <div class=\"t--margin-top col-xs-12\">\r\n            <div class=\"t--editor-caption\" tr=\"key: login-form.password_caption\"></div>\r\n            <dx-widget name=\"dxTextBox\" options.bind=\"passwordOptions\" view-model.ref=\"password\"></dx-widget>\r\n        </div>\r\n        <div class=\"t--margin-top col-xs-12\">\r\n            <div class=\"t--editor-caption\">&nbsp;</div>\r\n            <dx-widget name=\"dxCheckBox\" options.bind=\"stayLoggodOnOptions\" view-model.ref=\"stayLoggodOn\"></dx-widget>\r\n        </div>\r\n        <div class=\"t--margin-top col-xs-12\">\r\n            <div class=\"t--editor-caption\">&nbsp;</div>\r\n            <dx-widget name=\"dxButton\" options.bind=\"wd1Options\"></dx-widget>\r\n        </div>\r\n    </form>\r\n</template>"; });
 define('text!framework/security/views/authgroup/authgroup-edit-form.html', ['module'], function(module) { module.exports = "<template>\r\n    <div class=\"t--margin-top col-xs-12\">\r\n        <div class=\"t--cursor-pointer\" click.delegate=\"showPopup('popup')\" tr=\"key: authgroup-edit.info_text; markdown: true; mode: html\"></div>\r\n    </div>\r\n    <div class=\"t--margin-top col-xs-12 col-md-6\">\r\n        <div class=\"t--editor-caption\" tr=\"key: authgroup-edit.name_caption\"></div>\r\n        <dx-widget name=\"dxTextBox\" options.bind=\"nameOptions\" view-model.ref=\"name\"></dx-widget>\r\n    </div>\r\n    <div class=\"t--margin-top col-xs-12 col-md-6\">\r\n        <div class=\"t--editor-caption\" tr=\"key: authgroup-edit.mandator_caption\"></div>\r\n        <dx-widget name=\"dxSelectBox\" options.bind=\"mandatorOptions\" view-model.ref=\"mandator\"></dx-widget>\r\n    </div>\r\n    <dx-widget name=\"dxPopup\" options.bind=\"popupOptions\" view-model.ref=\"popup\">\r\n        <dx-template name=\"contentTemplate\">\r\n            <div class=\"container-fluid\">\r\n                <div class=\"row\">\r\n                    <div class=\"t--margin-top col-xs-12\">\r\n                        <div tr=\"key: authgroup-edit.popuptext_text; markdown: true; mode: html\"></div>\r\n                    </div>\r\n                </div>\r\n            </div>\r\n        </dx-template>\r\n    </dx-widget>\r\n</template>"; });
 define('text!framework/default-ui/styles/toolbar.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--toolbar-title {\n  font-size: 16px;\n  font-weight: 100;\n  color: black;\n  padding: 0 12px;\n}\n.t--toolbar-item {\n  display: flex;\n  align-items: center;\n  height: 32px;\n  padding: 0 12px;\n  text-decoration: none;\n  cursor: pointer;\n  -webkit-user-select: none;\n}\n.t--toolbar-item i {\n  font-size: 16px;\n}\n.t--toolbar-item:hover {\n  color: white;\n  background-color: #808080;\n}\n.t--toolbar-item-content {\n  display: flex;\n  flex-direction: row;\n}\n.t--container .dx-toolbar {\n  height: 32px;\n  background-color: #D3D3D3;\n}\n.t--container .dx-toolbar .dx-toolbar-items-container {\n  height: 32px;\n}\n.t--toolbar.dx-popup-normal .dx-toolbar,\n.dx-popup-wrapper:not(.dx-dialog) > .dx-popup-normal.dx-popup-normal .dx-toolbar {\n  margin: 12px;\n  width: calc(100% - 12px * 2);\n  box-sizing: content-box;\n}\n.t--toolbar .dx-toolbar,\n.dx-popup-wrapper:not(.dx-dialog) > .dx-popup-normal .dx-toolbar {\n  padding: 0;\n  height: 60px;\n  background-color: #808080;\n  color: white;\n}\n.t--toolbar .dx-toolbar .dx-toolbar-items-container,\n.dx-popup-wrapper:not(.dx-dialog) > .dx-popup-normal .dx-toolbar .dx-toolbar-items-container {\n  height: 60px;\n}\n.t--toolbar .dx-state-disabled .t--toolbar-item,\n.dx-popup-wrapper:not(.dx-dialog) > .dx-popup-normal .dx-state-disabled .t--toolbar-item {\n  cursor: default;\n  color: lightgray;\n}\n.t--toolbar .dx-state-disabled .t--toolbar-item:hover,\n.dx-popup-wrapper:not(.dx-dialog) > .dx-popup-normal .dx-state-disabled .t--toolbar-item:hover {\n  background-color: inherit;\n}\n.t--toolbar .t--toolbar-title,\n.dx-popup-wrapper:not(.dx-dialog) > .dx-popup-normal .t--toolbar-title {\n  font-size: 26px;\n  color: white;\n}\n.t--toolbar .t--toolbar-item,\n.dx-popup-wrapper:not(.dx-dialog) > .dx-popup-normal .t--toolbar-item {\n  height: 60px;\n  flex-direction: column;\n  justify-content: center;\n  align-items: center;\n  text-align: center;\n  color: white;\n}\n.t--toolbar .t--toolbar-item:hover,\n.dx-popup-wrapper:not(.dx-dialog) > .dx-popup-normal .t--toolbar-item:hover {\n  background-color: #4F4F4F;\n}\n.t--toolbar .t--toolbar-item-content,\n.dx-popup-wrapper:not(.dx-dialog) > .dx-popup-normal .t--toolbar-item-content {\n  flex-direction: column;\n}\n"; });
 define('text!framework/security/views/authgroup/authgroup-list-form.html', ['module'], function(module) { module.exports = "<template>\r\n    <require from=\"./authgroup-edit-form\"></require>\r\n    <dx-widget name=\"dxPopup\" options.bind=\"editOptions\" view-model.ref=\"edit\">\r\n        <dx-template name=\"contentTemplate\">\r\n            <div class=\"container-fluid\">\r\n                <div class=\"row\">\r\n                    <authgroup-edit-form view-model.ref=\"editContent\" is-edit-form=\"true\"></authgroup-edit-form>\r\n                </div>\r\n            </div>\r\n        </dx-template>\r\n    </dx-widget>\r\n    <div class=\"t--margin-top col-xs-12\">\r\n        <dx-widget name=\"dxDataGrid\" options.bind=\"authgroupsOptions\" view-model.ref=\"authgroups\"></dx-widget>\r\n    </div>\r\n</template>"; });
 define('text!framework/stack-router/views/stack-router/stack-router.html', ['module'], function(module) { module.exports = "<template class=\"t--stack-router\">\r\n  <require from=\"./stack-router.css\"></require>\r\n  <require from=\"../view/view\"></require>\r\n\r\n  <div \r\n    class=\"t--stack-router-item\" \r\n    class.bind=\"item.className\"\r\n    repeat.for=\"item of router.viewStack\">\r\n    <view view.bind=\"item\" create-toolbar.bind=\"$parent.createToolbar\"></view>\r\n  </div>\r\n</template>"; });
-define('text!framework/stack-router/views/view/view.html', ['module'], function(module) { module.exports = "<template class=\"t--view\" class.bind=\"className\">\r\n  <require from=\"./view.css\"></require>\r\n\r\n  <div class=\"t--toolbar\" if.bind=\"createToolbar\">\r\n    <dx-widget if.bind=\"toolbarOptions\" name=\"dxToolbar\" options.bind=\"toolbarOptions\"></dx-widget>\r\n  </div>\r\n  <div class=\"t--view-content-wrapper\">\r\n    <div class=\"container-fluid\">\r\n      <div class=\"row\">\r\n        <compose\r\n          view-model.ref=\"view.controller\" \r\n          view-model.bind=\"view.moduleId\" \r\n          model.bind=\"view.model\" \r\n          class=\"t--view-content\"></compose>\r\n      </div>\r\n    </div>\r\n  </div>\r\n</template>"; });
 define('text!framework/forms/styles/styles.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--form-element-flex-box {\n  display: flex;\n}\n.t--form-element-flex-box-with-padding > *:not(:first-child) {\n  margin-left: 12px;\n}\n.t--form-element-image-inline {\n  background-size: contain;\n  background-position: center center;\n  background-repeat: no-repeat;\n}\n.t--form-element-image {\n  max-width: 100%;\n}\n"; });
+define('text!framework/stack-router/views/view/view.html', ['module'], function(module) { module.exports = "<template class=\"t--view\" class.bind=\"className\">\r\n  <require from=\"./view.css\"></require>\r\n\r\n  <div class=\"t--toolbar\" if.bind=\"createToolbar\">\r\n    <dx-widget if.bind=\"toolbarOptions\" name=\"dxToolbar\" options.bind=\"toolbarOptions\"></dx-widget>\r\n  </div>\r\n  <div class=\"t--view-content-wrapper\">\r\n    <div class=\"container-fluid\">\r\n      <div class=\"row\">\r\n        <compose\r\n          view-model.ref=\"view.controller\" \r\n          view-model.bind=\"view.moduleId\" \r\n          model.bind=\"view.model\" \r\n          class=\"t--view-content\"></compose>\r\n      </div>\r\n    </div>\r\n  </div>\r\n</template>"; });
 define('text!framework/default-ui/views/container/container.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--container {\n  display: block;\n  width: 100vw;\n  height: 100vh;\n}\n.t--toolbar-title {\n  min-width: 220px;\n  padding: 0 12px;\n  font-size: 20px;\n  font-weight: 100;\n  color: white;\n}\n"; });
 define('text!framework/default-ui/views/content/content.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--content {\n  display: block;\n  margin-left: 280px;\n  height: calc(100% - 60px);\n  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n  transition-property: margin-left;\n}\n.t--sidebar-collapsed .t--content {\n  margin-left: 60px;\n}\n.t--view-current {\n  display: block;\n}\n.t--view-history {\n  display: none;\n}\n"; });
 define('text!framework/default-ui/views/header/header.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--header {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  margin-left: 280px;\n  padding: 0 12px;\n  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n  transition-property: margin-left;\n}\n.t--sidebar-collapsed .t--header {\n  margin-left: 60px;\n}\n.t--header-flex {\n  display: flex;\n  width: 100%;\n}\n.t--header-title {\n  flex-grow: 1;\n}\n"; });
-define('text!framework/default-ui/views/loading-spinner/loading-spinner.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--loading {\n  position: fixed;\n  top: 0;\n  bottom: 0;\n  left: 0;\n  right: 0;\n  font-family: \"Helvetica Neue\", \"Segoe UI\", Helvetica, Verdana, sans-serif;\n  font-size: 60px;\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n  align-items: center;\n  background-color: rgba(255, 255, 255, 0.8);\n  z-index: 9999;\n  opacity: 0;\n  transition-delay: 500ms;\n  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n  transition-property: opacity;\n}\n.t--loading.t--loading-active {\n  opacity: 1;\n}\n.t--loading-spinner {\n  margin: 100px auto;\n  width: 50px;\n  height: 40px;\n  text-align: center;\n  font-size: 10px;\n}\n.t--loading-spinner > div {\n  background-color: #333;\n  height: 100%;\n  width: 6px;\n  display: inline-block;\n  -webkit-animation: animationLoadingSpinner 1.2s infinite ease-in-out;\n  animation: animationLoadingSpinner 1.2s infinite ease-in-out;\n}\n.t--loading-spinner > .t--loading-rect2 {\n  -webkit-animation-delay: -1.1s;\n  animation-delay: -1.1s;\n}\n.t--loading-spinner > .t--loading-rect3 {\n  -webkit-animation-delay: -1s;\n  animation-delay: -1s;\n}\n.t--loading-spinner > .t--loading-rect4 {\n  -webkit-animation-delay: -0.9s;\n  animation-delay: -0.9s;\n}\n.t--loading-spinner > .t--loading-rect5 {\n  -webkit-animation-delay: -0.8s;\n  animation-delay: -0.8s;\n}\n@-webkit-keyframes animationLoading {\n  0% {\n    opacity: 0;\n  }\n  100% {\n    opacity: 1;\n  }\n}\n@keyframes animationLoading {\n  0% {\n    opacity: 0;\n  }\n  100% {\n    opacity: 1;\n  }\n}\n@-webkit-keyframes animationLoadingSpinner {\n  0%,\n  40%,\n  100% {\n    -webkit-transform: scaleY(0.4);\n  }\n  20% {\n    -webkit-transform: scaleY(1);\n  }\n}\n@keyframes animationLoadingSpinner {\n  0%,\n  40%,\n  100% {\n    transform: scaleY(0.4);\n    -webkit-transform: scaleY(0.4);\n  }\n  20% {\n    transform: scaleY(1);\n    -webkit-transform: scaleY(1);\n  }\n}\n"; });
 define('text!framework/default-ui/views/sidebar/sidebar.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--sidebar {\n  display: block;\n  position: fixed;\n  top: 0;\n  bottom: 0;\n  left: 0;\n  z-index: 10;\n  width: 280px;\n  background-color: #2a2e35;\n  font-size: 14px;\n  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n  transition-property: left;\n}\n.t--sidebar ul {\n  padding: 0;\n  margin: 0;\n  list-style: none;\n}\n.t--sidebar-collapsed .t--sidebar {\n  left: -220px;\n}\n.t--sidebar-collapsed .t--sidebar-sub {\n  left: 60px;\n}\n.t--sidebar-header {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  background-color: #262930;\n  color: white;\n  cursor: pointer;\n}\n.t--sidebar-header-title {\n  flex-grow: 1;\n  font-size: 26px;\n  font-weight: 100;\n  padding: 12px;\n}\n.t--sidebar-header-icon {\n  display: flex;\n  width: 60px;\n  align-items: center;\n  justify-content: center;\n}\n.t--sidebar-item {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  color: lightgray;\n  text-decoration: none;\n}\n.t--sidebar-item:hover {\n  background-color: #17C4BB;\n  color: white;\n}\n.t--sidebar-item-title {\n  flex-grow: 1;\n  padding: 12px;\n}\n.t--sidebar-item-icon {\n  display: flex;\n  width: 60px;\n  align-items: center;\n  justify-content: center;\n}\n.t--sidebar-sub {\n  position: fixed;\n  z-index: -9;\n  left: 280px;\n  min-width: 280px;\n  background-color: #2a2e35;\n  padding: 12px;\n}\n.t--sidebar-sub.au-enter-active {\n  animation: leftFadeIn 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n}\n.t--sidebar-sub-item {\n  color: lightgray;\n  text-decoration: none;\n}\n.t--sidebar-sub-item:hover {\n  color: white;\n}\n"; });
+define('text!framework/default-ui/views/loading-spinner/loading-spinner.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--loading {\n  position: fixed;\n  top: 0;\n  bottom: 0;\n  left: 0;\n  right: 0;\n  font-family: \"Helvetica Neue\", \"Segoe UI\", Helvetica, Verdana, sans-serif;\n  font-size: 60px;\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n  align-items: center;\n  background-color: rgba(255, 255, 255, 0.8);\n  z-index: 9999;\n  opacity: 0;\n  transition-delay: 500ms;\n  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n  transition-property: opacity;\n}\n.t--loading.t--loading-active {\n  opacity: 1;\n}\n.t--loading-spinner {\n  margin: 100px auto;\n  width: 50px;\n  height: 40px;\n  text-align: center;\n  font-size: 10px;\n}\n.t--loading-spinner > div {\n  background-color: #333;\n  height: 100%;\n  width: 6px;\n  display: inline-block;\n  -webkit-animation: animationLoadingSpinner 1.2s infinite ease-in-out;\n  animation: animationLoadingSpinner 1.2s infinite ease-in-out;\n}\n.t--loading-spinner > .t--loading-rect2 {\n  -webkit-animation-delay: -1.1s;\n  animation-delay: -1.1s;\n}\n.t--loading-spinner > .t--loading-rect3 {\n  -webkit-animation-delay: -1s;\n  animation-delay: -1s;\n}\n.t--loading-spinner > .t--loading-rect4 {\n  -webkit-animation-delay: -0.9s;\n  animation-delay: -0.9s;\n}\n.t--loading-spinner > .t--loading-rect5 {\n  -webkit-animation-delay: -0.8s;\n  animation-delay: -0.8s;\n}\n@-webkit-keyframes animationLoading {\n  0% {\n    opacity: 0;\n  }\n  100% {\n    opacity: 1;\n  }\n}\n@keyframes animationLoading {\n  0% {\n    opacity: 0;\n  }\n  100% {\n    opacity: 1;\n  }\n}\n@-webkit-keyframes animationLoadingSpinner {\n  0%,\n  40%,\n  100% {\n    -webkit-transform: scaleY(0.4);\n  }\n  20% {\n    -webkit-transform: scaleY(1);\n  }\n}\n@keyframes animationLoadingSpinner {\n  0%,\n  40%,\n  100% {\n    transform: scaleY(0.4);\n    -webkit-transform: scaleY(0.4);\n  }\n  20% {\n    transform: scaleY(1);\n    -webkit-transform: scaleY(1);\n  }\n}\n"; });
 define('text!framework/stack-router/views/stack-router/stack-router.css', ['module'], function(module) { module.exports = ".t--stack-router,\n.t--stack-router-item {\n  display: block;\n  height: 100%;\n}\n"; });
 define('text!framework/stack-router/views/view/view.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--view {\n  display: block;\n  position: relative;\n  height: 100%;\n  overflow-x: hidden;\n}\n.t--view-content-wrapper {\n  display: block;\n  height: 100%;\n  overflow-x: hidden;\n  overflow-y: auto;\n}\n.t--view-content {\n  display: table;\n  width: 100%;\n  margin-bottom: 12px;\n  -webkit-overflow-scrolling: touch;\n}\n.t--view-with-toolbar .t--view-content-wrapper {\n  height: calc(100% - 60px);\n}\n"; });
 //# sourceMappingURL=app-bundle.js.map
