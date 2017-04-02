@@ -14,6 +14,8 @@ import {
 } from "../../base/export";
 import * as $ from "jquery";
 
+const aureliaBinding = require("aurelia-binding");
+
 @autoinject
 @processContent(false)
 export class DxWidget {
@@ -42,14 +44,7 @@ export class DxWidget {
   }
   bind(bindingContext: any, overrideContext: OverrideContext) {
     this.bindingContext = bindingContext;
-
-    if (overrideContext) {
-      if (overrideContext.parentOverrideContext !== undefined) {
-        this.overrideContext = overrideContext.parentOverrideContext;
-      } else {
-        this.overrideContext = overrideContext;
-      }
-    }
+    this.overrideContext = overrideContext;
     
     this.checkBindings();
   }
@@ -99,7 +94,7 @@ export class DxWidget {
 
   resetValidation() {
     if (this.instance.option("isValid") === false) {
-      this.instance.option("isValid", true);
+      this.setOptionValue("isValid", true);
     }
   }
 
@@ -136,7 +131,7 @@ export class DxWidget {
         $(item).remove();
       });
 
-      Object.assign(this.templates, this.dxTemplate.getTemplates(this.bindingContext, this.owningView.resources));
+      Object.assign(this.templates, this.dxTemplate.getTemplates(this.bindingContext, this.overrideContext, this.owningView.resources));
   }
   private registerBindings(): void {
     if (!this.options.bindingOptions) {
@@ -146,9 +141,15 @@ export class DxWidget {
     for (let property in this.options.bindingOptions) {
       const binding = this.options.bindingOptions[property];
 
-      this.bindingEngine.expressionObserver(this.bindingContext, binding.expression)
+      const context = aureliaBinding.getContextFor(
+        binding.parsed.name, {
+          bindingContext: this.bindingContext,
+          overrideContext: this.overrideContext
+        }, binding.parsed.ancestor);
+
+      this.bindingEngine.expressionObserver(context, binding.expression)
         .subscribe((newValue, oldValue) => {
-          this.instance.option(property, newValue);
+          this.setOptionValue(property, newValue);
           this.registerDeepObserver(binding, property, value);
         });
 
@@ -157,11 +158,15 @@ export class DxWidget {
         overrideContext: this.overrideContext
       });
 
-      this.instance.option(property, value);
+      this.setOptionValue(property, value);
       this.registerDeepObserver(binding, property, value);
     }
   }
   private checkBindings(): void {
+    if (!this.options) {
+      throw new Error(`Invalid or no options for ${this.name}`);
+    }
+
     if (!this.options.bindingOptions) {
       return;
     }
@@ -193,7 +198,7 @@ export class DxWidget {
     }
 
     binding.deepObserver = this.deepObserver.observe(value, () => {
-      this.instance.option(property, value);
+      this.setOptionValue(property, value);
     });
   }
   private onOptionChanged(e): void {
@@ -234,5 +239,12 @@ export class DxWidget {
 
       result.attached();
     });
+  }
+  private setOptionValue(propertyName: string, value: any) {
+    if (value == void(0) && (propertyName === "items" || propertyName === "dataSource")) {
+      value = [];
+    }
+
+    this.instance.option(propertyName, value);
   }
 }
