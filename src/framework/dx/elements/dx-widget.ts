@@ -14,8 +14,6 @@ import {
 } from "../../base/export";
 import * as $ from "jquery";
 
-const aureliaBinding = require("aurelia-binding");
-
 @autoinject
 @processContent(false)
 export class DxWidget {
@@ -124,6 +122,7 @@ export class DxWidget {
               renderData.container,
               this.owningView.resources,
               this.bindingContext,
+              this.overrideContext,
               renderData.model
             );
           }
@@ -141,13 +140,7 @@ export class DxWidget {
     for (let property in this.options.bindingOptions) {
       const binding = this.options.bindingOptions[property];
 
-      const context = aureliaBinding.getContextFor(
-        binding.parsed.name, {
-          bindingContext: this.bindingContext,
-          overrideContext: this.overrideContext
-        }, binding.parsed.ancestor);
-
-      this.bindingEngine.expressionObserver(context, binding.expression)
+      this.bindingEngine.expressionObserver(this.getContext(binding), binding.expression)
         .subscribe((newValue, oldValue) => {
           this.setOptionValue(property, newValue);
           this.registerDeepObserver(binding, property, value);
@@ -186,6 +179,30 @@ export class DxWidget {
 
     const binding = bindingOptions[property];
     binding.parsed = this.bindingEngine.parseExpression(binding.expression);
+  }
+  private getContext(binding: any) {
+    const parsed = binding.parsed;
+
+    let obj = parsed;
+    while (obj.object) {
+      obj = obj.object;
+    }
+
+    if (obj.name in this.bindingContext) {
+      return this.bindingContext;
+    } else {
+      let ov = this.overrideContext;
+
+      while (ov) {
+        if (obj.name in ov.bindingContext) {
+          return ov.bindingContext;
+        }
+
+        ov = ov.parentOverrideContext;
+      }
+    }
+
+    return this.bindingContext || this.overrideContext;
   }
   private registerDeepObserver(binding, property, value): void {
     if (binding.deepObserver) {
