@@ -4,5 +4,6 @@ export * from "./expression-provider";
 export * from "./rest-delete-options";
 export * from "./rest-get-options";
 export * from "./rest-post-options";
+export * from "./scope";
 export * from "./style-class";
 export * from "./style-property";

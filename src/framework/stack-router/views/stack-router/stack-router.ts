@@ -21,8 +21,6 @@ import {
 @autoinject
 export class StackRouter {
   private owningView: any;
-  private bindingContext: any;
-  private overrideContext: any;
 
   constructor(
     private history: HistoryService,
@@ -34,11 +32,6 @@ export class StackRouter {
 
   created(owningView) {
     this.owningView = owningView;
-  }
-
-  bind(bindingContext, overrideContext) {
-    this.bindingContext = bindingContext;
-    this.overrideContext = overrideContext;
   }
 
   attached() {

@@ -4,6 +4,10 @@ import {
   TemplatingEngine
 } from "aurelia-framework";
 
+import {
+  IScope
+} from "../../base/interfaces/export";
+
 @autoinject
 export class DxTemplateService {
   private templates = {};
@@ -16,7 +20,7 @@ export class DxTemplateService {
     this.templates[key] = template;
   }
 
-  getTemplates(bindingContext: any, overrideContext: any, resources: any): any {
+  getTemplates(scope: IScope, overrideContext: any, resources: any): any {
     const result = {};
 
     for (let templateKey in this.templates) {
@@ -26,8 +30,7 @@ export class DxTemplateService {
             this.templates[templateKey],
             renderData.container,
             resources,
-            bindingContext,
-            overrideContext,
+            scope,
             renderData.model
           );
         }
@@ -37,7 +40,7 @@ export class DxTemplateService {
     return result;
   }
 
-  render(template: string | Element, container: any, resources: any, bindingContext: any, overrideContext: any, model?: any): any {
+  render(template: string | Element, container: any, resources: any, scope: IScope, model?: any): any {
     let newItem: Element | Node;
 
     if (typeof template === "string") {
@@ -57,10 +60,10 @@ export class DxTemplateService {
         data: model
       };
 
-      itemOverrideContext = createOverrideContext(bindingContext, overrideContext);
+      itemOverrideContext = createOverrideContext(scope.bindingContext, scope.overrideContext);
     } else {
-      itemBindingContext = bindingContext;
-      itemOverrideContext = overrideContext;
+      itemBindingContext = scope.bindingContext;
+      itemOverrideContext = scope.overrideContext;
     }
 
     const result = this.templatingEngine.enhance({

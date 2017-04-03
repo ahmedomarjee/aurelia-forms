@@ -15,7 +15,7 @@ export class FaIconAttribute {
 
   @bindable icon: string;
 
-  bind(bindingContext: any) {
+  bind() {
     this.setClass();
   }
 

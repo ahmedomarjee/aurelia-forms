@@ -97,7 +97,9 @@ export class DataGridWidgetCreatorService {
 
     if (options.onItemClick) {
       clickActions.push(e => {
-        form.expressions.evaluateExpression(options.onItemClick, { e })
+        form.expressions.evaluateExpression(options.onItemClick, { 
+          bindingContext: e,
+          overrideContext: null });
       });
     }
     if (options.editDataContext || options.edits.length > 0) {
@@ -201,7 +203,10 @@ export class DataGridWidgetCreatorService {
       const commands = this.defaultCommands.getListCommands(form, options);
 
       if (options.createToolbar) {
-        form[options.optionsToolbar.optionsName] = this.toolbar.createToolbarOptions(form, form.expressions, options.caption, commands);
+        form[options.optionsToolbar.optionsName] = this.toolbar.createToolbarOptions({
+          bindingContext: form,
+          overrideContext: null
+        }, form.expressions, options.caption, commands);
       } else if (options.isMainList) {
         commands.forEach(c => form.commands.addCommand(c));
       }

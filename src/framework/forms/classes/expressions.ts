@@ -8,8 +8,12 @@ import {
   FormBase
 } from "./form-base";
 import {
-  IExpressionProvider
-} from "../../base/interfaces/expression-provider";
+  IExpressionProvider,
+  IScope
+} from "../../base/interfaces/export";
+import {
+  BindingService
+} from "../../base/services/export";
 
 @autoinject
 @singleton(true)
@@ -18,17 +22,23 @@ export class Expressions implements IExpressionProvider {
   private form: FormBase;
 
   constructor(
-    private bindingEngine: BindingEngine
+    private bindingEngine: BindingEngine,
+    private binding: BindingService
   ) { }
 
-  createObserver(expression: string, action: { (newValue?: any, oldValue?: any): void }, bindingContext?: any): { (): void } {
+  createObserver(expression: string, action: { (newValue?: any, oldValue?: any): void }, scope?: IScope): { (): void } {
+    const context = !scope ? this.form : this.binding.getBindingContext(
+      this.bindingEngine.parseExpression(expression),
+      scope
+    );
+
     return this
       .bindingEngine
-      .expressionObserver(bindingContext || this.form, expression)
+      .expressionObserver(context, expression)
       .subscribe(action)
       .dispose;
   }
-  evaluateExpression(expression: string, overrideContext?: any): any {
+  evaluateExpression(expression: string, scope?: IScope): any {
     let parsed = this.expression.get(expression);
 
     if (!parsed) {
@@ -36,10 +46,14 @@ export class Expressions implements IExpressionProvider {
       this.expression.set(expression, parsed);
     }
 
-    return parsed.evaluate({
-      bindingContext: this.form,
-      overrideContext: overrideContext
-    });
+    if (!scope) {
+      scope = {
+        bindingContext: this.form,
+        overrideContext: null
+      }
+    }
+
+    return parsed.evaluate(scope);
   }
   registerForm(form: FormBase) {
     if (this.form) {

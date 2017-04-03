@@ -10,6 +10,7 @@ import {
   DxTemplateService
 } from "../services/dx-template-service";
 import {
+  BindingService,
   DeepObserverService,
 } from "../../base/export";
 import * as $ from "jquery";
@@ -31,6 +32,7 @@ export class DxWidget {
     private element: Element,
     private templatingEngine: TemplatingEngine,
     private bindingEngine: BindingEngine,
+    private binding: BindingService,
     private deepObserver: DeepObserverService,
     private dxTemplate: DxTemplateService) {
   }
@@ -120,9 +122,10 @@ export class DxWidget {
             return this.dxTemplate.render(
               item,
               renderData.container,
-              this.owningView.resources,
-              this.bindingContext,
-              this.overrideContext,
+              this.owningView.resources, {
+                bindingContext: this.bindingContext,
+                overrideContext: this.overrideContext
+              },
               renderData.model
             );
           }
@@ -140,7 +143,12 @@ export class DxWidget {
     for (let property in this.options.bindingOptions) {
       const binding = this.options.bindingOptions[property];
 
-      this.bindingEngine.expressionObserver(this.getContext(binding), binding.expression)
+      const context = this.binding.getBindingContext(binding.parsed, {
+          bindingContext: this.bindingContext,
+          overrideContext: this.overrideContext
+        });
+
+      this.bindingEngine.expressionObserver(context, binding.expression)
         .subscribe((newValue, oldValue) => {
           this.setOptionValue(property, newValue);
           this.registerDeepObserver(binding, property, value);
@@ -179,30 +187,6 @@ export class DxWidget {
 
     const binding = bindingOptions[property];
     binding.parsed = this.bindingEngine.parseExpression(binding.expression);
-  }
-  private getContext(binding: any) {
-    const parsed = binding.parsed;
-
-    let obj = parsed;
-    while (obj.object) {
-      obj = obj.object;
-    }
-
-    if (obj.name in this.bindingContext) {
-      return this.bindingContext;
-    } else {
-      let ov = this.overrideContext;
-
-      while (ov) {
-        if (obj.name in ov.bindingContext) {
-          return ov.bindingContext;
-        }
-
-        ov = ov.parentOverrideContext;
-      }
-    }
-
-    return this.bindingContext || this.overrideContext;
   }
   private registerDeepObserver(binding, property, value): void {
     if (binding.deepObserver) {

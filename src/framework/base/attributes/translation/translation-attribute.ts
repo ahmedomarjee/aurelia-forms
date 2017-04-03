@@ -25,6 +25,7 @@ export class TrCustomAttribute {
   @bindable markdown: true;
 
   bind(bindingContext: any) {
+    //TODO - für was? - wieso ist expressions in bindingContext?
     this.expressionProvider = bindingContext.expressions;
     this.setInnerHtml();
   }

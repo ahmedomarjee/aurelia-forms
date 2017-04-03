@@ -73,7 +73,11 @@ export class EditPopups {
 
     const popup: DevExpress.ui.dxPopup = this.form[editPopup.id].instance;
     const content: FormBase = this.form[editPopup.idContent];
-    popup.option("toolbarItems", this.toolbar.createToolbarItems(content, content.expressions, {
+    
+    popup.option("toolbarItems", this.toolbar.createToolbarItems({
+        bindingContext: content,
+        overrideContext: null
+      }, content.expressions, {
       getItems: () => {
         return popup.option("toolbarItems");
       },

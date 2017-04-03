@@ -5,7 +5,8 @@ import {
   FormBase
 } from "../classes/form-base";
 import {
-  IExpressionProvider
+  IExpressionProvider,
+  IScope
 } from "../../base/interfaces/export";
 import {
   LocalizationService
@@ -35,7 +36,10 @@ export class ToolbarService {
   createFormToolbarOptions(form: FormBase): DevExpress.ui.dxToolbarOptions {
     let component: DevExpress.ui.dxToolbar;
 
-    const options = this.createToolbarOptions(form, form.expressions, form.title, form.commands.getCommands(), (c) => {
+    const options = this.createToolbarOptions({
+        bindingContext: form,
+        overrideContext: null
+      }, form.expressions, form.title, form.commands.getCommands(), (c) => {
       component = c;
     });
 
@@ -56,7 +60,7 @@ export class ToolbarService {
 
     return options;
   }
-  createToolbarOptions(bindingContext: any, expressionProvider: IExpressionProvider, title: string, commands: Interfaces.ICommandData[], componentCreatedCallback?: {(component: DevExpress.ui.dxToolbar)}): DevExpress.ui.dxToolbarOptions {
+  createToolbarOptions(scope: IScope, expressionProvider: IExpressionProvider, title: string, commands: Interfaces.ICommandData[], componentCreatedCallback?: {(component: DevExpress.ui.dxToolbar)}): DevExpress.ui.dxToolbarOptions {
     let component: DevExpress.ui.dxToolbar
 
     const options: DevExpress.ui.dxToolbarOptions = {
@@ -69,7 +73,7 @@ export class ToolbarService {
       }
     };
 
-    options.items = this.createToolbarItems(bindingContext, expressionProvider, {
+    options.items = this.createToolbarItems(scope, expressionProvider, {
       getItems: () => {
         if (!component) {
           return options.items;
@@ -87,7 +91,7 @@ export class ToolbarService {
     }, title, commands);
     return options;
   }
-  createToolbarItems(bindingContext: any, expressionProvider: IExpressionProvider, toolbarManager: IToolbarManager, title: string, commands: Interfaces.ICommandData[]): DevExpress.ui.dxPopupToolbarItemOptions[] {
+  createToolbarItems(scope: IScope, expressionProvider: IExpressionProvider, toolbarManager: IToolbarManager, title: string, commands: Interfaces.ICommandData[]): DevExpress.ui.dxPopupToolbarItemOptions[] {
     const items = commands
       .sort((a, b) => {
         const s1 = a.sort || 500;
@@ -101,7 +105,7 @@ export class ToolbarService {
             return 0;
         }
       })
-      .map(i => this.createToolbarItem(bindingContext, expressionProvider, toolbarManager, i));
+      .map(i => this.createToolbarItem(scope, expressionProvider, toolbarManager, i));
 
     const titleItem: DevExpress.ui.dxPopupToolbarItemOptions = {
       html: this.createTitleHtml(title),
@@ -113,7 +117,7 @@ export class ToolbarService {
     items.splice(0, 0, titleItem);
     return items;
   }
-  createToolbarItem(bindingContext: any, expressionProvider: IExpressionProvider, toolbarManager: IToolbarManager, command: Interfaces.ICommandData): DevExpress.ui.dxPopupToolbarItemOptions {
+  createToolbarItem(scope: IScope, expressionProvider: IExpressionProvider, toolbarManager: IToolbarManager, command: Interfaces.ICommandData): DevExpress.ui.dxPopupToolbarItemOptions {
     const item: DevExpress.ui.dxPopupToolbarItemOptions = {};
 
     this.setEnabled(expressionProvider, toolbarManager, command, item);
@@ -123,7 +127,7 @@ export class ToolbarService {
         <string>toolbarButtonTemplate,
         container,
         null,
-        bindingContext,
+        scope,
         model
       );
     };
@@ -157,7 +161,10 @@ export class ToolbarService {
     if (command.isEnabled != undefined) {
       expressionProvider.createObserver("isEnabled", (newValue) => {
         setEnabled(newValue);
-      }, command);
+      }, {
+        bindingContext: command,
+        overrideContext: null 
+      });
     } else if (command.isEnabledExpression) {
       expressionProvider.createObserver(command.isEnabledExpression, (newValue) => {
         setEnabled(newValue);
@@ -175,7 +182,10 @@ export class ToolbarService {
     if (command.isVisible != undefined) {
       expressionProvider.createObserver("isVisible", (newValue) => {
         setVisible(newValue);
-      }, command);
+      }, {
+        bindingContext: command,
+        overrideContext: null
+      });
     } else if (command.isVisibleExpression) {
       expressionProvider.createObserver(command.isVisibleExpression, (newValue) => {
         setVisible(newValue);

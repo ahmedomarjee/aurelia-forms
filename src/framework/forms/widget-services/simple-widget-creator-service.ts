@@ -199,7 +199,10 @@ export class SimpleWidgetCreatorService {
       return cmd;
     }));
 
-    widgetOptions.toolbarItems = this.toolbar.createToolbarItems(form, form.expressions, {
+    widgetOptions.toolbarItems = this.toolbar.createToolbarItems({
+        bindingContext: form,
+        overrideContext: null
+      }, form.expressions, {
       getItems: () => {
         const popup: DevExpress.ui.dxPopup = form[options.id];
         if (!popup) {
