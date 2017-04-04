@@ -1,24 +1,15 @@
 <template>
-    <div class="t--margin-top col-xs-12">
-        <div class="t--cursor-pointer" click.delegate="showPopup('popup')" tr="key: authgroup-edit.info_text; markdown: true; mode: html"></div>
-    </div>
-    <div class="t--margin-top col-xs-12 col-md-6">
-        <div class="t--editor-caption" tr="key: authgroup-edit.name_caption"></div>
-        <dx-widget name="dxTextBox" options.bind="nameOptions" view-model.ref="name"></dx-widget>
-    </div>
-    <div class="t--margin-top col-xs-12 col-md-6">
-        <div class="t--editor-caption" tr="key: authgroup-edit.mandator_caption"></div>
-        <dx-widget name="dxSelectBox" options.bind="mandatorOptions" view-model.ref="mandator"></dx-widget>
-    </div>
-    <dx-widget name="dxPopup" options.bind="popupOptions" view-model.ref="popup">
-        <dx-template name="contentTemplate">
-            <div class="container-fluid">
-                <div class="row">
-                    <div class="t--margin-top col-xs-12">
-                        <div tr="key: authgroup-edit.popuptext_text; markdown: true; mode: html"></div>
-                    </div>
-                </div>
-            </div>
-        </dx-template>
+    <dx-widget name="dxValidationGroup" options.bind="wd1Options">
+        <div class="t--margin-top col-xs-12">
+            <div tr="key: authgroup-edit.info_text; markdown: true; mode: html"></div>
+        </div>
+        <div class="t--margin-top col-xs-12 col-md-6">
+            <div class="t--editor-caption" tr="key: authgroup-edit.name_caption"></div>
+            <dx-widget name="dxTextBox" options.bind="nameOptions" view-model.ref="name"></dx-widget>
+        </div>
+        <div class="t--margin-top col-xs-12 col-md-6">
+            <div class="t--editor-caption" tr="key: authgroup-edit.mandator_caption"></div>
+            <dx-widget name="dxSelectBox" options.bind="mandatorOptions" view-model.ref="mandator"></dx-widget>
+        </div>
     </dx-widget>
 </template>

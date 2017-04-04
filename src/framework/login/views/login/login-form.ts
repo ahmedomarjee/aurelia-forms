@@ -17,6 +17,13 @@ export class LoginForm extends fwx.FormBase {
             "filters": []
         });
         this.addFunction("$f", $f, "functions.$f");
+        this.widgetCreator.addValidationGroup(this, {
+            "id": "wd1",
+            "options": {
+                "optionsName": "wd1Options",
+                "optionsNameFQ": "wd1Options"
+            }
+        });
         this.widgetCreator.addTextBox(this, {
             "caption": "login-form.username_caption",
             "binding": {
@@ -61,10 +68,10 @@ export class LoginForm extends fwx.FormBase {
             }
         });
         this.widgetCreator.addCommand(this, {
-            "id": "wd1",
+            "id": "wd2",
             "options": {
-                "optionsName": "wd1Options",
-                "optionsNameFQ": "wd1Options"
+                "optionsName": "wd2Options",
+                "optionsNameFQ": "wd2Options"
             },
             "binding": {
                 "bindTo": "$f.loginCommand",

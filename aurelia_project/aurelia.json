@@ -26,9 +26,9 @@
   "textProcessor": {
     "displayName": "Text",
     "source": [
-      "src/localization-neutral.json",
-      "src/routes/forms.json",
-      "src/routes/structure.json"
+      "src/autodata/localization-neutral.json",
+      "src/autodata/forms.json",
+      "src/route-info/structure.json"
     ]
   },
   "cssProcessor": {

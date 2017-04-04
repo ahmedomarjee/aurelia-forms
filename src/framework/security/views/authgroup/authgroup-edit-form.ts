@@ -16,6 +16,13 @@ export class AuthgroupEditForm extends fwx.FormBase {
             "postOnSave": true,
             "filters": []
         });
+        this.widgetCreator.addValidationGroup(this, {
+            "id": "wd1",
+            "options": {
+                "optionsName": "wd1Options",
+                "optionsNameFQ": "wd1Options"
+            }
+        });
         this.widgetCreator.addTextBox(this, {
             "caption": "authgroup-edit.name_caption",
             "binding": {
@@ -62,15 +69,6 @@ export class AuthgroupEditForm extends fwx.FormBase {
                 "displayMember": "Name",
                 "action": "base/Security/Mandator",
                 "columns": ["Name", "Id"]
-            }
-        });
-        this.widgetCreator.addPopup(this, {
-            "caption": "authgroup-edit.popup_caption",
-            "commands": [],
-            "id": "popup",
-            "options": {
-                "optionsName": "popupOptions",
-                "optionsNameFQ": "popupOptions"
             }
         });
         super.onConstructionFinished();

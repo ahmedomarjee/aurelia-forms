@@ -1,7 +1,7 @@
 export default {
-  baseUrl: "http://10.20.50.53/TIP.Aurelia",
-  apiUrl: "http://10.20.50.53/TIP.Aurelia/api",
-  webApiUrl: "http://10.20.50.53/TIP.Aurelia/api/data",
+  baseUrl: "http://localhost/TIP.AU.Default",
+  apiUrl: "http://localhost/TIP.AU.Default/api",
+  webApiUrl: "http://localhost/TIP.AU.Default/api/data",
   appUrl: "http://localhost:9000",
 
   loginApp: "framework/login/login",

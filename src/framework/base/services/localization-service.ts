@@ -8,7 +8,7 @@ import {
   IExpressionProvider
 } from "../interfaces/expression-provider";
 
-import * as localizationNeutral from "text!../../../localization-neutral.json";
+import * as localizationNeutral from "text!../../../autodata/localization-neutral.json";
 
 @autoinject
 export class LocalizationService {

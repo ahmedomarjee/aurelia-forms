@@ -1,27 +1,29 @@
 <template>
-    <div class="t--margin-top col-xs-12 t--login-logo">
-        <img class="t--form-element-image" src="http://2014.erp-future.com/sites/2014.erp-future.com/files/1_business/Logo_U_TIP.png"></img>
-    </div>
-    <form submit.delegate="submitForm('functions.$f.loginCommand')">
-        <button class="t--invisible-submit" type="submit"></button>
-        <div class="col-xs-12">
-            <div tr="key: login-form.enter_user_password_text; markdown: true; mode: html"></div>
+    <dx-widget name="dxValidationGroup" options.bind="wd1Options">
+        <div class="t--margin-top col-xs-12 t--login-logo">
+            <img class="t--form-element-image" src="http://2014.erp-future.com/sites/2014.erp-future.com/files/1_business/Logo_U_TIP.png"></img>
         </div>
-        <div class="t--margin-top col-xs-12">
-            <div class="t--editor-caption" tr="key: login-form.username_caption"></div>
-            <dx-widget name="dxTextBox" options.bind="usernameOptions" view-model.ref="username"></dx-widget>
-        </div>
-        <div class="t--margin-top col-xs-12">
-            <div class="t--editor-caption" tr="key: login-form.password_caption"></div>
-            <dx-widget name="dxTextBox" options.bind="passwordOptions" view-model.ref="password"></dx-widget>
-        </div>
-        <div class="t--margin-top col-xs-12">
-            <div class="t--editor-caption">&nbsp;</div>
-            <dx-widget name="dxCheckBox" options.bind="stayLoggodOnOptions" view-model.ref="stayLoggodOn"></dx-widget>
-        </div>
-        <div class="t--margin-top col-xs-12">
-            <div class="t--editor-caption">&nbsp;</div>
-            <dx-widget name="dxButton" options.bind="wd1Options"></dx-widget>
-        </div>
-    </form>
+        <form submit.delegate="submitForm('functions.$f.loginCommand')">
+            <button class="t--invisible-submit" type="submit"></button>
+            <div class="col-xs-12">
+                <div tr="key: login-form.enter_user_password_text; markdown: true; mode: html"></div>
+            </div>
+            <div class="t--margin-top col-xs-12">
+                <div class="t--editor-caption" tr="key: login-form.username_caption"></div>
+                <dx-widget name="dxTextBox" options.bind="usernameOptions" view-model.ref="username"></dx-widget>
+            </div>
+            <div class="t--margin-top col-xs-12">
+                <div class="t--editor-caption" tr="key: login-form.password_caption"></div>
+                <dx-widget name="dxTextBox" options.bind="passwordOptions" view-model.ref="password"></dx-widget>
+            </div>
+            <div class="t--margin-top col-xs-12">
+                <div class="t--editor-caption">&nbsp;</div>
+                <dx-widget name="dxCheckBox" options.bind="stayLoggodOnOptions" view-model.ref="stayLoggodOn"></dx-widget>
+            </div>
+            <div class="t--margin-top col-xs-12">
+                <div class="t--editor-caption">&nbsp;</div>
+                <dx-widget name="dxButton" options.bind="wd2Options"></dx-widget>
+            </div>
+        </form>
+    </dx-widget>
 </template>

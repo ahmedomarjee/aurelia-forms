@@ -94,8 +94,8 @@ export class ToolbarService {
   createToolbarItems(scope: IScope, expressionProvider: IExpressionProvider, toolbarManager: IToolbarManager, title: string, commands: Interfaces.ICommandData[]): DevExpress.ui.dxPopupToolbarItemOptions[] {
     const items = commands
       .sort((a, b) => {
-        const s1 = a.sort || 500;
-        const s2 = b.sort || 500;
+        const s1 = a.sort == void(0) ? 500 : a.sort;
+        const s2 = b.sort == void(0) ? 500 : b.sort;
 
         if (s1 < s2) {
             return -1;

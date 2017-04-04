@@ -9,15 +9,13 @@
   "authgroup-edit": {
     "authgroup-edit_caption": "Berechtigungsgruppe",
     "info_text": {
-      "text": "Hallo {0}",
+      "text": "Hallo Kollege - {0}",
       "parameters": [
         "models.data.$m_A.Name"
       ]
     },
     "name_caption": "Bezeichnung",
-    "mandator_caption": "Mandant",
-    "popup_caption": "Ich bin eine Überschrift",
-    "popuptext_text": "Das ist ein Test"
+    "mandator_caption": "Mandant"
   },
   "authgroup-list": {
     "authgroup-list_caption": "Berechtigungsgruppen",
@@ -31,14 +29,9 @@
     "question": "Frage",
     "information": "Information",
     "sure_delete_question": "Sind Sie sicher, dass sie den aktuellen Datensatz löschen wollen?",
+    "save_success": "Daten wurden erfolgreich gespeichert",
     "login": "Anmelden",
     "logout": "Abmelden"
-  },
-  "login-form-funcs": {
-    "anmelden_caption": "Anmelden"
-  },
-  "routes": {
-    "settings": "Einstellungen"
   },
   "forms": {
     "validator_required": "{0} ist ein Pflichtfeld",
@@ -46,5 +39,11 @@
     "validator_stringLengthMinMax": "{0} muss zwischen {1} und {2} Zeichen haben",
     "validator_stringLengthMin": "{0} muss mindestens {1} Zeichen haben",
     "validator_stringLengthMax": "{0} darf maximal {1} Zeichen haben"
+  },
+  "login-form-funcs": {
+    "anmelden_caption": "Anmelden"
+  },
+  "routes": {
+    "settings": "Einstellungen"
   }
 }

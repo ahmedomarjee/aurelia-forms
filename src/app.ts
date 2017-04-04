@@ -9,8 +9,8 @@ import {
   IRoute
 } from "./framework/stack-router/interfaces/export";
 
-import * as routesForm from "text!./routes/forms.json";
-import * as routesStructure from "text!./routes/structure.json";
+import * as routesForm from "text!./autodata/forms.json";
+import * as routesStructure from "text!./route-info/structure.json";
 
 @autoinject
 export class App {

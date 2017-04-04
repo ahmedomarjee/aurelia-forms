@@ -38,6 +38,13 @@ export class AuthgroupListForm extends fwx.FormBase {
                 "optionsNameFQ": "editOptions"
             }
         });
+        this.widgetCreator.addValidationGroup(this, {
+            "id": "wd1",
+            "options": {
+                "optionsName": "wd1Options",
+                "optionsNameFQ": "wd1Options"
+            }
+        });
         this.widgetCreator.addDataGrid(this, {
             "columns": [{
                 "id": "name",
@@ -59,8 +66,7 @@ export class AuthgroupListForm extends fwx.FormBase {
                 "bindToFQ": "models.data.$m_A."
             },
             "dataModel": "$m_A",
-            "editDataContext": "$m_A_Edit",
-            "idEditPopup": "edit",
+            "editUrl": "security/authgroup",
             "addShortscuts": true,
             "isMainList": true,
             "edits": [],
