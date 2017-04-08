@@ -8,6 +8,9 @@ import {
 import {
   IRoute
 } from "./framework/stack-router/interfaces/export";
+import {
+  LayoutService
+} from "./framework/default-ui/services/export";
 
 import * as routesForm from "text!./autodata/forms.json";
 import * as routesStructure from "text!./route-info/structure.json";
@@ -18,11 +21,14 @@ export class App {
 
   constructor(
     private router: RouterService,
-    private routesCreator: RoutesCreatorService
+    private routesCreator: RoutesCreatorService,
+    private layout: LayoutService
   ) { 
     this.routes = routesCreator.createRoutes(
       JSON.parse(<any>routesStructure),
       JSON.parse(<any>routesForm));
+
+      this.layout.activateTheme();
   }
 
   attached() {
