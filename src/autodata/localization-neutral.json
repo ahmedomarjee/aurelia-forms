@@ -31,7 +31,8 @@
     "sure_delete_question": "Sind Sie sicher, dass sie den aktuellen Datensatz löschen wollen?",
     "save_success": "Daten wurden erfolgreich gespeichert",
     "login": "Anmelden",
-    "logout": "Abmelden"
+    "logout": "Abmelden",
+    "navigation": "Navigation"
   },
   "forms": {
     "validator_required": "{0} ist ein Pflichtfeld",
@@ -45,5 +46,8 @@
   },
   "routes": {
     "settings": "Einstellungen"
+  },
+  "default-ui": {
+    "navigation_title": "Navigation"
   }
 }
