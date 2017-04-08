@@ -5,12 +5,24 @@ import {
 import {
   LayoutService
 } from "../../services/layout-service";
+import {
+  StyleService
+} from "../../../base/services/style-service";
 
 @autoinject
 export class Container {
   constructor(
-    private layout: LayoutService
-  ) { }
+    private layout: LayoutService,
+    private style: StyleService
+  ) { 
+    style.addStyles("container", [{
+      name: ".t--sidebar .t--sidebar-item:hover",
+      properties: [{
+        propertyName: "background-color",
+        value: layout.themeColor
+      }]
+    }]);
+  }
 
   @computedFrom("layout.isSidebarCollapsed")
   get className(): string {
