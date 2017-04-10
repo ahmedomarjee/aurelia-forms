@@ -1,4 +1,6 @@
 export {IEditPopupHiddenEventArgs} from "./edit-popup-hidden";
+export {IEditPopupShownEventArgs} from "./edit-popup-shown";
+export {IEditPopupModelLoadedEventArgs} from "./edit-popup-model-loaded";
 export {IModelLoadedEventArgs} from "./model-loaded";
 export {IModelLoadedInterceptorEventArgs} from "./model-loaded-interceptor";
 export {IModelLoadRequiredEventArgs} from "./model-load-required";

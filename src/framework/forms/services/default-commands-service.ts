@@ -119,7 +119,9 @@ export class DefaultCommandsService {
       id: "$goBack",
       icon: "arrow-left",
       sort: 0,
-      isVisible: this.router.viewStack.length > 1,
+      isVisible: this.router.viewStack.length > 1
+        && !form.isEditForm
+        && !form.isNestedForm,
       execute() {
         history.back();
       }
@@ -176,10 +178,19 @@ export class DefaultCommandsService {
     if (options.dataModel) {
       const info = form.models.getInfo(options.dataModel);
       if (info) {
-        cmd.isVisible = info.webApiAction
-          && info.keyProperty
-          && this.permission.canWebApiNew(info.webApiAction)
-          && !!(options.editUrl || options.idEditPopup || options.edits.length > 0);
+        cmd.isVisible = (info.webApiAction
+            && info.keyProperty
+            && this.permission.canWebApiNew(info.webApiAction)
+            && !!(options.editUrl || options.idEditPopup || options.edits.length > 0)) || false;
+
+        const isEnabled = () => {
+          return (!options.isRelation || (form.models[info.id] && form.models[info.id][info.keyProperty])) || false;
+        };
+        cmd.isEnabled = isEnabled();
+
+        form.expressions.createObserver(`models.data.${info.id}.${info.keyProperty}`, (newValue) => {
+          cmd.isEnabled = isEnabled();
+        });
       }
     }
 

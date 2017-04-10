@@ -12,8 +12,10 @@ import {
   SimpleWidgetCreatorService
 } from "../widget-services/simple-widget-creator-service";
 import {
-  IEditPopupHiddenEventArgs
-} from "../event-args/edit-popup-hidden";
+  IEditPopupHiddenEventArgs,
+  IEditPopupShownEventArgs,
+  IEditPopupModelLoadedEventArgs
+} from "../event-args/export";
 import {
   CustomEvent
 } from "../../base/classes/custom-event";
@@ -28,7 +30,9 @@ export class EditPopups {
   constructor(
     private simpleWidgetCreator: SimpleWidgetCreatorService,
     private toolbar: ToolbarService,
-    public onEditPopupHidden: CustomEvent<IEditPopupHiddenEventArgs>
+    public onEditPopupShown: CustomEvent<IEditPopupShownEventArgs>,
+    public onEditPopupHidden: CustomEvent<IEditPopupHiddenEventArgs>,
+    public onEditPopupModelLoaded: CustomEvent<IEditPopupModelLoadedEventArgs>
   ) {}
 
   addInfo(editPopup: Interfaces.IEditPopup) {
@@ -73,6 +77,14 @@ export class EditPopups {
 
     const popup: DevExpress.ui.dxPopup = this.form[editPopup.id].instance;
     const content: FormBase = this.form[editPopup.idContent];
+
+    content.models.onLoaded.register(r => {
+      return this.onEditPopupModelLoaded.fire({
+        editPopup: editPopup,
+        model: r.model,
+        data: r.data
+      });
+    });
     
     popup.option("toolbarItems", this.toolbar.createToolbarItems({
         bindingContext: content,
@@ -93,6 +105,10 @@ export class EditPopups {
           content.variables.data[m.to] = this.form.expressions.evaluateExpression(
             m.binding.bindToFQ
           );
+        });
+
+        this.onEditPopupShown.fire({
+          editPopup: editPopup
         });
       },
       hidden: () => {

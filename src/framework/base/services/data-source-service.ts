@@ -2,11 +2,10 @@ import {
   autoinject
 } from "aurelia-framework";
 import {
-  IDataSourceOptions
-} from "../interfaces/data-source-options";
-import {
+  IDataSourceOptions,
+  IDataSourceCustomizationOptions,
   IExpressionProvider
-} from "../interfaces/expression-provider";
+} from "../interfaces/export";
 import {
   RestService
 } from "./rest-service";
@@ -17,11 +16,15 @@ export class DataSourceService {
     private rest: RestService
   ) {}
 
-    createDataSource(expressionProvider: IExpressionProvider, options: IDataSourceOptions, loadRequiredAction?: {(): void}): DevExpress.data.DataSource {
+    createDataSource(expressionProvider: IExpressionProvider, options: IDataSourceOptions, customizationOptions?: IDataSourceCustomizationOptions, loadRequiredAction?: {(): void}): DevExpress.data.DataSource {
       const dataSource = new DevExpress.data.DataSource(new DevExpress.data.CustomStore({
         key: options.keyProperty,
         byKey: (key) => {
-          const getOptions = this.createGetOptions(expressionProvider, options);
+          if (!this.canLoad(customizationOptions)) {
+            return Promise.resolve(null);
+          }
+
+          const getOptions = this.createGetOptions(expressionProvider, options, customizationOptions);
 
           return this.rest.get({
             url: this.rest.getWebApiUrl(`${options.webApiAction}/${key}`),
@@ -29,9 +32,9 @@ export class DataSourceService {
           });
         },
         load: (loadOptions) => {
-          const getOptions = this.createGetOptions(expressionProvider, options);
+          const getOptions = this.createGetOptions(expressionProvider, options, customizationOptions);
           
-          if (getOptions == null) {
+          if (getOptions == null || !this.canLoad(customizationOptions)) {
             if (loadOptions.requireTotalCount) {
                 return Promise.resolve({
                   data: [],
@@ -101,7 +104,7 @@ export class DataSourceService {
 
       return dataSource;
     }
-    createGetOptions(expressionProvider: IExpressionProvider, options: IDataSourceOptions): any {
+    createGetOptions(expressionProvider: IExpressionProvider, options: IDataSourceOptions, customizationOptions?: IDataSourceCustomizationOptions): any {
       const getOptions: any = {};
       getOptions.columns = options.webApiColumns;
       getOptions.expand = options.webApiExpand;
@@ -133,6 +136,17 @@ export class DataSourceService {
             getOptions.where = [getOptions.where, where];
           } else {
             getOptions.where = where;
+          }
+        }
+      }
+
+      if (customizationOptions && customizationOptions.getCustomWhere) {
+        const customWhere = customizationOptions.getCustomWhere();
+        if (customWhere) {
+          if (getOptions.where) {
+            getOptions.where = [getOptions.where, customWhere];
+          } else {
+            getOptions.where = customWhere;
           }
         }
       }
@@ -178,6 +192,11 @@ export class DataSourceService {
           }
         }
       }
+    }
+    private canLoad(customizationOptions: IDataSourceCustomizationOptions) {
+      return !customizationOptions 
+        || !customizationOptions.canLoad 
+        || customizationOptions.canLoad();
     }
     private constructWhere(expressionProvider: IExpressionProvider, data: any, where: any[]): boolean {
       if (data == void (0)) {

@@ -18,6 +18,9 @@ import {
   ToolbarService
 } from "../services/export";
 import {
+  IDataSourceCustomizationOptions
+} from "../../base/interfaces/export"
+import {
   SelectionModeEnum
 } from "../enums/selection-mode-enum";
 import * as WidgetOptions from "../widget-options/export";
@@ -39,7 +42,30 @@ export class DataGridWidgetCreatorService {
 
     if (options.dataModel) {
       const model = form.models.getInfo(options.dataModel);
-      const dataSource = this.dataSource.createDataSource(form.expressions, model);
+      const relationModel = options.isRelation
+        ? form.models.getInfo(options.relationBinding.dataContext)
+        : null;
+
+      const customizationOptions: IDataSourceCustomizationOptions = {};
+      if (options.isRelation) {
+        customizationOptions.getCustomWhere = () => {
+          let data = form.models.data && form.models.data[model.id]
+            ? form.models.data[model.id][model.keyProperty]
+            : "0";
+
+          data = data || "0";
+
+          return [options.relationBinding.bindTo, data];
+        };
+        customizationOptions.canLoad = () => {
+          return !!(form.models.data && form.models.data[model.id] && form.models.data[model.id][model.keyProperty]);
+        }
+        form.expressions.createObserver(`models.data.${model.id}.${model.keyProperty}`, () => {
+          dataSource.reload();
+        });
+      }
+
+      const dataSource = this.dataSource.createDataSource(form.expressions, relationModel || model, customizationOptions);
       dataGridOptions.dataSource = dataSource;
 
       dataGridOptions.remoteOperations = {
@@ -197,7 +223,6 @@ export class DataGridWidgetCreatorService {
     }
 
     //TODO - AutoHeight
-    //TODO - EditPopup
     //TODO - AddShortcuts
     if (options.createToolbar || options.isMainList) {
       const commands = this.defaultCommands.getListCommands(form, options);
@@ -210,6 +235,28 @@ export class DataGridWidgetCreatorService {
       } else if (options.isMainList) {
         commands.forEach(c => form.commands.addCommand(c));
       }
+    }
+
+    if (options.idEditPopup && options.isRelation) {
+      form.editPopups.onEditPopupModelLoaded.register(e => {
+        if (e.editPopup.id != options.idEditPopup) {
+          return;
+        }
+        if (e.model.key !== "variables.data.$id") {
+          return;
+        }
+        if (!e.data) {
+          return;
+        }
+        if (e.data[e.model.keyProperty]) {
+          return;
+        }
+
+        const info = form.models.getInfo(options.dataModel);
+        e.data[options.relationBinding.bindTo] = form.models.data[info.id][info.keyProperty];
+
+        return Promise.resolve();
+      });
     }
 
     return dataGridOptions;
