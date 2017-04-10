@@ -55,7 +55,6 @@ export class WidgetCreatorService {
   addLookup(form: FormBase, options: WidgetOptions.ISelectOptions, selectContainerOptions: WidgetOptions.ISelectItemContainerOptions): DevExpress.ui.dxLookupOptions {
     return this.simpleWidgetCreator.addLookup(form, options, selectContainerOptions);
   }
-  //addNestedForm
   addNumberBox(form: FormBase, options: WidgetOptions.INumberBoxOptions): DevExpress.ui.dxNumberBoxOptions {
     return this.simpleWidgetCreator.addNumberBox(form, options);
   }

@@ -276,8 +276,8 @@ export class FormBase {
   protected addFunction(id: string, functionInstance: any, namespace: string, customParameter?: any): void {
     this.functions.add(id, functionInstance, namespace, customParameter);
   }
-  protected addNestedForm(id: string): void {
-    this.nestedForms.addInfo(id);
+  protected addNestedForm(id: string, mappings: Interfaces.IMapping[]): void {
+    this.nestedForms.addInfo(id, mappings);
   }
   protected addEditPopup(editPopup: Interfaces.IEditPopup): void {
     this.editPopups.addInfo(editPopup);

@@ -5,6 +5,7 @@ import {
 import {
   FormBase
 } from "../classes/form-base";
+import * as Interfaces from "../interfaces/export";
 
 @autoinject
 @singleton(true)
@@ -14,8 +15,9 @@ export class NestedForms {
 
   constructor() {}
 
-  addInfo(id: string) {
+  addInfo(id: string, mappings: Interfaces.IMapping[]) {
     this.nestedForms.push(id);
+    this.observeMappings(id, mappings);
   }  
   getNestedForms(): FormBase[] {
     const arr: FormBase[] = [];
@@ -27,6 +29,17 @@ export class NestedForms {
     });
 
     return arr;
+  }
+  observeMappings(id: string, mappings: Interfaces.IMapping[]) {
+    for (let mapping of mappings) {
+      this.form.expressions.createObserver(
+        mapping.binding.bindToFQ,
+        (newValue) => {
+          const nestedForm: FormBase = this.form[id];
+          nestedForm.variables.data[mapping.to] = newValue;
+        }
+      );
+    }
   }
 
   registerForm(form: FormBase) {

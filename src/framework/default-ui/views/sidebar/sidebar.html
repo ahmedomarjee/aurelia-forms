@@ -3,8 +3,7 @@
   <require from="./sidebar.css"></require>
 
   <div class="t--sidebar-header" click.delegate="onHeaderClicked()">
-    <div class="t--sidebar-header-title">
-      Navigation
+    <div class="t--sidebar-header-title" tr="key: base.navigation">
     </div>
     <div class="t--sidebar-header-icon">
       <i class="fa fa-${headerIcon}"></i>
@@ -22,7 +21,7 @@
         stack-router-link="clear-stack.bind: true">
         <span class="t--sidebar-item-title" tr="key.bind: route.caption">
         </span>
-        <span class="t--sidebar-item-icon" if.bind="route.navigation.icon">
+        <span class="t--sidebar-item-icon" if.bind="route.navigation.icon" title.bind="route.caption | tr">
           <i class="fa fa-${route.navigation.icon}"></i>
         </span>
       </a>

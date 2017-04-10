@@ -10,7 +10,8 @@ import {
 export class Container {
   constructor(
     private layout: LayoutService
-  ) { }
+  ) { 
+  }
 
   @computedFrom("layout.isSidebarCollapsed")
   get className(): string {
