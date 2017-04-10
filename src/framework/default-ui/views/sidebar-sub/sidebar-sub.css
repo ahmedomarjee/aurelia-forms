@@ -1,0 +1,5 @@
+.t--sidebar-sub-ul {
+  column-fill: auto;
+  column-count: 2;
+  column-width: 200px;
+}

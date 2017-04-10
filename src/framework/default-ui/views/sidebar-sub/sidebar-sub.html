@@ -1,5 +1,7 @@
 <template class="t--sidebar-sub au-animate">
-  <ul>
+  <require from="./sidebar-sub.css"></require>
+
+  <ul class="t--sidebar-sub-ul">
     <li repeat.for="child of route.children">
       <a 
         href.bind="child.route ? '#' + child.route : ''" 

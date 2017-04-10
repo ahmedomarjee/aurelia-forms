@@ -4,11 +4,11 @@ import {
 } from "aurelia-framework";
 import {
   INavigationRoute
-} from "../../../stack-router/interfaces/export"
+} from "../../../stack-router/interfaces/export";
 
 @autoinject
 export class SidebarSub {
-  constructor() {}
+  constructor() { }
 
   @bindable route: INavigationRoute;
 }

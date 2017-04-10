@@ -12,3 +12,4 @@ export { PermissionService } from "./permission-service";
 export { RestService } from "./rest-service";
 export { ShortcutService } from "./shortcut-service";
 export { StyleService } from "./style-service";
+export { WindowService } from "./window-service";
