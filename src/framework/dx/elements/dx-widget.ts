@@ -234,6 +234,7 @@ export class DxWidget {
     $(this.element).children().each((index, child) => {
       const result = this.templatingEngine.enhance({
         element: child,
+        resources: this.owningView.resources,
         bindingContext: this.bindingContext,
         overrideContext: this.overrideContext
       });

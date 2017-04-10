@@ -24,6 +24,11 @@ export class NestedForms {
 
     this.nestedForms.forEach(i => {
       const form: FormBase = this.form[i];
+
+      if (!form) {
+        return;
+      }
+      
       arr.push(form);
       arr.push(...form.nestedForms.getNestedForms());
     });
