@@ -32,7 +32,7 @@ export class GlobalizationService {
         }
 
         if (format.length === 1) {
-          return moment(value).locale(this.current.culture).format(format, );
+          return moment(value).locale(this.current.culture).format(this.current[format]);
         } else {
           const count = parseInt(format.substr(1));
           const formatClass = format.substr(0, 1);
