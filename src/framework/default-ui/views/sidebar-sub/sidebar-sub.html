@@ -2,7 +2,7 @@
   <require from="./sidebar-sub.css"></require>
 
   <ul class="t--sidebar-sub-ul">
-    <li repeat.for="child of route.children">
+    <li repeat.for="child of route.children | sort:'caption':'asc':true">
       <a 
         href.bind="child.route ? '#' + child.route : ''" 
         class="t--sidebar-sub-item"
