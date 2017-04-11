@@ -1,6 +1,7 @@
 import {IBinding} from "../interfaces/binding";
 import {IWidgetOptions} from "./widget-options";
 import {IValidationRule} from "./validation-rule";
+import {IDataSourceOptionFilter} from "../../base/interfaces/export";
 
 export interface IEditorOptions extends IWidgetOptions {
     caption: string;
@@ -11,5 +12,9 @@ export interface IEditorOptions extends IWidgetOptions {
     placeholder?: string;
 
     binding?: IBinding;
+    
+    filter?: string;
+    filters?: IDataSourceOptionFilter[];
+
     validationRules?: IValidationRule[];
 }

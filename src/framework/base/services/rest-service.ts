@@ -17,6 +17,8 @@ import {
 import * as Interfaces from "../interfaces/export";
 import Config from "../../../config";
 
+const GET_OPTIONS = "X-GET-OPTIONS";
+
 @autoinject
 export class RestService {
   constructor(
@@ -84,7 +86,7 @@ export class RestService {
     const headers: any = {};
 
     if (options && options.getOptions) {
-      headers["X-GET-OPTIONS"] = this.json.stringify(options.getOptions);
+      headers[GET_OPTIONS] = this.json.stringify(options.getOptions);
     }
 
     headers["Content-Type"] = "application/json";
@@ -103,37 +105,64 @@ export class RestService {
       this.loadingCount++;
     }
 
-    return new Promise<any>((success: any, error) => {
-      client
-        .fetch(url, {
-          method: method,
-          headers: headers,
-          body: body
-        })
-        .then(r => {
-          if (r.ok) {
-            return r.text();
-          }
-          if (r.status == 401) {
-            this.onUnauthorizated.fire({
-              url: url
-            });
-            return;
+    let preWorkPromise: Promise<any> = Promise.resolve();
+
+    if (headers && headers[GET_OPTIONS]) {
+      const getOptions: string = headers[GET_OPTIONS];
+      if (getOptions.length > 4000) {
+        preWorkPromise = client
+          .fetch(this.getWebApiUrl("Options"), {
+            method: "POST",
+            body: getOptions,
+            headers: this.getAuthHeader ? this.getAuthHeader() : {}
+          });
+      }
+    }
+
+    return preWorkPromise
+      .then(preWorkResult => {
+        return new Promise<any>((success: any, error) => {
+          if (preWorkResult) {
+            if (!(typeof preWorkResult === "string")) {
+              preWorkResult = JSON.stringify(preWorkResult);
+            }
+
+            headers[GET_OPTIONS] = preWorkResult;
           }
 
-          DevExpress.ui.notify(r.statusText, "error", 3000);
-          error(r);
-        })
-        .then(r => this.json.parse(r))
-        .then(r => success(r))
-        .catch(r => {
-          error(r);
-        })
-        .then(() => {
-          if (changeLoadingCount) {
-            this.loadingCount--;
-          }
+          client
+            .fetch(url, {
+              method: method,
+              headers: headers,
+              body: body
+            })
+            .then(r => {
+              if (r.ok) {
+                return r.text();
+              }
+              if (r.status == 401) {
+                this.onUnauthorizated.fire({
+                  url: url
+                });
+                return;
+              } else if (r.status == 423) {
+                location.reload(true);
+              }
+
+              DevExpress.ui.notify(r.statusText, "error", 3000);
+              error(r);
+            })
+            .then(r => this.json.parse(r))
+            .then(r => success(r))
+            .catch(r => {
+              error(r);
+            })
+            .then(() => {
+              if (changeLoadingCount) {
+                this.loadingCount--;
+              }
+            });
         });
-    });
+      });
   }
 }

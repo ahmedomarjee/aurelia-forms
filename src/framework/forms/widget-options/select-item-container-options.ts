@@ -8,5 +8,6 @@ import {
 export interface ISelectItemContainerOptions {
   selectItem: ISelectItem;
   filter?: any;
+  filters?: IDataSourceOptionFilter[];
   customs?: IDataSourceOptionFilter[];
 }

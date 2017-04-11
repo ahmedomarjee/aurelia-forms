@@ -273,6 +273,7 @@ define('config',["require", "exports"], function (require, exports) {
 define('framework/base/services/rest-service',["require", "exports", "tslib", "aurelia-framework", "aurelia-fetch-client", "../classes/custom-event", "./json-service", "../../../config"], function (require, exports, tslib_1, aurelia_framework_1, aurelia_fetch_client_1, custom_event_1, json_service_1, config_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    var GET_OPTIONS = "X-GET-OPTIONS";
     var RestService = (function () {
         function RestService(json, onUnauthorizated) {
             this.json = json;
@@ -334,7 +335,7 @@ define('framework/base/services/rest-service',["require", "exports", "tslib", "a
         RestService.prototype.createHeaders = function (options) {
             var headers = {};
             if (options && options.getOptions) {
-                headers["X-GET-OPTIONS"] = this.json.stringify(options.getOptions);
+                headers[GET_OPTIONS] = this.json.stringify(options.getOptions);
             }
             headers["Content-Type"] = "application/json";
             headers["Accept"] = "application/json";
@@ -349,35 +350,56 @@ define('framework/base/services/rest-service',["require", "exports", "tslib", "a
             if (changeLoadingCount) {
                 this.loadingCount++;
             }
-            return new Promise(function (success, error) {
-                client
-                    .fetch(url, {
-                    method: method,
-                    headers: headers,
-                    body: body
-                })
-                    .then(function (r) {
-                    if (r.ok) {
-                        return r.text();
+            var preWorkPromise = Promise.resolve();
+            if (headers && headers[GET_OPTIONS]) {
+                var getOptions = headers[GET_OPTIONS];
+                if (getOptions.length > 4000) {
+                    preWorkPromise = client
+                        .fetch(this.getWebApiUrl("Options"), {
+                        method: "POST",
+                        body: getOptions,
+                        headers: this.getAuthHeader ? this.getAuthHeader() : {}
+                    });
+                }
+            }
+            return preWorkPromise
+                .then(function (preWorkResult) {
+                return new Promise(function (success, error) {
+                    if (preWorkResult) {
+                        if (!(typeof preWorkResult === "string")) {
+                            preWorkResult = JSON.stringify(preWorkResult);
+                        }
+                        headers[GET_OPTIONS] = preWorkResult;
                     }
-                    if (r.status == 401) {
-                        _this.onUnauthorizated.fire({
-                            url: url
-                        });
-                        return;
-                    }
-                    DevExpress.ui.notify(r.statusText, "error", 3000);
-                    error(r);
-                })
-                    .then(function (r) { return _this.json.parse(r); })
-                    .then(function (r) { return success(r); })
-                    .catch(function (r) {
-                    error(r);
-                })
-                    .then(function () {
-                    if (changeLoadingCount) {
-                        _this.loadingCount--;
-                    }
+                    client
+                        .fetch(url, {
+                        method: method,
+                        headers: headers,
+                        body: body
+                    })
+                        .then(function (r) {
+                        if (r.ok) {
+                            return r.text();
+                        }
+                        if (r.status == 401) {
+                            _this.onUnauthorizated.fire({
+                                url: url
+                            });
+                            return;
+                        }
+                        DevExpress.ui.notify(r.statusText, "error", 3000);
+                        error(r);
+                    })
+                        .then(function (r) { return _this.json.parse(r); })
+                        .then(function (r) { return success(r); })
+                        .catch(function (r) {
+                        error(r);
+                    })
+                        .then(function () {
+                        if (changeLoadingCount) {
+                            _this.loadingCount--;
+                        }
+                    });
                 });
             });
         };
@@ -3305,7 +3327,11 @@ define('framework/forms/widget-services/simple-widget-creator-service',["require
             return editorOptions;
         };
         SimpleWidgetCreatorService.prototype.addColorBox = function (form, options) {
-            return this.createEditorOptions(form, options);
+            var editorOptions = this.createEditorOptions(form, options);
+            if (options.editAlphaChannel) {
+                editorOptions.editAlphaChannel = options.editAlphaChannel;
+            }
+            return editorOptions;
         };
         SimpleWidgetCreatorService.prototype.addDateBox = function (form, options) {
             var editorOptions = this.createEditorOptions(form, options);
@@ -5543,6 +5569,10 @@ define('framework/stack-router/views/view/view',["require", "exports", "tslib", 
     ], View);
     exports.View = View;
 });
+
+
+
+define("framework/forms/interfaces/filters", [],function(){});
 
 define('text!app.html', ['module'], function(module) { module.exports = "<template>\r\n  <require from=\"./framework/default-ui/views/container/container\"></require>\r\n  <container></container>\r\n</template>\r\n"; });
 define('text!framework/login/login.html', ['module'], function(module) { module.exports = "<template>\r\n  <require from=\"../stack-router/views/stack-router/stack-router\"></require>\r\n  <require from=\"../../framework/default-ui/views/loading/loading\"></require>\r\n  <require from=\"./login.css\"></require>\r\n\r\n  <loading></loading>\r\n  <div class=\"t--login-container\">\r\n    <div class=\"t--login-image\">\r\n      <div class=\"t--login-banner\" tr=\"key.bind: title\">\r\n      </div>\r\n    </div>  \r\n    <div class=\"t--login-data\">\r\n      <stack-router create-toolbar.bind=\"false\"></stack-router>\r\n    </div>\r\n  </div>\r\n</template>"; });

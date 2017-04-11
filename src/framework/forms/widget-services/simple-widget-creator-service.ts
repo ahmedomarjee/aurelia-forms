@@ -54,7 +54,13 @@ export class SimpleWidgetCreatorService {
     return editorOptions;
   }
   addColorBox(form: FormBase, options: WidgetOptions.IColorBoxOptions): DevExpress.ui.dxColorBoxOptions {
-    return this.createEditorOptions(form, options);
+    const editorOptions: DevExpress.ui.dxColorBoxOptions = this.createEditorOptions(form, options);
+
+    if (options.editAlphaChannel) {
+      editorOptions.editAlphaChannel = options.editAlphaChannel;
+    }
+
+    return editorOptions;
   }
   addDateBox(form: FormBase, options: WidgetOptions.IDateBoxOptions): DevExpress.ui.dxDateBoxOptions {
     const editorOptions: DevExpress.ui.dxDateBoxOptions = this.createEditorOptions(form, options);
@@ -426,6 +432,15 @@ export class SimpleWidgetCreatorService {
         where.push(selectContainerOptions.selectItem.where);
       }
 
+      const filters = [];
+
+      if (selectContainerOptions.customs) {
+        filters.push(...selectContainerOptions.customs);
+      }
+      if (selectContainerOptions.filters) {
+        filters.push(...selectContainerOptions.filters);
+      }
+
       current.dataSource = this.dataSource.createDataSource(form.expressions, {
         keyProperty: selectContainerOptions.selectItem.valueMember,
         webApiAction: selectContainerOptions.selectItem.action,
@@ -433,7 +448,7 @@ export class SimpleWidgetCreatorService {
         webApiExpand: selectContainerOptions.selectItem.expand,
         webApiOrderBy: selectContainerOptions.selectItem.orderBy,
         webApiWhere: where,
-        filters: selectContainerOptions.customs
+        filters: filters
       });
     }
 
