@@ -30,12 +30,34 @@
   flex-direction: row;
 }
 
-.t--container .dx-toolbar {
+.t--toolbar.t--toolbar-inline.dx-toolbar {
   height: @inlineToolbarHeight;
   background-color: #D3D3D3;
 
   .dx-toolbar-items-container {
     height: @inlineToolbarHeight;
+  }
+
+  .t--toolbar-item {
+    &:hover {
+      color: white;
+    }
+    .t--toolbar-item-content {
+      flex-direction: row;
+    }
+
+    height: @inlineToolbarHeight;
+    color: black;
+  }
+
+  .dx-state-disabled {
+    .t--toolbar-item {
+      &:hover {
+        color: gray;
+      }
+
+      color: gray;
+    }
   }
 }
 

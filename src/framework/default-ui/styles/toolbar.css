@@ -34,12 +34,28 @@
   display: flex;
   flex-direction: row;
 }
-.t--container .dx-toolbar {
+.t--toolbar.t--toolbar-inline.dx-toolbar {
   height: 32px;
   background-color: #D3D3D3;
 }
-.t--container .dx-toolbar .dx-toolbar-items-container {
+.t--toolbar.t--toolbar-inline.dx-toolbar .dx-toolbar-items-container {
   height: 32px;
+}
+.t--toolbar.t--toolbar-inline.dx-toolbar .t--toolbar-item {
+  height: 32px;
+  color: black;
+}
+.t--toolbar.t--toolbar-inline.dx-toolbar .t--toolbar-item:hover {
+  color: white;
+}
+.t--toolbar.t--toolbar-inline.dx-toolbar .t--toolbar-item .t--toolbar-item-content {
+  flex-direction: row;
+}
+.t--toolbar.t--toolbar-inline.dx-toolbar .dx-state-disabled .t--toolbar-item {
+  color: gray;
+}
+.t--toolbar.t--toolbar-inline.dx-toolbar .dx-state-disabled .t--toolbar-item:hover {
+  color: gray;
 }
 .t--toolbar.dx-popup-normal .dx-toolbar,
 .dx-popup-wrapper:not(.dx-dialog) > .dx-popup-normal.dx-popup-normal .dx-toolbar {

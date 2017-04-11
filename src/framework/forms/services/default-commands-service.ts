@@ -184,7 +184,7 @@ export class DefaultCommandsService {
             && !!(options.editUrl || options.idEditPopup || options.edits.length > 0)) || false;
 
         const isEnabled = () => {
-          return (!options.isRelation || (form.models[info.id] && form.models[info.id][info.keyProperty])) || false;
+          return (!options.isRelation || (form.models.data[info.id] && form.models.data[info.id][info.keyProperty])) || false;
         };
         cmd.isEnabled = isEnabled();
 
