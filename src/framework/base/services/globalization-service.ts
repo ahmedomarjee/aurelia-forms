@@ -82,7 +82,12 @@ export class GlobalizationService {
         }
 
         if (format.length === 1) {
-          return moment(value, format, this.current.culture);
+          const result = moment(value, this.current[format]);
+          if (result.isValid()) {
+            return result.toDate();
+          } else {
+            return null;
+          }
         } else {
           const groupFinder = this.current.groupSeparator.replace(this.escapeRegex, "\\$&");
           value = value
