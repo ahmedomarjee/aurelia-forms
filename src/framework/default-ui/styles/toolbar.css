@@ -51,6 +51,11 @@
 .t--toolbar.t--toolbar-inline.dx-toolbar .t--toolbar-item .t--toolbar-item-content {
   flex-direction: row;
 }
+.t--toolbar.t--toolbar-inline.dx-toolbar .t--toolbar-title {
+  font-size: 14px;
+  color: black;
+  font-weight: normal;
+}
 .t--toolbar.t--toolbar-inline.dx-toolbar .dx-state-disabled .t--toolbar-item {
   color: gray;
 }
@@ -104,4 +109,20 @@
 .t--toolbar .t--toolbar-item-content,
 .dx-popup-wrapper:not(.dx-dialog) > .dx-popup-normal .t--toolbar-item-content {
   flex-direction: column;
+}
+.dx-popup-wrapper.dx-lookup-popup-search > .dx-popup-normal .dx-toolbar {
+  height: 30px;
+}
+.dx-popup-wrapper.dx-lookup-popup-search > .dx-popup-normal .dx-toolbar .dx-toolbar-items-container {
+  height: 30px;
+}
+.dx-popup-wrapper.dx-lookup-popup-search > .dx-popup-normal .dx-toolbar .dx-toolbar-item .dx-toolbar-item-content {
+  padding: 0 12px;
+  font-size: 14px;
+}
+.dx-popup-wrapper.dx-lookup-popup-search > .dx-popup-normal .dx-list .dx-scrollview-content {
+  padding: 0 12px;
+}
+.dx-popup-wrapper.dx-lookup-popup-search > .dx-popup-normal .dx-lookup-search-wrapper {
+  padding: 0 12px;
 }

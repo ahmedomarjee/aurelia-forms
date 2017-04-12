@@ -13,7 +13,7 @@ export interface ISelectItem {
 
     items?: any[];
 
-    hasItemTemplate?: boolean;
-    hasTitleTemplate?: boolean;
-    hasFieldTemplate?: boolean;
+    itemTemplate?: string;
+    fieldTemplate?: string;
+    titleTemplate?: string;
 }

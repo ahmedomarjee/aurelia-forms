@@ -39,13 +39,12 @@ export class DxWidget {
 
   created(owningView: any, myView: any) {
     this.owningView = owningView;
-
-    this.extractTemplates();
   }
   bind(bindingContext: any, overrideContext: OverrideContext) {
     this.bindingContext = bindingContext;
     this.overrideContext = overrideContext;
     
+    this.extractTemplates();
     this.checkBindings();
   }
   attached() {

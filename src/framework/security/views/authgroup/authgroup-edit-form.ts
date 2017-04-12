@@ -60,15 +60,6 @@ export class AuthgroupEditForm extends fwx.FormBase {
                 "optionsName": "mandatorOptions",
                 "optionsNameFQ": "mandatorOptions"
             }
-        }, {
-            "selectItem": {
-                "id": "mandator",
-                "elementName": "select-box",
-                "valueMember": "Id",
-                "displayMember": "Name",
-                "action": "base/Security/Mandator",
-                "columns": ["Name", "Id"]
-            }
         });
         super.onConstructionFinished();
     }

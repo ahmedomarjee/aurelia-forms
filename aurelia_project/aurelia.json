@@ -26,6 +26,7 @@
   "textProcessor": {
     "displayName": "Text",
     "source": [
+      "src/autodata/select-items.json",
       "src/autodata/localization-neutral.json",
       "src/autodata/forms.json",
       "src/route-info/structure.json"

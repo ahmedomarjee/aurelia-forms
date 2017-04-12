@@ -5,6 +5,7 @@
     "validator_stringLengthMinMax": "{0} muss zwischen {1} und {2} Zeichen haben",
     "validator_stringLengthMin": "{0} muss mindestens {1} Zeichen haben",
     "validator_stringLengthMax": "{0} darf maximal {1} Zeichen haben",
-    "file_uploadClickHere": "Hier klicken, um eine Datei hochzuladen."
+    "file_uploadClickHere": "Hier klicken, um eine Datei hochzuladen.",
+    "lookup_selectItem": "Element auswählen"
   }
 }

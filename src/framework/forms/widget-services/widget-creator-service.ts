@@ -52,8 +52,8 @@ export class WidgetCreatorService {
   addListView(form: FormBase, options: WidgetOptions.IListViewOptions): WidgetOptions.IListViewOptions {
     return this.simpleWidgetCreator.addListView(form, options);
   }
-  addLookup(form: FormBase, options: WidgetOptions.ISelectOptions, selectContainerOptions: WidgetOptions.ISelectItemContainerOptions): DevExpress.ui.dxLookupOptions {
-    return this.simpleWidgetCreator.addLookup(form, options, selectContainerOptions);
+  addLookup(form: FormBase, options: WidgetOptions.ISelectOptions): DevExpress.ui.dxLookupOptions {
+    return this.simpleWidgetCreator.addLookup(form, options);
   }
   addNumberBox(form: FormBase, options: WidgetOptions.INumberBoxOptions): DevExpress.ui.dxNumberBoxOptions {
     return this.simpleWidgetCreator.addNumberBox(form, options);
@@ -64,14 +64,14 @@ export class WidgetCreatorService {
   addPopup(form: FormBase, options: WidgetOptions.IPopupOptions): DevExpress.ui.dxPopupOptions {
     return this.simpleWidgetCreator.addPopup(form, options);
   }
-  addRadioGroup(form: FormBase, options: WidgetOptions.ISelectOptions, selectContainerOptions: WidgetOptions.ISelectItemContainerOptions): DevExpress.ui.dxRadioGroupOptions {
-    return this.simpleWidgetCreator.addRadioGroup(form, options, selectContainerOptions);
+  addRadioGroup(form: FormBase, options: WidgetOptions.ISelectOptions): DevExpress.ui.dxRadioGroupOptions {
+    return this.simpleWidgetCreator.addRadioGroup(form, options);
   }
   addTab(form: FormBase, options: WidgetOptions.ITabOptions): DevExpress.ui.dxTabsOptions {
     return this.simpleWidgetCreator.addTab(form, options);
   }
-  addSelectBox(form: FormBase, options: WidgetOptions.ISelectOptions, selectContainerOptions: WidgetOptions.ISelectItemContainerOptions): DevExpress.ui.dxSelectBoxOptions {
-    return this.simpleWidgetCreator.addSelectBox(form, options, selectContainerOptions);
+  addSelectBox(form: FormBase, options: WidgetOptions.ISelectOptions): DevExpress.ui.dxSelectBoxOptions {
+    return this.simpleWidgetCreator.addSelectBox(form, options);
   }
   addTagBox(form: FormBase, options: WidgetOptions.ITagBoxOptions): DevExpress.ui.dxTagBoxOptions {
     return this.simpleWidgetCreator.addTagBox(form, options);

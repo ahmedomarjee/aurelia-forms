@@ -5,11 +5,11 @@ import {
   FormBase
 } from "../classes/form-base";
 import {
-  ToolbarService
-} from "../services/toolbar-service";
-import {
-  DefaultCommandsService
-} from "../services/default-commands-service";
+  DefaultCommandsService,
+  SelectItemService,
+  ToolbarService,
+  ValidationService
+} from "../services/export";
 import {
   DataSourceService,
   GlobalizationService,
@@ -21,9 +21,6 @@ import {
 import {
   ICommandData
 } from "../interfaces/command-data";
-import {
-  ValidationService
-} from "../services/validation-service";
 import * as WidgetOptions from "../widget-options/export";
 
 @autoinject
@@ -35,7 +32,8 @@ export class SimpleWidgetCreatorService {
     private localization: LocalizationService,
     private toolbar: ToolbarService,
     private defaultCommands: DefaultCommandsService,
-    private validation: ValidationService
+    private validation: ValidationService,
+    private selectItem: SelectItemService
   ) { }
 
   addAccordion(form: FormBase, options: WidgetOptions.IAccordionOptions): DevExpress.ui.dxAccordionOptions {
@@ -116,11 +114,23 @@ export class SimpleWidgetCreatorService {
   addListView(form: FormBase, options: WidgetOptions.IListViewOptions): WidgetOptions.IListViewOptions {
     return options;
   }
-  addLookup(form: FormBase, options: WidgetOptions.ISelectOptions, selectContainerOptions: WidgetOptions.ISelectItemContainerOptions): DevExpress.ui.dxLookupOptions {
+  addLookup(form: FormBase, options: WidgetOptions.ISelectOptions): DevExpress.ui.dxLookupOptions {
     const editorOptions: DevExpress.ui.dxLookupOptions = this.createEditorOptions(form, options);
+    const selectItem = this.selectItem.getSelectItem(options.idSelect);
 
-    this.addDataExpressionOptions(form, options, selectContainerOptions, editorOptions);
+    this.addDataExpressionOptions(form, options, editorOptions, selectItem);
 
+    editorOptions.title = this.localization.translate(null, "forms.lookup_selectItem");
+
+    if (selectItem.titleTemplate) {
+      editorOptions.titleTemplate = `from-select-title-template-${selectItem.id}`;
+    }
+    if (selectItem.fieldTemplate) {
+      editorOptions.fieldTemplate = `from-select-field-template-${selectItem.id}`;
+    }
+    if (selectItem.itemTemplate) {
+      editorOptions.itemTemplate = `from-select-item-template-${selectItem.id}`;
+    }
     return editorOptions;
   }
   addNumberBox(form: FormBase, options: WidgetOptions.INumberBoxOptions): DevExpress.ui.dxNumberBoxOptions {
@@ -224,17 +234,30 @@ export class SimpleWidgetCreatorService {
 
     return widgetOptions;
   }
-  addRadioGroup(form: FormBase, options: WidgetOptions.ISelectOptions, selectContainerOptions: WidgetOptions.ISelectItemContainerOptions): DevExpress.ui.dxRadioGroupOptions {
+  addRadioGroup(form: FormBase, options: WidgetOptions.ISelectOptions): DevExpress.ui.dxRadioGroupOptions {
     const editorOptions: DevExpress.ui.dxRadioGroupOptions = this.createEditorOptions(form, options);
+    const selectItem = this.selectItem.getSelectItem(options.idSelect);
 
-    this.addDataExpressionOptions(form, options, selectContainerOptions, editorOptions);
+    this.addDataExpressionOptions(form, options, editorOptions, selectItem);
+
+    if (selectItem.itemTemplate) {
+      editorOptions.itemTemplate = `from-select-item-template-${selectItem.id}`;
+    }
 
     return editorOptions;
   }
-  addSelectBox(form: FormBase, options: WidgetOptions.ISelectOptions, selectContainerOptions: WidgetOptions.ISelectItemContainerOptions): DevExpress.ui.dxSelectBoxOptions {
+  addSelectBox(form: FormBase, options: WidgetOptions.ISelectOptions): DevExpress.ui.dxSelectBoxOptions {
     const editorOptions: DevExpress.ui.dxSelectBoxOptions = this.createEditorOptions(form, options);
+    const selectItem = this.selectItem.getSelectItem(options.idSelect);
 
-    this.addDataExpressionOptions(form, options, selectContainerOptions, editorOptions);
+    this.addDataExpressionOptions(form, options, editorOptions, selectItem);
+
+    if (selectItem.fieldTemplate) {
+      editorOptions.fieldTemplate = `from-select-field-template-${selectItem.id}`;
+    }
+    if (selectItem.itemTemplate) {
+      editorOptions.itemTemplate = `from-select-item-template-${selectItem.id}`;
+    }
 
     return editorOptions;
   }
@@ -414,31 +437,39 @@ export class SimpleWidgetCreatorService {
 
     return editorOptions;
   }
-  private addDataExpressionOptions(form: FormBase, options: WidgetOptions.ISelectOptions, selectContainerOptions: WidgetOptions.ISelectItemContainerOptions, current: DevExpress.ui.DataExpressionMixinOptions): void {
-    if (selectContainerOptions.selectItem.items
-      && selectContainerOptions.selectItem.items.length > 0) {
-      current.dataSource = selectContainerOptions.selectItem.items;
-    } else if (selectContainerOptions.selectItem.action) {
+  private addDataExpressionOptions(form: FormBase, options: WidgetOptions.ISelectOptions, current: DevExpress.ui.DataExpressionMixinOptions, selectItem: WidgetOptions.ISelectItem): void {
+    if (selectItem.items
+      && selectItem.items.length > 0) {
+      current.dataSource = selectItem.items;
+    } else if (selectItem.action) {
       const where = [];
-      if (selectContainerOptions.filter) {
-        where.push(selectContainerOptions.filter);
+      if (options.filter) {
+        where.push(options.filter);
       }
-      if (selectContainerOptions.selectItem.where) {
-        where.push(selectContainerOptions.selectItem.where);
+      if (selectItem.where) {
+        where.push(selectItem.where);
+      }
+
+      const filters = [];
+      if (options.customs) {
+        filters.push(...options.customs);
+      }
+      if (options.filters) {
+        filters.push(...options.filter);
       }
 
       current.dataSource = this.dataSource.createDataSource(form.expressions, {
-        keyProperty: selectContainerOptions.selectItem.valueMember,
-        webApiAction: selectContainerOptions.selectItem.action,
-        webApiColumns: selectContainerOptions.selectItem.columns,
-        webApiExpand: selectContainerOptions.selectItem.expand,
-        webApiOrderBy: selectContainerOptions.selectItem.orderBy,
+        keyProperty: selectItem.valueMember,
+        webApiAction: selectItem.action,
+        webApiColumns: selectItem.columns,
+        webApiExpand: selectItem.expand,
+        webApiOrderBy: selectItem.orderBy,
         webApiWhere: where,
-        filters: selectContainerOptions.customs
+        filters: filters
       });
     }
 
-    current.valueExpr = selectContainerOptions.selectItem.valueMember;
-    current.displayExpr = selectContainerOptions.selectItem.displayMember;
+    current.valueExpr = selectItem.valueMember;
+    current.displayExpr = selectItem.displayMember;
   }
 }
