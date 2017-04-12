@@ -12,9 +12,8 @@ export class AuthgroupListForm extends fwx.FormBase {
             "id": "$m_A",
             "webApiAction": "base/Security/Authgroup",
             "webApiExpand": {
-                "Mandator": null
+                Mandator: null
             },
-            "keyProperty": "Id",
             "filters": []
         });
         this.addModel({
@@ -31,12 +30,12 @@ export class AuthgroupListForm extends fwx.FormBase {
                     "bindToFQ": "models.data.$m_A_Edit.Id"
                 }
             }],
-            "commands": [],
             "id": "edit",
             "options": {
                 "optionsName": "editOptions",
                 "optionsNameFQ": "editOptions"
-            }
+            },
+            "commands": []
         });
         this.widgetCreator.addValidationGroup(this, {
             "id": "wd1",

@@ -39,6 +39,10 @@ export class AuthorizationService {
   }
   isLoggedIn: boolean = null;
 
+  getAuthorizationKey(): string {
+    return localStorage.getItem(this.X_TIP_AUTH);
+  }
+
   openApp() {
     if (this.isLoggedIn) {
       return;
@@ -84,7 +88,7 @@ export class AuthorizationService {
   private getAuthorizationHeaders(): any {
     const headers = {};
 
-    const auth = localStorage.getItem(this.X_TIP_AUTH);
+    const auth = this.getAuthorizationKey();
     if (auth) {
       headers[this.X_TIP_AUTH] = auth;
     }

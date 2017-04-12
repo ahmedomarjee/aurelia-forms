@@ -43,7 +43,7 @@ export class WidgetCreatorService {
   addFileUploader(form: FormBase, options: WidgetOptions.IFileUploaderOptions): DevExpress.ui.dxFileUploaderOptions {
     return this.simpleWidgetCreator.addFileUploader(form, options);
   }
-  addFileUploaderWithViewer(form: FormBase, options: WidgetOptions.IFileUploaderOptions): WidgetOptions.IFileUploaderOptions {
+  addFileUploaderWithViewer(form: FormBase, options: WidgetOptions.IFileUploaderWithViewerOptions): WidgetOptions.IFileUploaderWithViewerOptions {
     return this.simpleWidgetCreator.addFileUploaderWithViewer(form, options);
   }
   addInclude(form: FormBase, options: WidgetOptions.IIncludeOptions): WidgetOptions.IIncludeOptions {

@@ -1,6 +1,6 @@
 <template>
     <require from="./authgroup-edit-form"></require>
-    <dx-widget name="dxValidationGroup" options.bind="wd1Options">
+    <dx-widget name="dxValidationGroup" options.bind="wd1Options" view-model.ref="wd1">
         <dx-widget name="dxPopup" options.bind="editOptions" view-model.ref="edit">
             <dx-template name="contentTemplate">
                 <div class="container-fluid">

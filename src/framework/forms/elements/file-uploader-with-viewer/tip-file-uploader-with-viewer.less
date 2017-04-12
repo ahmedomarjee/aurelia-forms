@@ -1,0 +1,39 @@
+@minHeight: 150px;
+
+.t--file-uploader-with-viewer {
+  input {
+    height: 0;
+    width: 0;
+  }
+
+  .t--file-uploader-with-viewer-click-region {
+    display: block;
+    width: 100%;
+    min-height: @minHeight;
+    border: 3px dotted gray;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 12px;
+  }
+
+  .t--file-uploader-image, t--file-uploader-placeholder-image {
+    width: 100%;
+    min-height: @minHeight;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-content: center;
+  }
+
+  .t--file-uploader-with-viewer-download {
+    margin-top: 12px;
+  }
+
+  img {
+    max-height: 100%;
+    max-width: 100%;
+    position: absolute;
+  }
+}

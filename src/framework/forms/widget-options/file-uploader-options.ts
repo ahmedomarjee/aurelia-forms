@@ -4,5 +4,6 @@ import {IValidationRule} from "./validation-rule";
 import {IWidgetOptions} from "./widget-options";
 
 export interface IFileUploaderOptions extends IWidgetOptions {
+    acceptTypeEnum?: number;
     acceptType?: string;
 }

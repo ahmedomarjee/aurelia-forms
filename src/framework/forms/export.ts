@@ -5,3 +5,4 @@ export * from "./interfaces/export";
 export * from "./services/export";
 export * from "./widget-options/export";
 export * from "./widget-services/export";
+export * from "./elements/export";

@@ -1,0 +1,21 @@
+<template class="t--file-uploader-with-viewer">
+  <require from="./tip-file-uploader-with-viewer.css"></require>
+  <input type="file" accept.bind="options.acceptType" ref="input">
+
+  <div class="t--file-uploader-with-viewer-click-region" click.delegate="onClick($event)">
+    <div if.bind="placeholderImage && !downloadUrl" class="t--file-uploader-placeholder-image" css.bind="imageStyle">
+      <img src.bind="placeholderImage" />
+    </div>
+    <div if.bind="placeholderImageText && !downloadUrl" class="t--file-uploader-placeholder-image-text"></div>
+      <span>${placeholderImageText}</span>
+    <div if.bind="placeholderIcon && !downloadUrl" class="t--file-uploader-placeholder-icon">
+      <i class="fa fa-${placeholderIcon}"></i>
+    </div>
+
+    <div if.bind="downloadUrl" class="t--file-uploader-image" css.bind="imageStyle">
+      <img src.bind="downloadUrl" />
+    </div>
+
+    <dx-widget class="t--file-uploader-with-viewer-download" if.bind="downloadUrl" view-model.ref="downloadButton" name="dxButton" options.bind="downloadButtonOptions"></dx-widget>
+  </div>
+</template>

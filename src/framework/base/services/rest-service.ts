@@ -17,8 +17,6 @@ import {
 import * as Interfaces from "../interfaces/export";
 import Config from "../../../config";
 
-const GET_OPTIONS = "X-GET-OPTIONS";
-
 @autoinject
 export class RestService {
   constructor(
@@ -45,28 +43,10 @@ export class RestService {
     return this.execute("GET", options.url, this.createHeaders(options), options.increaseLoadingCount);
   }
   post(options: Interfaces.IRestPostOptions): Promise<any> {
-    let body = null;
-    if (options.data) {
-      if (typeof options.data === "string") {
-        body = options.data;
-      } else {
-        body = this.json.stringify(options.data);
-      }
-    }
-
-    return this.execute("POST", options.url, this.createHeaders(options), options.increaseLoadingCount, body);
+    return this.execute("POST", options.url, this.createHeaders(options), options.increaseLoadingCount, options.data);
   }
   put(options: Interfaces.IRestPostOptions): Promise<any> {
-    let body = null;
-    if (options.data) {
-      if (typeof options.data === "string") {
-        body = options.data;
-      } else {
-        body = this.json.stringify(options.data);
-      }
-    }
-
-    return this.execute("PUT", options.url, this.createHeaders(options), options.increaseLoadingCount, body);
+    return this.execute("PUT", options.url, this.createHeaders(options), options.increaseLoadingCount, options.data);
   }
 
   getUrl(suffix: string): string {
@@ -86,7 +66,7 @@ export class RestService {
     const headers: any = {};
 
     if (options && options.getOptions) {
-      headers[GET_OPTIONS] = this.json.stringify(options.getOptions);
+      headers["X-GET-OPTIONS"] = this.json.stringify(options.getOptions);
     }
 
     headers["Content-Type"] = "application/json";
@@ -101,68 +81,52 @@ export class RestService {
   private execute(method: string, url: string, headers: any, changeLoadingCount: boolean, body?: any): Promise<any> {
     const client = new HttpClient();
 
+    if (body) {
+      if (typeof body !== "string" && !(body instanceof FormData)) {
+        body = this.json.stringify(body);
+      }
+
+      if (body instanceof FormData) {
+        delete headers["Accept"];
+        delete headers["Content-Type"];
+      }
+    }
+
     if (changeLoadingCount) {
       this.loadingCount++;
     }
 
-    let preWorkPromise: Promise<any> = Promise.resolve();
-
-    if (headers && headers[GET_OPTIONS]) {
-      const getOptions: string = headers[GET_OPTIONS];
-      if (getOptions.length > 4000) {
-        preWorkPromise = client
-          .fetch(this.getWebApiUrl("Options"), {
-            method: "POST",
-            body: getOptions,
-            headers: this.getAuthHeader ? this.getAuthHeader() : {}
-          });
-      }
-    }
-
-    return preWorkPromise
-      .then(preWorkResult => {
-        return new Promise<any>((success: any, error) => {
-          if (preWorkResult) {
-            if (!(typeof preWorkResult === "string")) {
-              preWorkResult = JSON.stringify(preWorkResult);
-            }
-
-            headers[GET_OPTIONS] = preWorkResult;
+    return new Promise<any>((success: any, error) => {
+      client
+        .fetch(url, {
+          method: method,
+          headers: headers,
+          body: body
+        })
+        .then(r => {
+          if (r.ok) {
+            return r.text();
+          }
+          if (r.status == 401) {
+            this.onUnauthorizated.fire({
+              url: url
+            });
+            return;
           }
 
-          client
-            .fetch(url, {
-              method: method,
-              headers: headers,
-              body: body
-            })
-            .then(r => {
-              if (r.ok) {
-                return r.text();
-              }
-              if (r.status == 401) {
-                this.onUnauthorizated.fire({
-                  url: url
-                });
-                return;
-              } else if (r.status == 423) {
-                location.reload(true);
-              }
-
-              DevExpress.ui.notify(r.statusText, "error", 3000);
-              error(r);
-            })
-            .then(r => this.json.parse(r))
-            .then(r => success(r))
-            .catch(r => {
-              error(r);
-            })
-            .then(() => {
-              if (changeLoadingCount) {
-                this.loadingCount--;
-              }
-            });
+          DevExpress.ui.notify(r.statusText, "error", 3000);
+          error(r);
+        })
+        .then(r => this.json.parse(r))
+        .then(r => success(r))
+        .catch(r => {
+          error(r);
+        })
+        .then(() => {
+          if (changeLoadingCount) {
+            this.loadingCount--;
+          }
         });
-      });
+    });
   }
 }

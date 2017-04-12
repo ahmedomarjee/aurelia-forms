@@ -12,7 +12,6 @@ export class AuthgroupEditForm extends fwx.FormBase {
             "id": "$m_A",
             "webApiAction": "base/Security/Authgroup",
             "key": "variables.data.$id",
-            "keyProperty": "Id",
             "postOnSave": true,
             "filters": []
         });

@@ -1,9 +1,10 @@
 import {IBinding} from "../interfaces/binding";
 import {IOptions} from "./options";
 import {IValidationRule} from "./validation-rule";
-import {IWidgetOptions} from "./widget-options";
+import {IEditorOptions} from "./editor-options";
 
-export interface IFileUploaderWithViewerOptions extends IWidgetOptions {
+export interface IFileUploaderWithViewerOptions extends IEditorOptions {
+    acceptTypeEnum?: number;
     acceptType?: string;
     placeholderIcon?: string;
     placeholderIconExpression?: string;

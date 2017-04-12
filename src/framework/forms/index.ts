@@ -7,7 +7,8 @@ import {
 
 export function configure(config: FrameworkConfiguration) {
   config
-    .globalResources("./styles/styles.css");
+    .globalResources("./styles/styles.css")
+    .globalResources("./elements/file-uploader-with-viewer/tip-file-uploader-with-viewer");
 
   const dxTemplate: DxTemplateService = config.container.get(DxTemplateService);
 }
