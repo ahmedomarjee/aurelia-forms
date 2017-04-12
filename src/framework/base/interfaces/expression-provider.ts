@@ -1,6 +1,8 @@
-import {IScope} from "./scope";
+import {
+  Scope
+} from "aurelia-framework";
 
 export interface IExpressionProvider {
-  createObserver(expression: string, action: {(newValue?: any, oldValue?: any): void}, scope?: IScope): {(): void};
-  evaluateExpression(expression: string, scope?: IScope): any;
+  createObserver(expression: string, action: {(newValue?: any, oldValue?: any): void}, scope?: Scope): {(): void};
+  evaluateExpression(expression: string, scope?: Scope): any;
 }

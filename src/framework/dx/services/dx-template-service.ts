@@ -1,12 +1,9 @@
 import {
   autoinject,
   createOverrideContext,
+  Scope,
   TemplatingEngine
 } from "aurelia-framework";
-
-import {
-  IScope
-} from "../../base/interfaces/export";
 
 @autoinject
 export class DxTemplateService {
@@ -20,7 +17,7 @@ export class DxTemplateService {
     this.templates[key] = template;
   }
 
-  getTemplates(scope: IScope, overrideContext: any, resources: any): any {
+  getTemplates(scope: Scope, overrideContext: any, resources: any): any {
     const result = {};
 
     for (let templateKey in this.templates) {
@@ -40,7 +37,7 @@ export class DxTemplateService {
     return result;
   }
 
-  render(template: string | Element, container: any, resources: any, scope: IScope, model?: any): any {
+  render(template: string | Element, container: any, resources: any, scope: Scope, model?: any): any {
     let newItem: Element | Node;
 
     if (typeof template === "string") {

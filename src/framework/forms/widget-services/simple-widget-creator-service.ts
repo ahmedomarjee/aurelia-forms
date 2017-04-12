@@ -52,7 +52,13 @@ export class SimpleWidgetCreatorService {
     return editorOptions;
   }
   addColorBox(form: FormBase, options: WidgetOptions.IColorBoxOptions): DevExpress.ui.dxColorBoxOptions {
-    return this.createEditorOptions(form, options);
+    const editorOptions: DevExpress.ui.dxColorBoxOptions = this.createEditorOptions(form, options);
+
+    if (options.editAlphaChannel) {
+      editorOptions.editAlphaChannel = options.editAlphaChannel;
+    }
+
+    return editorOptions;
   }
   addDateBox(form: FormBase, options: WidgetOptions.IDateBoxOptions): DevExpress.ui.dxDateBoxOptions {
     const editorOptions: DevExpress.ui.dxDateBoxOptions = this.createEditorOptions(form, options);
@@ -309,6 +315,9 @@ export class SimpleWidgetCreatorService {
 
     widgetOptions.valueExpr = options.itemsValueExpr;
     widgetOptions.displayExpr = options.itemsDisplayExpr;
+    widgetOptions.searchEnabled = true;
+    widgetOptions.showSelectionControls = true;
+    widgetOptions.applyValueMode = "useButtons";
 
     const model = form.models.getInfo(options.itemsDataContext);
     const dataSource = this.dataSource.createDataSource(form.expressions, model);
@@ -316,23 +325,27 @@ export class SimpleWidgetCreatorService {
 
     widgetOptions.onSelectionChanged = (e) => {
       const addedItems: any[] = e.addedItems;
-      const removedItems: any[] = e.addedItems;
+      const removedItems: any[] = e.removedItems;
 
-      const list: any[] = form.expressions.evaluateExpression(options.relationBinding.bindToFQ)
-        || [];
+      let list: any[] = form.expressions.evaluateExpression(options.relationBinding.bindToFQ);
+
+      if (list == void(0)) {
+        list = [];
+        form.expressions.assignExpression(options.relationBinding.bindToFQ, list);
+      }
 
       addedItems.forEach(c => {
-        const exists = list.some(d => d[options.relationProperty] = c);
-        if (c) {
+        const exists = list.some(d => d[options.relationProperty] == c[model.keyProperty]);
+        if (exists) {
           return;
         }
 
         const newObj = {};
-        newObj[options.relationProperty] = c;
+        newObj[options.relationProperty] = c[model.keyProperty];
         list.push(newObj);
       });
       removedItems.forEach(c => {
-        const existsList = list.filter(d => d[options.relationProperty] = c);
+        const existsList = list.filter(d => d[options.relationProperty] == c[model.keyProperty]);
         
         existsList.forEach(d => {
           const index = list.indexOf(d);

@@ -1,11 +1,13 @@
-import { autoinject } from "aurelia-framework";
-import { IScope } from "../interfaces/export";
+import {
+  autoinject,
+  Scope
+} from "aurelia-framework";
 
 @autoinject
 export class BindingService {
   constructor() {}
 
-  getBindingContext(expression: any, scope: IScope) {
+  getBindingContext(expression: any, scope: Scope) {
     let obj = expression;
     while (obj.object) {
       obj = obj.object;

@@ -1,12 +1,12 @@
 import {
-  autoinject
+  autoinject,
+  Scope
 } from "aurelia-framework";
 import {
   FormBase
 } from "../classes/form-base";
 import {
-  IExpressionProvider,
-  IScope
+  IExpressionProvider
 } from "../../base/interfaces/export";
 import {
   LocalizationService
@@ -60,7 +60,7 @@ export class ToolbarService {
 
     return options;
   }
-  createToolbarOptions(scope: IScope, expressionProvider: IExpressionProvider, title: string, commands: Interfaces.ICommandData[], componentCreatedCallback?: {(component: DevExpress.ui.dxToolbar)}): DevExpress.ui.dxToolbarOptions {
+  createToolbarOptions(scope: Scope, expressionProvider: IExpressionProvider, title: string, commands: Interfaces.ICommandData[], componentCreatedCallback?: {(component: DevExpress.ui.dxToolbar)}): DevExpress.ui.dxToolbarOptions {
     let component: DevExpress.ui.dxToolbar
 
     const options: DevExpress.ui.dxToolbarOptions = {
@@ -91,7 +91,7 @@ export class ToolbarService {
     }, title, commands);
     return options;
   }
-  createToolbarItems(scope: IScope, expressionProvider: IExpressionProvider, toolbarManager: IToolbarManager, title: string, commands: Interfaces.ICommandData[]): DevExpress.ui.dxPopupToolbarItemOptions[] {
+  createToolbarItems(scope: Scope, expressionProvider: IExpressionProvider, toolbarManager: IToolbarManager, title: string, commands: Interfaces.ICommandData[]): DevExpress.ui.dxPopupToolbarItemOptions[] {
     const items = commands
       .sort((a, b) => {
         const s1 = a.sort == void(0) ? 500 : a.sort;
@@ -117,7 +117,7 @@ export class ToolbarService {
     items.splice(0, 0, titleItem);
     return items;
   }
-  createToolbarItem(scope: IScope, expressionProvider: IExpressionProvider, toolbarManager: IToolbarManager, command: Interfaces.ICommandData): DevExpress.ui.dxPopupToolbarItemOptions {
+  createToolbarItem(scope: Scope, expressionProvider: IExpressionProvider, toolbarManager: IToolbarManager, command: Interfaces.ICommandData): DevExpress.ui.dxPopupToolbarItemOptions {
     const item: DevExpress.ui.dxPopupToolbarItemOptions = {};
 
     this.setEnabled(expressionProvider, toolbarManager, command, item);

@@ -2,14 +2,14 @@ import {
   autoinject,
   singleton,
   BindingEngine,
-  Expression
+  Expression,
+  Scope
 } from "aurelia-framework";
 import {
   FormBase
 } from "./form-base";
 import {
-  IExpressionProvider,
-  IScope
+  IExpressionProvider
 } from "../../base/interfaces/export";
 import {
   BindingService
@@ -26,7 +26,7 @@ export class Expressions implements IExpressionProvider {
     private binding: BindingService
   ) { }
 
-  createObserver(expression: string, action: { (newValue?: any, oldValue?: any): void }, scope?: IScope): { (): void } {
+  createObserver(expression: string, action: { (newValue?: any, oldValue?: any): void }, scope?: Scope): { (): void } {
     const context = !scope ? this.form : this.binding.getBindingContext(
       this.bindingEngine.parseExpression(expression),
       scope
@@ -38,7 +38,24 @@ export class Expressions implements IExpressionProvider {
       .subscribe(action)
       .dispose;
   }
-  evaluateExpression(expression: string, scope?: IScope): any {
+  assignExpression(expression: string, value: any, scope?: Scope) {
+    let parsed = this.expression.get(expression);
+
+    if (!parsed) {
+      parsed = this.bindingEngine.parseExpression(expression);
+      this.expression.set(expression, parsed);
+    }
+
+    if (!scope) {
+      scope = {
+        bindingContext: this.form,
+        overrideContext: null
+      }
+    }
+
+    parsed.assign(scope, value, null);
+  }
+  evaluateExpression(expression: string, scope?: Scope): any {
     let parsed = this.expression.get(expression);
 
     if (!parsed) {
