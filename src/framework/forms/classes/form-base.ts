@@ -38,6 +38,7 @@ import {
 } from "../widget-services/widget-creator-service";
 import {
   CustomEvent,
+  ErrorService,
   GlobalizationService,
   LocalizationService
 } from "../../base/export";
@@ -80,6 +81,7 @@ export class FormBase {
     this.globalization = formBaseImport.globalization;
     this.localization = formBaseImport.localization;
     this.commandServerData = formBaseImport.commandServerData;
+    this.error = formBaseImport.error;
 
     this.onAttached = formBaseImport.onAttached;
     this.onReady = formBaseImport.onReady;
@@ -110,6 +112,7 @@ export class FormBase {
   expressions: Expressions;
   globalization: GlobalizationService;
   localization: LocalizationService;
+  error: ErrorService;
 
   models: Models;
   variables: Variables;

@@ -43,7 +43,7 @@ export class DefaultCommandsService {
             3000);
         })
         .catch(r => {
-          this.formBaseImport.error.showAndLogError(r);
+          form.error.showAndLogError(r);
         });
       }
     };
