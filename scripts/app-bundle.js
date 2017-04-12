@@ -3622,12 +3622,12 @@ define('framework/forms/widget-services/simple-widget-creator-service',["require
         };
         SimpleWidgetCreatorService.prototype.addTagBox = function (form, options) {
             var widgetOptions = this.baseWidgetCreator.createWidgetOptions(form, options);
-            widgetOptions.valueExpr = options.itemsValueExpr;
-            widgetOptions.displayExpr = options.itemsDisplayExpr;
+            widgetOptions.valueExpr = options.itemValueExpr;
+            widgetOptions.displayExpr = options.itemDisplayExpr;
             widgetOptions.searchEnabled = true;
             widgetOptions.showSelectionControls = true;
             widgetOptions.applyValueMode = "useButtons";
-            var model = form.models.getInfo(options.itemsDataContext);
+            var model = form.models.getInfo(options.itemDataContext);
             var dataSource = this.dataSource.createDataSource(form.expressions, model);
             widgetOptions.dataSource = dataSource;
             widgetOptions.onSelectionChanged = function (e) {

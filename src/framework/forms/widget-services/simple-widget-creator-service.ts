@@ -313,13 +313,13 @@ export class SimpleWidgetCreatorService {
   addTagBox(form: FormBase, options: WidgetOptions.ITagBoxOptions): DevExpress.ui.dxTagBoxOptions {
     const widgetOptions: DevExpress.ui.dxTagBoxOptions = this.baseWidgetCreator.createWidgetOptions(form, options);
 
-    widgetOptions.valueExpr = options.itemsValueExpr;
-    widgetOptions.displayExpr = options.itemsDisplayExpr;
+    widgetOptions.valueExpr = options.itemValueExpr;
+    widgetOptions.displayExpr = options.itemDisplayExpr;
     widgetOptions.searchEnabled = true;
     widgetOptions.showSelectionControls = true;
     widgetOptions.applyValueMode = "useButtons";
 
-    const model = form.models.getInfo(options.itemsDataContext);
+    const model = form.models.getInfo(options.itemDataContext);
     const dataSource = this.dataSource.createDataSource(form.expressions, model);
     widgetOptions.dataSource = dataSource;
 
