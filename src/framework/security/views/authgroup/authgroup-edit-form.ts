@@ -43,6 +43,7 @@ export class AuthgroupEditForm extends fwx.FormBase {
         });
         this.widgetCreator.addSelectBox(this, {
             "idSelect": "mandator",
+            "customs": [],
             "caption": "authgroup-edit.mandator_caption",
             "binding": {
                 "dataContext": "$m_A",

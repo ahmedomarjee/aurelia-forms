@@ -1,12 +1,14 @@
 import {
-  autoinject
+  autoinject,
+  BindingEngine,  
+  Scope
 } from "aurelia-framework";
 import {
   RestService
 } from "./rest-service";
 import {
-  IExpressionProvider
-} from "../interfaces/expression-provider";
+  BindingService
+} from "./binding-service";
 
 import * as localizationNeutral from "text!../../../autodata/localization-neutral.json";
 
@@ -16,12 +18,14 @@ export class LocalizationService {
   private neutral: any;
   
   constructor(
-    private rest: RestService
+    private rest: RestService,
+    private binding: BindingService,
+    private bindingEngine: BindingEngine
   ) {
     this.neutral = JSON.parse(<any>localizationNeutral);
   }
 
-  translate(expressionProvider: IExpressionProvider | string[], key: string, callback?: {(val: string): void}): string {
+  translate(scope: Scope | string[], key: string, callback?: {(val: string): void}): string {
     if (!key) {
       return null;
     }
@@ -33,20 +37,22 @@ export class LocalizationService {
     }
 
     if (callback) {
-      if (!Array.isArray(expressionProvider) && typeof item === "object" && item.parameters.length > 0) {
+      if (!Array.isArray(scope) && typeof item === "object" && item.parameters.length > 0) {
         item.parameters.forEach((expr, index) => {
-          expressionProvider.createObserver(expr, () => {
-            callback(this.translateItem(expressionProvider, item))
-          });
+          this.bindingEngine
+            .expressionObserver(null, expr)
+            .subscribe(() => {
+              callback(this.translateItem(scope, item));
+            });
         });
       }
 
-      const result = this.translateItem(expressionProvider, item);
+      const result = this.translateItem(scope, item);
       callback(result);
 
       return result;
     } else {
-      return this.translateItem(expressionProvider, item);
+      return this.translateItem(scope, item);
     }
   }
   private getItem(key: string): any {
@@ -63,20 +69,20 @@ export class LocalizationService {
 
     return item;
   }
-  private translateItem(expressionProvider: IExpressionProvider | string[], item: any): string {
+  private translateItem(scope: Scope | string[], item: any): string {
     if (typeof item === "string") {
-      if (Array.isArray(expressionProvider)) {
-        expressionProvider.forEach((val, index) => {
+      if (Array.isArray(scope)) {
+        scope.forEach((val, index) => {
           item = item.replace(new RegExp("\\{" + index + "\\}", "g"), val);
         });
       }
 
       return item;
-    } else if (!Array.isArray(expressionProvider) && typeof item === "object") {
+    } else if (!Array.isArray(scope) && typeof item === "object") {
       let text: string = item.text;
 
       item.parameters.forEach((expr, index) => {
-        let val = expressionProvider.evaluateExpression(expr);
+        let val = this.bindingEngine.parseExpression(expr).evaluate(scope);
 
         if (val == void(0)) {
           val = "";

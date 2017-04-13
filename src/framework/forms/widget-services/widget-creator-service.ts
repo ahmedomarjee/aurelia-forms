@@ -10,13 +10,17 @@ import {
 import {
   DataGridWidgetCreatorService
 } from "./data-grid-widget-creator-service";
+import {
+  ListWidgetCreatorService
+} from "./list-widget-creator-service";
 import * as WidgetOptions from "../widget-options/export";
 
 @autoinject
 export class WidgetCreatorService {
   constructor(
     private simpleWidgetCreator: SimpleWidgetCreatorService,
-    private dataGridWidgetCreator: DataGridWidgetCreatorService
+    private dataGridWidgetCreator: DataGridWidgetCreatorService,
+    private listWidgetCreator: ListWidgetCreatorService
   ) { }
 
   addAccordion(form: FormBase, options: WidgetOptions.IAccordionOptions): DevExpress.ui.dxAccordionOptions {
@@ -48,6 +52,9 @@ export class WidgetCreatorService {
   }
   addInclude(form: FormBase, options: WidgetOptions.IIncludeOptions): WidgetOptions.IIncludeOptions {
     return this.simpleWidgetCreator.addInclude(form, options);
+  }
+  addList(form: FormBase, options: WidgetOptions.IListOptions): DevExpress.ui.dxListOptions {
+    return this.listWidgetCreator.addList(form, options);
   }
   addListView(form: FormBase, options: WidgetOptions.IListViewOptions): WidgetOptions.IListViewOptions {
     return this.simpleWidgetCreator.addListView(form, options);

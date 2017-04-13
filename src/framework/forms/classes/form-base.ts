@@ -4,6 +4,8 @@ import {
   BindingEngine,
   Expression,
   Container,
+  OverrideContext,
+  Scope,
   TaskQueue
 } from "aurelia-framework";
 import {
@@ -127,6 +129,8 @@ export class FormBase {
   onReactivated: CustomEvent<IFormReadyEventArgs>;
   onValidating: CustomEvent<IFormValidatingEventArgs>;
 
+  scope: Scope;
+
   owningView: any;
   parent: FormBase;
 
@@ -147,8 +151,13 @@ export class FormBase {
 
     return promise;
   }
-  bind() {
+  bind(bindingContext: any, overrideContext: OverrideContext) {
     this.parent = this.owningView.bindingContext;
+
+    this.scope = {
+      bindingContext: bindingContext,
+      overrideContext: overrideContext
+    };
   }
   activate(routeInfo: any) {
     if (routeInfo && routeInfo.parameters && routeInfo.parameters.id) {
@@ -261,7 +270,7 @@ export class FormBase {
   }
 
   translate(key: string): string {
-    return this.localization.translate(this.expressions, key);
+    return this.localization.translate(this.scope, key);
   }
 
   protected addModel(model: Interfaces.IModel): void {

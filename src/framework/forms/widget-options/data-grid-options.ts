@@ -1,7 +1,7 @@
 import {IDataGridColumnOptions} from "./data-grid-column-options"
-import {IListOptions} from "./list-options";
+import {IListOptionsBase} from "./list-options-base";
 
-export interface IDataGridOptions extends IListOptions {
+export interface IDataGridOptions extends IListOptionsBase {
     columns?: IDataGridColumnOptions[]
 
     showFilterRow?: boolean;

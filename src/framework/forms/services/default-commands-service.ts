@@ -5,7 +5,7 @@ import {
   FormBase
 } from "../classes/form-base";
 import {
-  IListOptions
+  IListOptionsBase
 } from "../widget-options/export";
 import {
   LocationService,
@@ -129,7 +129,7 @@ export class DefaultCommandsService {
 
     return cmd;
   }
-  getListAddCommand(form: FormBase, options: IListOptions): Interfaces.ICommandData {
+  getListAddCommand(form: FormBase, options: IListOptionsBase): Interfaces.ICommandData {
     const cmd: Interfaces.ICommandData = {
       id: "$add",
       icon: "plus",
@@ -196,7 +196,7 @@ export class DefaultCommandsService {
 
     return cmd;
   }
-  getListCommands(form: FormBase, options: IListOptions): Interfaces.ICommandData[] {
+  getListCommands(form: FormBase, options: IListOptionsBase): Interfaces.ICommandData[] {
     const result: Interfaces.ICommandData[] = [];
 
     const addCmd = this.getListAddCommand(form, options);

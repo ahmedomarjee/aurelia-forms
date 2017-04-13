@@ -1,11 +1,12 @@
 import {
   autoinject,
   bindable,
-  customAttribute
+  customAttribute,
+  OverrideContext
 } from "aurelia-framework";
 import {
   LocalizationService
-} from "../../services/localization-service";
+} from "../../services/export";
 import {
   IExpressionProvider
 } from "../../interfaces/export";
@@ -18,15 +19,16 @@ export class TrCustomAttribute {
     private localization: LocalizationService
   ) {}
 
-  expressionProvider: IExpressionProvider;
+  bindingContext: any;
+  overrideContext: OverrideContext
 
   @bindable mode: string;
   @bindable key: string;
   @bindable markdown: true;
 
-  bind(bindingContext: any) {
-    //TODO - für was? - wieso ist expressions in bindingContext?
-    this.expressionProvider = bindingContext.expressions;
+  bind(bindingContext: any, overrideContext: OverrideContext) {
+    this.bindingContext = bindingContext;
+    this.overrideContext = overrideContext;
     this.setInnerHtml();
   }
 
@@ -35,7 +37,10 @@ export class TrCustomAttribute {
   }
 
   private setInnerHtml() {
-    this.localization.translate(this.expressionProvider, this.key, (val) => {
+    this.localization.translate({
+        bindingContext: this.bindingContext,
+        overrideContext: this.overrideContext
+      }, this.key, (val) => {
       this.element.innerHTML = val;
     });
   }

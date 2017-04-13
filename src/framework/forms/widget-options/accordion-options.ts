@@ -1,5 +1,5 @@
 import {IDataGridColumnOptions} from "./data-grid-column-options"
-import {IListOptions} from "./list-options";
+import {IListOptionsBase} from "./list-options-base";
 
-export interface IAccordionOptions extends IListOptions {
+export interface IAccordionOptions extends IListOptionsBase {
 }

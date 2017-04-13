@@ -46,7 +46,7 @@ export class SimpleWidgetCreatorService {
     const editorOptions: DevExpress.ui.dxCheckBoxOptions = this.createEditorOptions(form, options);
 
     if (options.caption) {
-      editorOptions.text = this.localization.translate(form.expressions, options.caption);
+      editorOptions.text = this.localization.translate(form.scope, options.caption);
     }
 
     return editorOptions;
@@ -85,8 +85,8 @@ export class SimpleWidgetCreatorService {
     }
 
     const buttonOptions: DevExpress.ui.dxButtonOptions = {};
-    buttonOptions.text = this.localization.translate(form.expressions, command.title);
-    buttonOptions.hint = this.localization.translate(form.expressions, command.tooltip);
+    buttonOptions.text = this.localization.translate(form.scope, command.title);
+    buttonOptions.hint = this.localization.translate(form.scope, command.tooltip);
     buttonOptions.width = "100%";
     buttonOptions.onClick = () => {
       if (typeof command.execute === "function") {
@@ -280,7 +280,7 @@ export class SimpleWidgetCreatorService {
 
     options.pages.forEach((page, index) => {
       const pageOptions = {
-        text: this.localization.translate(form.expressions, page.caption),
+        text: this.localization.translate(form.scope, page.caption),
         visible: true,
         __options: page
       };
@@ -430,7 +430,7 @@ export class SimpleWidgetCreatorService {
     }
 
     if (options.placeholder) {
-      (<any>editorOptions).placeholder = this.localization.translate(form.expressions, options.placeholder);
+      (<any>editorOptions).placeholder = this.localization.translate(form.scope, options.placeholder);
     }
 
     editorOptions["validators"] = options.validationRules.map(v => {
