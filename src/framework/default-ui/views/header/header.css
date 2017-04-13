@@ -1,17 +1,36 @@
+@keyframes leftFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
 .t--header {
   display: flex;
   align-items: center;
   height: 60px;
   margin-left: 280px;
   padding: 0 12px;
+  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);
+  transition-property: margin-left;
+}
+.t--sidebar-collapsed .t--header {
+  margin-left: 60px;
 }
 .t--header-flex {
   display: flex;
   width: 100%;
 }
-.t--header-title {
-  flex-grow: 1;
+.t--header-flex > div:not(:first-child) {
+  margin-left: 24px;
 }
-.t--sidebar-collapsed .t--header {
-  margin-left: 60px;
+.t--header-title {
+  display: flex;
+  align-items: center;
+}
+.t--header-between {
+  flex-grow: 1;
 }

@@ -36,7 +36,7 @@
 }
 .t--toolbar.t--toolbar-inline.dx-toolbar {
   height: 32px;
-  background-color: #D3D3D3;
+  background-color: #E5E5E5;
 }
 .t--toolbar.t--toolbar-inline.dx-toolbar .dx-toolbar-items-container {
   height: 32px;
@@ -55,7 +55,6 @@
   display: flex;
   align-items: center;
   height: 32px;
-  background-color: rgba(255, 255, 255, 0.4);
   font-size: 14px;
   font-weight: normal;
 }

@@ -22,9 +22,11 @@ export class CustomEvent<T extends ICustomEventArgs> {
     private taskQueue: TaskQueue) {}
 
   waitTimeout = 0;
+  anyRegistered: boolean;  
 
   register(action: { (args: T): Promise<any> }): { (): void } {
     this.delegates.push(action);
+    this.anyRegistered = this.delegates.length > 0;
 
     return () => {
       const indexOf = this.delegates.indexOf(action);
@@ -33,6 +35,7 @@ export class CustomEvent<T extends ICustomEventArgs> {
       }
 
       this.delegates.splice(indexOf, 1);
+      this.anyRegistered = this.delegates.length > 0;
     }
   }
   fire(args: T): Promise<any> {

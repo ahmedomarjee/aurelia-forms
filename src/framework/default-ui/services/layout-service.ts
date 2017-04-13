@@ -30,9 +30,6 @@ export class LayoutService {
     }, {
       name: ".t--toolbar.t--toolbar-inline.dx-toolbar .t--toolbar-title",
       properties: [{
-        propertyName: "background-color",
-        value: "rgba(255,255,255,0.4)"
-      }, {
         propertyName: "color",
         value: this.themeColor
       }]

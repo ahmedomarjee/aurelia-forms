@@ -17,8 +17,19 @@
 .t--header-flex {
   display: flex;
   width: 100%;
+
+  > div:not(:first-child) {
+    margin-left: 24px;
+  }
 }
 .t--header-title {
+  display: flex;
+  align-items: center;
+}
+.t--header-search {
+
+}
+.t--header-between {
   flex-grow: 1;
 }
 .t--header-options {

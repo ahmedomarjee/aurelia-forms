@@ -2,9 +2,13 @@
   <require from="./header.css"></require>
 
   <div class="t--header-flex">
-    <div class="t--header-title">
-      TIP Technik und Informatik Partner GmbH
+    <div class="t--header-title" if.bind="header.text">
+      ${header.text}
     </div>
+    <div class="t--header-search" if.bind="header.onSearch.anyRegistered">
+      <dx-widget name="dxTextBox" options.bind="searchTextOptions"></dx-widget>
+    </div>
+    <div class="t--header-between"></div>
     <div class="t--header-options">
       <a href="#" click.delegate="logout()" tr="key: base.logout"></a>
     </div>
