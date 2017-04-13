@@ -1,7 +1,5 @@
 import {
-  autoinject,
-  BindingEngine,  
-  Scope
+  autoinject
 } from "aurelia-framework";
 import {
   RestService
@@ -9,6 +7,9 @@ import {
 import {
   BindingService
 } from "./binding-service";
+import {
+  ScopeContainer
+} from "../classes/scope-container"
 
 import * as localizationNeutral from "text!../../../autodata/localization-neutral.json";
 
@@ -19,13 +20,12 @@ export class LocalizationService {
   
   constructor(
     private rest: RestService,
-    private binding: BindingService,
-    private bindingEngine: BindingEngine
+    private binding: BindingService
   ) {
     this.neutral = JSON.parse(<any>localizationNeutral);
   }
 
-  translate(scope: Scope | string[], key: string, callback?: {(val: string): void}): string {
+  translate(scopeContainer: ScopeContainer | string[], key: string, callback?: {(val: string): void}): string {
     if (!key) {
       return null;
     }
@@ -37,22 +37,21 @@ export class LocalizationService {
     }
 
     if (callback) {
-      if (!Array.isArray(scope) && typeof item === "object" && item.parameters.length > 0) {
+      if (!Array.isArray(scopeContainer) && typeof item === "object" && item.parameters.length > 0) {
         item.parameters.forEach((expr, index) => {
-          this.bindingEngine
-            .expressionObserver(null, expr)
-            .subscribe(() => {
-              callback(this.translateItem(scope, item));
+          this.binding
+            .observeExpression(scopeContainer, expr, () => {
+              callback(this.translateItem(scopeContainer, item))
             });
         });
       }
 
-      const result = this.translateItem(scope, item);
+      const result = this.translateItem(scopeContainer, item);
       callback(result);
 
       return result;
     } else {
-      return this.translateItem(scope, item);
+      return this.translateItem(scopeContainer, item);
     }
   }
   private getItem(key: string): any {
@@ -69,20 +68,20 @@ export class LocalizationService {
 
     return item;
   }
-  private translateItem(scope: Scope | string[], item: any): string {
+  private translateItem(scopeContainer: ScopeContainer | string[], item: any): string {
     if (typeof item === "string") {
-      if (Array.isArray(scope)) {
-        scope.forEach((val, index) => {
+      if (Array.isArray(scopeContainer)) {
+        scopeContainer.forEach((val, index) => {
           item = item.replace(new RegExp("\\{" + index + "\\}", "g"), val);
         });
       }
 
       return item;
-    } else if (!Array.isArray(scope) && typeof item === "object") {
+    } else if (!Array.isArray(scopeContainer) && typeof item === "object") {
       let text: string = item.text;
 
       item.parameters.forEach((expr, index) => {
-        let val = this.bindingEngine.parseExpression(expr).evaluate(scope);
+        let val = this.binding.evaluate(scopeContainer.scope, expr);
 
         if (val == void(0)) {
           val = "";

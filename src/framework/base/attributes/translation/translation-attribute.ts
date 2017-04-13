@@ -2,14 +2,15 @@ import {
   autoinject,
   bindable,
   customAttribute,
-  OverrideContext
+  OverrideContext,
+  Scope
 } from "aurelia-framework";
 import {
   LocalizationService
 } from "../../services/export";
 import {
-  IExpressionProvider
-} from "../../interfaces/export";
+  ScopeContainer
+} from "../../classes/scope-container"
 
 @autoinject
 @customAttribute("tr")
@@ -19,17 +20,23 @@ export class TrCustomAttribute {
     private localization: LocalizationService
   ) {}
 
-  bindingContext: any;
-  overrideContext: OverrideContext
+  scope: Scope;
+  scopeContainer: ScopeContainer;
 
   @bindable mode: string;
   @bindable key: string;
   @bindable markdown: true;
 
   bind(bindingContext: any, overrideContext: OverrideContext) {
-    this.bindingContext = bindingContext;
-    this.overrideContext = overrideContext;
+    this.scope = {
+      bindingContext: bindingContext,
+      overrideContext: overrideContext
+    };
+    this.scopeContainer = new ScopeContainer(this.scope);
     this.setInnerHtml();
+  }
+  unbind() {
+    this.scopeContainer.disposeAll();
   }
 
   keyChanged(newValue: string, oldValue: string): void {
@@ -37,10 +44,7 @@ export class TrCustomAttribute {
   }
 
   private setInnerHtml() {
-    this.localization.translate({
-        bindingContext: this.bindingContext,
-        overrideContext: this.overrideContext
-      }, this.key, (val) => {
+    this.localization.translate(this.scopeContainer, this.key, (val) => {
       this.element.innerHTML = val;
     });
   }

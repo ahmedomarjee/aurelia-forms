@@ -1,45 +1,51 @@
 import {
-  Expressions
-} from "../classes/expressions";
-import {
-  IExpressionProvider
-} from "../../base/interfaces/export";
+  autoinject,
+  Scope
+} from "aurelia-framework";
 import {
   ICommandData
 } from "../interfaces/export";
+import {
+  BindingService
+} from "../../base/services/export";
 
+@autoinject
 export class CommandService {
   private isCommandExecuting = false;
 
-  isVisible(expressionProvider: IExpressionProvider, command: ICommandData): boolean {
+  constructor(
+    private binding: BindingService
+  ) {}
+
+  isVisible(scope: Scope, command: ICommandData): boolean {
     if (command.isVisible != undefined) {
       return command.isVisible;
     } else if (command.isVisibleExpression) {
-      return expressionProvider.evaluateExpression(command.isVisibleExpression);
+      return this.binding.evaluate(scope, command.isVisibleExpression);
     }
 
     return true;
   }
-  isEnabled(expressionProvider: IExpressionProvider, command: ICommandData): boolean {
+  isEnabled(scope: Scope, command: ICommandData): boolean {
     if (command.isEnabled != undefined) {
       return command.isEnabled;
     } else if (command.isEnabledExpression) {
-      return expressionProvider.evaluateExpression(command.isEnabledExpression);
+      return this.binding.evaluate(scope, command.isEnabledExpression);
     }
 
     return true;
   }
-  isVisibleAndEnabled(expressions: IExpressionProvider, command: ICommandData): boolean {
-    return this.isVisible(expressions, command)
-      && this.isEnabled(expressions, command);
+  isVisibleAndEnabled(scope: Scope, command: ICommandData): boolean {
+    return this.isVisible(scope, command)
+      && this.isEnabled(scope, command);
   }
 
-  execute(expressionProvider: IExpressionProvider, command: ICommandData): boolean  {
+  execute(scope: Scope, command: ICommandData): boolean  {
     if (this.isCommandExecuting) {
       return;
     }
 
-    if (!this.isVisibleAndEnabled(expressionProvider, command)) {
+    if (!this.isVisibleAndEnabled(scope, command)) {
       return false;
     }
     if (!command.execute) {
@@ -47,7 +53,7 @@ export class CommandService {
     }
 
     this.isCommandExecuting = true;
-    const result = command.execute.bind(expressionProvider)();
+    const result = command.execute.bind(scope.bindingContext)();
 
     if (result && result.then && result.catch) {
       result

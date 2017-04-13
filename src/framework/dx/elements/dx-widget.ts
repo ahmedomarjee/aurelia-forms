@@ -142,10 +142,10 @@ export class DxWidget {
     for (let property in this.options.bindingOptions) {
       const binding = this.options.bindingOptions[property];
 
-      const context = this.binding.getBindingContext(binding.parsed, {
+      const context = this.binding.getBindingContext({
           bindingContext: this.bindingContext,
           overrideContext: this.overrideContext
-        });
+        }, binding.expression);
 
       this.bindingEngine.expressionObserver(context, binding.expression)
         .subscribe((newValue, oldValue) => {

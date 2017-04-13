@@ -124,10 +124,10 @@ export class TipFileUploaderWithViewer{
   }
 
   getExpressionContext(propertyName: string) {
-    return this.binding.getBindingContext(propertyName, {
+    return this.binding.getBindingContext({
         bindingContext: this.bindingContext,
         overrideContext: this.overrideContext
-      });
+      }, propertyName);
   }
   observeValue(propertyName: string, setValueCallback: {(value): void}) {
     const expression = this.bindingEngine.parseExpression(propertyName);

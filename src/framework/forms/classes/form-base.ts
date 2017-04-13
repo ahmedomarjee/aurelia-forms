@@ -39,10 +39,12 @@ import {
   WidgetCreatorService
 } from "../widget-services/widget-creator-service";
 import {
+  BindingService,
   CustomEvent,
   ErrorService,
   GlobalizationService,
-  LocalizationService
+  LocalizationService,
+  ScopeContainer
 } from "../../base/export";
 import {
   IFormAttachedEventArgs,
@@ -56,15 +58,16 @@ import {
 import {
   IPopupInfo
 } from "../interfaces/export";
-import {
-  Expressions
-} from "./expressions";
 
 export class FormBase {
+  private _callOnBind: { (): void }[];
+
   constructor(
     private element: Element,
     private formBaseImport: FormBaseImport
   ) {
+    this._callOnBind = [];
+
     this.isEditForm = element.getAttribute("is-edit-form") === "true";
     this.isNestedForm = element.getAttribute("is-nested-form") === "true";
 
@@ -78,8 +81,8 @@ export class FormBase {
     this.nestedForms = formBaseImport.nestedForms;
     this.editPopups = formBaseImport.editPopups;
     this.functions = formBaseImport.functions;
-    this.expressions = formBaseImport.expressions;
     this.commands = formBaseImport.commands;
+    this.binding = formBaseImport.binding;
     this.globalization = formBaseImport.globalization;
     this.localization = formBaseImport.localization;
     this.commandServerData = formBaseImport.commandServerData;
@@ -94,7 +97,6 @@ export class FormBase {
     this.variables.registerForm(this);
     this.functions.registerForm(this);
     this.commands.registerForm(this);
-    this.expressions.registerForm(this);
     this.nestedForms.registerForm(this);
     this.editPopups.registerForm(this);
   }
@@ -111,7 +113,7 @@ export class FormBase {
   widgetCreator: WidgetCreatorService;
   command: CommandService;
   toolbar: ToolbarService;
-  expressions: Expressions;
+  binding: BindingService;
   globalization: GlobalizationService;
   localization: LocalizationService;
   error: ErrorService;
@@ -130,13 +132,17 @@ export class FormBase {
   onValidating: CustomEvent<IFormValidatingEventArgs>;
 
   scope: Scope;
+  scopeContainer: ScopeContainer;
 
   owningView: any;
   parent: FormBase;
 
+  callOnBind(callback: { (): void }) {
+    this._callOnBind.push(callback);
+  }
+
   created(owningView: any, myView: any) {
     this.owningView = owningView;
-    this.toolbarOptions = this.toolbar.createFormToolbarOptions(this);
   }
   attached() {
     const promise = this.onAttached.fire({
@@ -158,6 +164,19 @@ export class FormBase {
       bindingContext: bindingContext,
       overrideContext: overrideContext
     };
+    this.scopeContainer = new ScopeContainer(this.scope);
+
+    this._callOnBind.forEach(c => {
+      c();
+    })
+
+    this._callOnBind = null;
+    this.loadCommands();
+    this.toolbarOptions = this.toolbar.createFormToolbarOptions(this);
+    this.models.loadModelsWithKey();
+  }
+  unbind() {
+    this.scopeContainer.disposeAll();
   }
   activate(routeInfo: any) {
     if (routeInfo && routeInfo.parameters && routeInfo.parameters.id) {
@@ -171,7 +190,7 @@ export class FormBase {
   }
 
   getFileDownloadUrl(key: string): string {
-    return this.expressions.evaluateExpression(key);
+    return this.binding.evaluate(this.scope, key);
   }
   getFormsInclOwn(): FormBase[] {
     return [this, ...this.nestedForms.getNestedForms()];
@@ -201,7 +220,7 @@ export class FormBase {
         return;
       }
 
-      this.command.execute(this.expressions, command);
+      this.command.execute(this.scope, command);
     } else {
       context.executeCommand(id);
     }
@@ -244,7 +263,7 @@ export class FormBase {
     }
 
     return this.validate()
-     .then(c => this.models.save());
+      .then(c => this.models.save());
   }
 
   canDeleteNow(): boolean {
@@ -274,38 +293,55 @@ export class FormBase {
   }
 
   protected addModel(model: Interfaces.IModel): void {
-    this.models.addInfo(model);
+    this.callOnBind(() => {
+      this.models.addInfo(model);
+    });
   }
   protected addVariable(variable: Interfaces.IVariable): void {
-    this.variables.addInfo(variable);
+    this.callOnBind(() => {
+      this.variables.addInfo(variable);
+    });
   }
   protected addCommandServerData(id: string, commandServerData: Interfaces.ICommandData): void {
-    this.commandServerData.add(id, commandServerData);
+    this.callOnBind(() => {
+      this.commandServerData.add(id, commandServerData);
+    });
   }
   protected addCommand(command: Interfaces.ICommand): void {
-    this.commands.addInfo(command);
+    this.callOnBind(() => {
+      this.commands.addInfo(command);
+    });
   }
   protected addFunction(id: string, functionInstance: any, namespace: string, customParameter?: any): void {
-    this.functions.add(id, functionInstance, namespace, customParameter);
+    this.callOnBind(() => {
+      this.functions.add(id, functionInstance, namespace, customParameter);
+    });
   }
   protected addNestedForm(id: string, mappings: Interfaces.IMapping[]): void {
-    this.nestedForms.addInfo(id, mappings);
+    this.callOnBind(() => {
+      this.nestedForms.addInfo(id, mappings);
+    });
   }
   protected addEditPopup(editPopup: Interfaces.IEditPopup): void {
-    this.editPopups.addInfo(editPopup);
+    this.callOnBind(() => {
+      this.editPopups.addInfo(editPopup);
+    });
   }
   protected addMapping(mapping: Interfaces.IMapping): void {
 
   }
   protected submitForm(commandExpression: string): void {
-    const command: Interfaces.ICommandData = this.expressions.evaluateExpression(commandExpression);
+    const command: Interfaces.ICommandData = this.binding.evaluate(this.scope, commandExpression);
     if (!command || !command.execute) {
       return;
     }
 
-    this.command.execute(this.expressions, command);
+    this.command.execute(this.scope, command);
   }
   protected onConstructionFinished(): void {
+  }
+
+  private loadCommands() {
     if (!this.isNestedForm) {
       this.commands.addCommand(this.formBaseImport.defaultCommands.getFormGoBackCommand(this));
 
@@ -322,7 +358,6 @@ export class FormBase {
       this.commands.addCommand(this.formBaseImport.defaultCommands.getClosePopupCommand(this));
     }
   }
-
   private getCurrentForm(): FormBase {
     if (this.popupStack.length === 0) {
       return this;

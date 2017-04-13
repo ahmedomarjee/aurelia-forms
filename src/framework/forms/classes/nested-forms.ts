@@ -37,7 +37,8 @@ export class NestedForms {
   }
   observeMappings(id: string, mappings: Interfaces.IMapping[]) {
     for (let mapping of mappings) {
-      this.form.expressions.createObserver(
+      this.form.binding.observeExpression(
+        this.form.scopeContainer,
         mapping.binding.bindToFQ,
         (newValue) => {
           const nestedForm: FormBase = this.form[id];

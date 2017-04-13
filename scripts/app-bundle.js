@@ -217,11 +217,6 @@ define('framework/base/interfaces/data-source-customization-options',["require",
     Object.defineProperty(exports, "__esModule", { value: true });
 });
 
-define('framework/base/interfaces/expression-provider',["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-});
-
 define('framework/base/interfaces/rest-delete-options',["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -256,9 +251,9 @@ define('config',["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = {
-        baseUrl: "http://localhost/TIP.ERP",
-        apiUrl: "http://localhost/TIP.ERP/api",
-        webApiUrl: "http://localhost/TIP.ERP/api/data",
+        baseUrl: "http://10.20.50.53/TIP.ERP",
+        apiUrl: "http://10.20.50.53/TIP.ERP/api",
+        webApiUrl: "http://10.20.50.53/TIP.ERP/api/data",
         appUrl: "http://localhost:9000",
         loginApp: "framework/login/login",
         mainApp: "app"
@@ -475,14 +470,65 @@ define('framework/base/services/authorization-service',["require", "exports", "t
     exports.AuthorizationService = AuthorizationService;
 });
 
+define('framework/base/classes/scope-container',["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var ScopeContainer = (function () {
+        function ScopeContainer(scope, parentScopeContainer) {
+            this.scope = scope;
+            this.parentScopeContainer = parentScopeContainer;
+            if (parentScopeContainer) {
+                this._disposables = parentScopeContainer._disposables;
+            }
+            else {
+                this._disposables = [];
+            }
+        }
+        ScopeContainer.prototype.addDisposable = function (disposable) {
+            this._disposables.push(disposable);
+        };
+        ScopeContainer.prototype.disposeAll = function () {
+            if (this.parentScopeContainer) {
+                this._disposables = [];
+            }
+            else {
+                this._disposables.forEach(function (c) {
+                    c.dispose();
+                });
+                this._disposables.length = 0;
+            }
+        };
+        return ScopeContainer;
+    }());
+    exports.ScopeContainer = ScopeContainer;
+});
+
 define('framework/base/services/binding-service',["require", "exports", "tslib", "aurelia-framework"], function (require, exports, tslib_1, aurelia_framework_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var BindingService = (function () {
-        function BindingService() {
+        function BindingService(bindingEngine) {
+            this.bindingEngine = bindingEngine;
         }
-        BindingService.prototype.getBindingContext = function (expression, scope) {
-            var obj = expression;
+        BindingService.prototype.assign = function (scope, expression, value) {
+            this.bindingEngine
+                .parseExpression(expression)
+                .assign(scope, value, null);
+        };
+        BindingService.prototype.evaluate = function (scope, expression) {
+            return this.bindingEngine
+                .parseExpression(expression)
+                .evaluate(scope);
+        };
+        BindingService.prototype.observeExpression = function (scopeContainer, expression, callback) {
+            var disposable = this.bindingEngine
+                .expressionObserver(this.getBindingContext(scopeContainer.scope, expression), expression).subscribe(callback);
+            scopeContainer.addDisposable(disposable);
+            return disposable;
+        };
+        BindingService.prototype.getBindingContext = function (scope, expression) {
+            var obj = this.bindingEngine
+                .parseExpression(expression);
             while (obj.object) {
                 obj = obj.object;
             }
@@ -504,19 +550,20 @@ define('framework/base/services/binding-service',["require", "exports", "tslib",
     }());
     BindingService = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
-        tslib_1.__metadata("design:paramtypes", [])
+        tslib_1.__metadata("design:paramtypes", [aurelia_framework_1.BindingEngine])
     ], BindingService);
     exports.BindingService = BindingService;
 });
 
-define('framework/base/services/data-source-service',["require", "exports", "tslib", "aurelia-framework", "./rest-service"], function (require, exports, tslib_1, aurelia_framework_1, rest_service_1) {
+define('framework/base/services/data-source-service',["require", "exports", "tslib", "aurelia-framework", "./rest-service", "./binding-service"], function (require, exports, tslib_1, aurelia_framework_1, rest_service_1, binding_service_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var DataSourceService = (function () {
-        function DataSourceService(rest) {
+        function DataSourceService(rest, binding) {
             this.rest = rest;
+            this.binding = binding;
         }
-        DataSourceService.prototype.createDataSource = function (expressionProvider, options, customizationOptions, loadRequiredAction) {
+        DataSourceService.prototype.createDataSource = function (scopeContainer, options, customizationOptions, loadRequiredAction) {
             var _this = this;
             var dataSource = new DevExpress.data.DataSource(new DevExpress.data.CustomStore({
                 key: options.keyProperty,
@@ -524,14 +571,14 @@ define('framework/base/services/data-source-service',["require", "exports", "tsl
                     if (!_this.canLoad(customizationOptions)) {
                         return Promise.resolve(null);
                     }
-                    var getOptions = _this.createGetOptions(expressionProvider, options, customizationOptions);
+                    var getOptions = _this.createGetOptions(scopeContainer, options, customizationOptions);
                     return _this.rest.get({
                         url: _this.rest.getWebApiUrl(options.webApiAction + "/" + key),
                         getOptions: getOptions
                     });
                 },
                 load: function (loadOptions) {
-                    var getOptions = _this.createGetOptions(expressionProvider, options, customizationOptions);
+                    var getOptions = _this.createGetOptions(scopeContainer, options, customizationOptions);
                     if (getOptions == null || !_this.canLoad(customizationOptions)) {
                         if (loadOptions.requireTotalCount) {
                             return Promise.resolve({
@@ -579,7 +626,7 @@ define('framework/base/services/data-source-service',["require", "exports", "tsl
                 }
             }));
             var timeout = null;
-            this.addObservers(expressionProvider, options, function () {
+            this.addObservers(scopeContainer, options, function () {
                 if (timeout) {
                     clearTimeout(timeout);
                     timeout = null;
@@ -598,14 +645,14 @@ define('framework/base/services/data-source-service',["require", "exports", "tsl
             });
             return dataSource;
         };
-        DataSourceService.prototype.createGetOptions = function (expressionProvider, options, customizationOptions) {
+        DataSourceService.prototype.createGetOptions = function (scopeContainer, options, customizationOptions) {
             var getOptions = {};
             getOptions.columns = options.webApiColumns;
             getOptions.expand = options.webApiExpand;
             getOptions.orderBy = options.webApiOrderBy;
             if (options.webApiWhere) {
                 var where = [];
-                if (!this.constructWhere(expressionProvider, options.webApiWhere, where)) {
+                if (!this.constructWhere(scopeContainer, options.webApiWhere, where)) {
                     return null;
                 }
                 if (where.length > 0) {
@@ -615,7 +662,7 @@ define('framework/base/services/data-source-service',["require", "exports", "tsl
             if (options.filters) {
                 var customs = [];
                 var where = [];
-                if (!this.constructFilters(expressionProvider, options, customs, where)) {
+                if (!this.constructFilters(scopeContainer, options, customs, where)) {
                     return null;
                 }
                 if (customs.length > 0) {
@@ -646,38 +693,38 @@ define('framework/base/services/data-source-service',["require", "exports", "tsl
             }
             return getOptions;
         };
-        DataSourceService.prototype.addObservers = function (expressionProvider, options, action) {
-            this.addObserversWhere(expressionProvider, options.webApiWhere, action);
+        DataSourceService.prototype.addObservers = function (scopeContainer, options, action) {
+            this.addObserversWhere(scopeContainer, options.webApiWhere, action);
             if (options.filters) {
                 for (var _i = 0, _a = options.filters; _i < _a.length; _i++) {
                     var item = _a[_i];
-                    this.addObserversDetail(expressionProvider, item.if, action);
-                    this.addObserversDetail(expressionProvider, item.webApiCustomValue, action);
-                    this.addObserversWhere(expressionProvider, item.webApiWhere, action);
+                    this.addObserversDetail(scopeContainer, item.if, action);
+                    this.addObserversDetail(scopeContainer, item.webApiCustomValue, action);
+                    this.addObserversWhere(scopeContainer, item.webApiWhere, action);
                 }
             }
         };
-        DataSourceService.prototype.addObserversDetail = function (expressionProvider, expression, action) {
+        DataSourceService.prototype.addObserversDetail = function (scopeContainer, expression, action) {
             if (expression == void (0)) {
                 return;
             }
-            expressionProvider.createObserver(expression, action);
+            this.binding.observeExpression(scopeContainer, expression, action);
         };
-        DataSourceService.prototype.addObserversWhere = function (expressionProvider, data, action) {
+        DataSourceService.prototype.addObserversWhere = function (scopeContainer, data, action) {
             var _this = this;
             if (data == void (0)) {
                 return;
             }
             if (Array.isArray(data)) {
-                data.forEach(function (item) { return _this.addObserversWhere(expressionProvider, item, action); });
+                data.forEach(function (item) { return _this.addObserversWhere(scopeContainer, item, action); });
             }
             else if (typeof data === "object") {
                 if (data.isBound === true && data.expression != void (0)) {
-                    this.addObserversDetail(expressionProvider, data.expression, action);
+                    this.addObserversDetail(scopeContainer, data.expression, action);
                 }
                 else {
                     for (var property in data) {
-                        this.addObserversWhere(expressionProvider, data[property], action);
+                        this.addObserversWhere(scopeContainer, data[property], action);
                     }
                 }
             }
@@ -687,7 +734,7 @@ define('framework/base/services/data-source-service',["require", "exports", "tsl
                 || !customizationOptions.canLoad
                 || customizationOptions.canLoad();
         };
-        DataSourceService.prototype.constructWhere = function (expressionProvider, data, where) {
+        DataSourceService.prototype.constructWhere = function (scopeContainer, data, where) {
             var _this = this;
             if (data == void (0)) {
                 return true;
@@ -697,7 +744,7 @@ define('framework/base/services/data-source-service',["require", "exports", "tsl
                 where.push(newArr_1);
                 var cancel_1 = false;
                 data.forEach(function (item) {
-                    if (!_this.constructWhere(expressionProvider, item, newArr_1)) {
+                    if (!_this.constructWhere(scopeContainer, item, newArr_1)) {
                         cancel_1 = true;
                     }
                 });
@@ -707,7 +754,7 @@ define('framework/base/services/data-source-service',["require", "exports", "tsl
             }
             else if (typeof data === "object") {
                 if (data.isBound === true && data.expression != void (0)) {
-                    var val = expressionProvider.evaluateExpression(data.expression);
+                    var val = this.binding.evaluate(scopeContainer.scope, data.expression);
                     if (val == void (0)) {
                         return false;
                     }
@@ -715,7 +762,7 @@ define('framework/base/services/data-source-service',["require", "exports", "tsl
                 }
                 else {
                     for (var property in data) {
-                        if (!this.constructWhere(expressionProvider, data[property], where)) {
+                        if (!this.constructWhere(scopeContainer, data[property], where)) {
                             return false;
                         }
                     }
@@ -726,23 +773,23 @@ define('framework/base/services/data-source-service',["require", "exports", "tsl
             }
             return true;
         };
-        DataSourceService.prototype.constructFilters = function (expressionProvider, options, customs, where) {
+        DataSourceService.prototype.constructFilters = function (scopeContainer, options, customs, where) {
             for (var _i = 0, _a = options.filters; _i < _a.length; _i++) {
                 var item = _a[_i];
                 if (item.if) {
-                    if (!expressionProvider.evaluateExpression(item.if)) {
+                    if (!this.binding.evaluate(scopeContainer.scope, item.if)) {
                         continue;
                     }
                 }
                 if (item.webApiCustomKey && item.webApiCustomValue) {
                     customs.push({
                         key: item.webApiCustomKey,
-                        value: expressionProvider.evaluateExpression(item.webApiCustomValue)
+                        value: this.binding.evaluate(scopeContainer.scope, item.webApiCustomValue)
                     });
                 }
                 else if (item.webApiWhere) {
                     var w = [];
-                    if (!this.constructWhere(expressionProvider, item.webApiWhere, w)) {
+                    if (!this.constructWhere(scopeContainer, item.webApiWhere, w)) {
                         return false;
                     }
                     where.push(w);
@@ -754,7 +801,8 @@ define('framework/base/services/data-source-service',["require", "exports", "tsl
     }());
     DataSourceService = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
-        tslib_1.__metadata("design:paramtypes", [rest_service_1.RestService])
+        tslib_1.__metadata("design:paramtypes", [rest_service_1.RestService,
+            binding_service_1.BindingService])
     ], DataSourceService);
     exports.DataSourceService = DataSourceService;
 });
@@ -1051,15 +1099,16 @@ define('framework/base/services/globalization-service',["require", "exports", "t
     exports.GermanGlobalizationProvider = GermanGlobalizationProvider;
 });
 
-define('framework/base/services/localization-service',["require", "exports", "tslib", "aurelia-framework", "./rest-service", "text!../../../autodata/localization-neutral.json"], function (require, exports, tslib_1, aurelia_framework_1, rest_service_1, localizationNeutral) {
+define('framework/base/services/localization-service',["require", "exports", "tslib", "aurelia-framework", "./rest-service", "./binding-service", "text!../../../autodata/localization-neutral.json"], function (require, exports, tslib_1, aurelia_framework_1, rest_service_1, binding_service_1, localizationNeutral) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var LocalizationService = (function () {
-        function LocalizationService(rest) {
+        function LocalizationService(rest, binding) {
             this.rest = rest;
+            this.binding = binding;
             this.neutral = JSON.parse(localizationNeutral);
         }
-        LocalizationService.prototype.translate = function (expressionProvider, key, callback) {
+        LocalizationService.prototype.translate = function (scopeContainer, key, callback) {
             var _this = this;
             if (!key) {
                 return null;
@@ -1069,19 +1118,20 @@ define('framework/base/services/localization-service',["require", "exports", "ts
                 throw new Error("No localization found for " + key);
             }
             if (callback) {
-                if (!Array.isArray(expressionProvider) && typeof item === "object" && item.parameters.length > 0) {
+                if (!Array.isArray(scopeContainer) && typeof item === "object" && item.parameters.length > 0) {
                     item.parameters.forEach(function (expr, index) {
-                        expressionProvider.createObserver(expr, function () {
-                            callback(_this.translateItem(expressionProvider, item));
+                        _this.binding
+                            .observeExpression(scopeContainer, expr, function () {
+                            callback(_this.translateItem(scopeContainer, item));
                         });
                     });
                 }
-                var result = this.translateItem(expressionProvider, item);
+                var result = this.translateItem(scopeContainer, item);
                 callback(result);
                 return result;
             }
             else {
-                return this.translateItem(expressionProvider, item);
+                return this.translateItem(scopeContainer, item);
             }
         };
         LocalizationService.prototype.getItem = function (key) {
@@ -1095,19 +1145,20 @@ define('framework/base/services/localization-service',["require", "exports", "ts
             });
             return item;
         };
-        LocalizationService.prototype.translateItem = function (expressionProvider, item) {
+        LocalizationService.prototype.translateItem = function (scopeContainer, item) {
+            var _this = this;
             if (typeof item === "string") {
-                if (Array.isArray(expressionProvider)) {
-                    expressionProvider.forEach(function (val, index) {
+                if (Array.isArray(scopeContainer)) {
+                    scopeContainer.forEach(function (val, index) {
                         item = item.replace(new RegExp("\\{" + index + "\\}", "g"), val);
                     });
                 }
                 return item;
             }
-            else if (!Array.isArray(expressionProvider) && typeof item === "object") {
+            else if (!Array.isArray(scopeContainer) && typeof item === "object") {
                 var text_1 = item.text;
                 item.parameters.forEach(function (expr, index) {
-                    var val = expressionProvider.evaluateExpression(expr);
+                    var val = _this.binding.evaluate(scopeContainer.scope, expr);
                     if (val == void (0)) {
                         val = "";
                     }
@@ -1121,7 +1172,8 @@ define('framework/base/services/localization-service',["require", "exports", "ts
     }());
     LocalizationService = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
-        tslib_1.__metadata("design:paramtypes", [rest_service_1.RestService])
+        tslib_1.__metadata("design:paramtypes", [rest_service_1.RestService,
+            binding_service_1.BindingService])
     ], LocalizationService);
     exports.LocalizationService = LocalizationService;
 });
@@ -1179,10 +1231,11 @@ define('framework/base/services/permission-service',["require", "exports", "tsli
     exports.PermissionService = PermissionService;
 });
 
-define('framework/base/classes/export',["require", "exports", "./custom-event"], function (require, exports, custom_event_1) {
+define('framework/base/classes/export',["require", "exports", "./custom-event", "./scope-container"], function (require, exports, custom_event_1, scope_container_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.CustomEvent = custom_event_1.CustomEvent;
+    exports.ScopeContainer = scope_container_1.ScopeContainer;
 });
 
 define('framework/base/services/shortcut-service',["require", "exports", "tslib", "aurelia-framework", "../classes/export", "../enumerations/export", "mousetrap"], function (require, exports, tslib_1, aurelia_framework_1, export_1, export_2, mousetrap) {
@@ -1898,10 +1951,25 @@ define('framework/default-ui/services/layout-service',["require", "exports", "ts
             this.themeColor = "#396394";
         }
         LayoutService.prototype.activateTheme = function () {
-            this.style.addStyles("container", [{
+            this.style.addStyles("custom-container", [{
                     name: ".t--sidebar .t--sidebar-item:hover",
                     properties: [{
                             propertyName: "background-color",
+                            value: this.themeColor
+                        }]
+                }, {
+                    name: ".t--toolbar.t--toolbar-inline.dx-toolbar",
+                    properties: [{
+                            propertyName: "border-left",
+                            value: "5px solid " + this.themeColor
+                        }]
+                }, {
+                    name: ".t--toolbar.t--toolbar-inline.dx-toolbar .t--toolbar-title",
+                    properties: [{
+                            propertyName: "background-color",
+                            value: "rgba(255,255,255,0.4)"
+                        }, {
+                            propertyName: "color",
                             value: this.themeColor
                         }]
                 }]);
@@ -1989,17 +2057,6 @@ define('main',["require", "exports", "./environment", "./framework/base/services
     exports.configure = configure;
 });
 
-define('framework/dx/index',["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    function configure(config) {
-        config
-            .globalResources("devextreme")
-            .globalResources("./elements/dx-widget");
-    }
-    exports.configure = configure;
-});
-
 define('framework/base/export',["require", "exports", "./classes/export", "./services/export"], function (require, exports, export_1, export_2) {
     "use strict";
     function __export(m) {
@@ -2041,6 +2098,17 @@ define('framework/default-ui/index',["require", "exports"], function (require, e
             .globalResources("./styles/styles.css")
             .globalResources("./styles/toolbar.css")
             .globalResources("./styles/popup.css");
+    }
+    exports.configure = configure;
+});
+
+define('framework/dx/index',["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    function configure(config) {
+        config
+            .globalResources("devextreme")
+            .globalResources("./elements/dx-widget");
     }
     exports.configure = configure;
 });
@@ -2140,7 +2208,7 @@ define('framework/forms/widget-options/list-edit-options',["require", "exports"]
     Object.defineProperty(exports, "__esModule", { value: true });
 });
 
-define('framework/forms/widget-options/list-options',["require", "exports"], function (require, exports) {
+define('framework/forms/widget-options/list-options-base',["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
@@ -2196,6 +2264,11 @@ define('framework/forms/widget-options/file-uploader-with-viewer-options',["requ
 });
 
 define('framework/forms/widget-options/include-options',["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
+
+define('framework/forms/widget-options/list-options',["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
@@ -2360,68 +2433,6 @@ define('framework/forms/event-args/export',["require", "exports"], function (req
     Object.defineProperty(exports, "__esModule", { value: true });
 });
 
-define('framework/forms/classes/expressions',["require", "exports", "tslib", "aurelia-framework", "../../base/services/export"], function (require, exports, tslib_1, aurelia_framework_1, export_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var Expressions = (function () {
-        function Expressions(bindingEngine, binding) {
-            this.bindingEngine = bindingEngine;
-            this.binding = binding;
-            this.expression = new Map();
-        }
-        Expressions.prototype.createObserver = function (expression, action, scope) {
-            var context = !scope ? this.form : this.binding.getBindingContext(this.bindingEngine.parseExpression(expression), scope);
-            return this
-                .bindingEngine
-                .expressionObserver(context, expression)
-                .subscribe(action)
-                .dispose;
-        };
-        Expressions.prototype.assignExpression = function (expression, value, scope) {
-            var parsed = this.expression.get(expression);
-            if (!parsed) {
-                parsed = this.bindingEngine.parseExpression(expression);
-                this.expression.set(expression, parsed);
-            }
-            if (!scope) {
-                scope = {
-                    bindingContext: this.form,
-                    overrideContext: null
-                };
-            }
-            parsed.assign(scope, value, null);
-        };
-        Expressions.prototype.evaluateExpression = function (expression, scope) {
-            var parsed = this.expression.get(expression);
-            if (!parsed) {
-                parsed = this.bindingEngine.parseExpression(expression);
-                this.expression.set(expression, parsed);
-            }
-            if (!scope) {
-                scope = {
-                    bindingContext: this.form,
-                    overrideContext: null
-                };
-            }
-            return parsed.evaluate(scope);
-        };
-        Expressions.prototype.registerForm = function (form) {
-            if (this.form) {
-                throw new Error("Form was already registered");
-            }
-            this.form = form;
-        };
-        return Expressions;
-    }());
-    Expressions = tslib_1.__decorate([
-        aurelia_framework_1.autoinject,
-        aurelia_framework_1.singleton(true),
-        tslib_1.__metadata("design:paramtypes", [aurelia_framework_1.BindingEngine,
-            export_1.BindingService])
-    ], Expressions);
-    exports.Expressions = Expressions;
-});
-
 define('framework/forms/classes/models',["require", "exports", "tslib", "aurelia-framework", "../../base/export", "../../base/services/data-source-service"], function (require, exports, tslib_1, aurelia_framework_1, export_1, data_source_service_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -2438,7 +2449,7 @@ define('framework/forms/classes/models',["require", "exports", "tslib", "aurelia
             this.info = {};
             this.onLoadRequired.register(function (args) {
                 if (args.model.key || args.model.autoLoad) {
-                    var key = _this.expressions.evaluateExpression(args.model.key);
+                    var key = _this.form.binding.evaluate(_this.form.scope, args.model.key);
                     return _this.loadModel(args.model, key);
                 }
                 return Promise.resolve();
@@ -2468,10 +2479,10 @@ define('framework/forms/classes/models',["require", "exports", "tslib", "aurelia
             }
             return arr;
         };
-        Models.prototype.loadModel = function (model, key) {
+        Models.prototype.loadModel = function (model, keyValue) {
             var _this = this;
-            var getOptions = this.dataSource.createGetOptions(this.expressions, model);
-            if (key == void (0)) {
+            var getOptions = this.dataSource.createGetOptions(this.form.scopeContainer, model);
+            if (keyValue == void (0)) {
                 this.data[model.id] = null;
                 this.onLoaded.fire({
                     model: model,
@@ -2480,7 +2491,7 @@ define('framework/forms/classes/models',["require", "exports", "tslib", "aurelia
             }
             else {
                 return this.rest.get({
-                    url: this.rest.getWebApiUrl(model.webApiAction + "/" + key),
+                    url: this.rest.getWebApiUrl(model.webApiAction + "/" + keyValue),
                     getOptions: getOptions,
                     increaseLoadingCount: true
                 }).then(function (r) {
@@ -2496,12 +2507,24 @@ define('framework/forms/classes/models',["require", "exports", "tslib", "aurelia
                 });
             }
         };
+        Models.prototype.loadModelsWithKey = function () {
+            for (var id in this.info) {
+                var model = this.info[id];
+                if (!model.key) {
+                    continue;
+                }
+                var keyValue = this.form.binding.evaluate(this.form.scope, model.key);
+                if (keyValue == void (0)) {
+                    continue;
+                }
+                this.loadModel(model, keyValue);
+            }
+        };
         Models.prototype.registerForm = function (form) {
             if (this.form) {
                 throw new Error("Form was already registered");
             }
             this.form = form;
-            this.expressions = form.expressions;
         };
         Models.prototype.save = function () {
             var _this = this;
@@ -2516,7 +2539,7 @@ define('framework/forms/classes/models',["require", "exports", "tslib", "aurelia
                     url: _this.rest.getWebApiUrl(m.webApiAction),
                     data: _this.data[m.id],
                     increaseLoadingCount: true,
-                    getOptions: _this.dataSource.createGetOptions(_this.expressions, m)
+                    getOptions: _this.dataSource.createGetOptions(_this.form.scopeContainer, m)
                 }).then(function (r) {
                     _this.data[m.id] = r;
                     _this.onLoaded.fire({
@@ -2552,7 +2575,7 @@ define('framework/forms/classes/models',["require", "exports", "tslib", "aurelia
         Models.prototype.addObservers = function (model) {
             var _this = this;
             this.addObserversDetail(model, model.key);
-            this.dataSource.addObservers(this.form.expressions, model, function () {
+            this.dataSource.addObservers(this.form.scopeContainer, model, function () {
                 _this.onLoadRequired.fire({
                     model: model
                 });
@@ -2563,7 +2586,7 @@ define('framework/forms/classes/models',["require", "exports", "tslib", "aurelia
             if (expression == void (0)) {
                 return;
             }
-            this.expressions.createObserver(expression, function (newValue, oldValue) {
+            this.form.binding.observeExpression(this.form.scopeContainer, expression, function (newValue, oldValue) {
                 _this.onLoadRequired.fire({
                     model: model
                 });
@@ -2665,7 +2688,7 @@ define('framework/forms/classes/nested-forms',["require", "exports", "tslib", "a
         NestedForms.prototype.observeMappings = function (id, mappings) {
             var _this = this;
             var _loop_1 = function (mapping) {
-                this_1.form.expressions.createObserver(mapping.binding.bindToFQ, function (newValue) {
+                this_1.form.binding.observeExpression(this_1.form.scopeContainer, mapping.binding.bindToFQ, function (newValue) {
                     var nestedForm = _this.form[id];
                     nestedForm.variables.data[mapping.to] = newValue;
                 });
@@ -2692,48 +2715,49 @@ define('framework/forms/classes/nested-forms',["require", "exports", "tslib", "a
     exports.NestedForms = NestedForms;
 });
 
-define('framework/forms/services/command-service',["require", "exports"], function (require, exports) {
+define('framework/forms/services/command-service',["require", "exports", "tslib", "aurelia-framework", "../../base/services/export"], function (require, exports, tslib_1, aurelia_framework_1, export_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var CommandService = (function () {
-        function CommandService() {
+        function CommandService(binding) {
+            this.binding = binding;
             this.isCommandExecuting = false;
         }
-        CommandService.prototype.isVisible = function (expressionProvider, command) {
+        CommandService.prototype.isVisible = function (scope, command) {
             if (command.isVisible != undefined) {
                 return command.isVisible;
             }
             else if (command.isVisibleExpression) {
-                return expressionProvider.evaluateExpression(command.isVisibleExpression);
+                return this.binding.evaluate(scope, command.isVisibleExpression);
             }
             return true;
         };
-        CommandService.prototype.isEnabled = function (expressionProvider, command) {
+        CommandService.prototype.isEnabled = function (scope, command) {
             if (command.isEnabled != undefined) {
                 return command.isEnabled;
             }
             else if (command.isEnabledExpression) {
-                return expressionProvider.evaluateExpression(command.isEnabledExpression);
+                return this.binding.evaluate(scope, command.isEnabledExpression);
             }
             return true;
         };
-        CommandService.prototype.isVisibleAndEnabled = function (expressions, command) {
-            return this.isVisible(expressions, command)
-                && this.isEnabled(expressions, command);
+        CommandService.prototype.isVisibleAndEnabled = function (scope, command) {
+            return this.isVisible(scope, command)
+                && this.isEnabled(scope, command);
         };
-        CommandService.prototype.execute = function (expressionProvider, command) {
+        CommandService.prototype.execute = function (scope, command) {
             var _this = this;
             if (this.isCommandExecuting) {
                 return;
             }
-            if (!this.isVisibleAndEnabled(expressionProvider, command)) {
+            if (!this.isVisibleAndEnabled(scope, command)) {
                 return false;
             }
             if (!command.execute) {
                 return false;
             }
             this.isCommandExecuting = true;
-            var result = command.execute.bind(expressionProvider)();
+            var result = command.execute.bind(scope.bindingContext)();
             if (result && result.then && result.catch) {
                 result
                     .catch(function () {
@@ -2749,6 +2773,10 @@ define('framework/forms/services/command-service',["require", "exports"], functi
         };
         return CommandService;
     }());
+    CommandService = tslib_1.__decorate([
+        aurelia_framework_1.autoinject,
+        tslib_1.__metadata("design:paramtypes", [export_1.BindingService])
+    ], CommandService);
     exports.CommandService = CommandService;
 });
 
@@ -2818,26 +2846,24 @@ define('framework/dx/services/dx-template-service',["require", "exports", "tslib
     exports.DxTemplateService = DxTemplateService;
 });
 
-define('framework/forms/services/toolbar-service',["require", "exports", "tslib", "aurelia-framework", "../../base/services/export", "../services/command-service", "../../dx/services/dx-template-service", "text!../templates/toolbar-button-template.html"], function (require, exports, tslib_1, aurelia_framework_1, export_1, command_service_1, dx_template_service_1, toolbarButtonTemplate) {
+define('framework/forms/services/toolbar-service',["require", "exports", "tslib", "aurelia-framework", "../../base/services/export", "../../base/classes/export", "../services/command-service", "../../dx/services/dx-template-service", "text!../templates/toolbar-button-template.html"], function (require, exports, tslib_1, aurelia_framework_1, export_1, export_2, command_service_1, dx_template_service_1, toolbarButtonTemplate) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var ToolbarService = (function () {
-        function ToolbarService(command, localization, dxTemplate) {
+        function ToolbarService(command, localization, binding, dxTemplate) {
             this.command = command;
             this.localization = localization;
+            this.binding = binding;
             this.dxTemplate = dxTemplate;
             this.titleItemTemplate = "TITEL_ITEM_TEMPLATE";
         }
         ToolbarService.prototype.createFormToolbarOptions = function (form) {
             var _this = this;
             var component;
-            var options = this.createToolbarOptions({
-                bindingContext: form,
-                overrideContext: null
-            }, form.expressions, form.title, form.commands.getCommands(), function (c) {
+            var options = this.createToolbarOptions(form.scopeContainer, form.title, form.commands.getCommands(), function (c) {
                 component = c;
             });
-            form.expressions.createObserver("title", function (newValue) {
+            this.binding.observeExpression(form.scopeContainer, "title", function (newValue) {
                 var title = _this.createTitleHtml(newValue);
                 var titleItem = options.items.find(function (item) { return item[_this.titleItemTemplate] === _this.titleItemTemplate; });
                 if (titleItem) {
@@ -2850,7 +2876,7 @@ define('framework/forms/services/toolbar-service',["require", "exports", "tslib"
             });
             return options;
         };
-        ToolbarService.prototype.createToolbarOptions = function (scope, expressionProvider, title, commands, componentCreatedCallback) {
+        ToolbarService.prototype.createToolbarOptions = function (scopeContainer, title, commands, componentCreatedCallback) {
             var component;
             var options = {
                 onInitialized: function (e) {
@@ -2860,7 +2886,7 @@ define('framework/forms/services/toolbar-service',["require", "exports", "tslib"
                     }
                 }
             };
-            options.items = this.createToolbarItems(scope, expressionProvider, {
+            options.items = this.createToolbarItems(scopeContainer, {
                 getItems: function () {
                     if (!component) {
                         return options.items;
@@ -2876,7 +2902,7 @@ define('framework/forms/services/toolbar-service',["require", "exports", "tslib"
             }, title, commands);
             return options;
         };
-        ToolbarService.prototype.createToolbarItems = function (scope, expressionProvider, toolbarManager, title, commands) {
+        ToolbarService.prototype.createToolbarItems = function (scopeContainer, toolbarManager, title, commands) {
             var _this = this;
             var items = commands
                 .sort(function (a, b) {
@@ -2892,7 +2918,7 @@ define('framework/forms/services/toolbar-service',["require", "exports", "tslib"
                     return 0;
                 }
             })
-                .map(function (i) { return _this.createToolbarItem(scope, expressionProvider, toolbarManager, i); });
+                .map(function (i) { return _this.createToolbarItem(scopeContainer, toolbarManager, i); });
             var titleItem = {
                 html: this.createTitleHtml(title),
                 location: "before"
@@ -2901,19 +2927,19 @@ define('framework/forms/services/toolbar-service',["require", "exports", "tslib"
             items.splice(0, 0, titleItem);
             return items;
         };
-        ToolbarService.prototype.createToolbarItem = function (scope, expressionProvider, toolbarManager, command) {
+        ToolbarService.prototype.createToolbarItem = function (scopeContainer, toolbarManager, command) {
             var _this = this;
             var item = {};
-            this.setEnabled(expressionProvider, toolbarManager, command, item);
-            this.setVisible(expressionProvider, toolbarManager, command, item);
+            this.setEnabled(scopeContainer, toolbarManager, command, item);
+            this.setVisible(scopeContainer, toolbarManager, command, item);
             item.template = function (model, dummy, container) {
-                return _this.dxTemplate.render(toolbarButtonTemplate, container, null, scope, model);
+                return _this.dxTemplate.render(toolbarButtonTemplate, container, null, scopeContainer.scope, model);
             };
             item.location = command.location || "before";
             item.locateInMenu = command.locateInMenu;
             item.command = command;
             item.guardedExecute = function () {
-                _this.command.execute(expressionProvider, command);
+                _this.command.execute(scopeContainer.scope, command);
             };
             return item;
         };
@@ -2923,46 +2949,48 @@ define('framework/forms/services/toolbar-service',["require", "exports", "tslib"
             }
             return "<div class=\"t--toolbar-title\">" + this.localization.translate(null, title) + "</div>";
         };
-        ToolbarService.prototype.setEnabled = function (expressionProvider, toolbarManager, command, item) {
+        ToolbarService.prototype.setEnabled = function (scopeContainer, toolbarManager, command, item) {
             var _this = this;
             var setEnabled = function (val) {
                 _this.setItemOption(toolbarManager, item, "disabled", !val);
                 item.disabled = !val;
                 command.isEnabled = val;
             };
-            item.disabled = !this.command.isEnabled(expressionProvider, command);
+            item.disabled = !this.command.isEnabled(scopeContainer.scope, command);
             if (command.isEnabled != undefined) {
-                expressionProvider.createObserver("isEnabled", function (newValue) {
-                    setEnabled(newValue);
-                }, {
+                var newScopeContainer = new export_2.ScopeContainer({
                     bindingContext: command,
                     overrideContext: null
+                }, scopeContainer);
+                this.binding.observeExpression(newScopeContainer, "isEnabled", function (newValue) {
+                    setEnabled(newValue);
                 });
             }
             else if (command.isEnabledExpression) {
-                expressionProvider.createObserver(command.isEnabledExpression, function (newValue) {
+                this.binding.observeExpression(scopeContainer, command.isEnabledExpression, function (newValue) {
                     setEnabled(newValue);
                 });
             }
         };
-        ToolbarService.prototype.setVisible = function (expressionProvider, toolbarManager, command, item) {
+        ToolbarService.prototype.setVisible = function (scopeContainer, toolbarManager, command, item) {
             var _this = this;
             var setVisible = function (val) {
                 _this.setItemOption(toolbarManager, item, "visible", val);
                 item.visible = val;
                 command.isVisible = val;
             };
-            item.visible = this.command.isVisible(expressionProvider, command);
+            item.visible = this.command.isVisible(scopeContainer.scope, command);
             if (command.isVisible != undefined) {
-                expressionProvider.createObserver("isVisible", function (newValue) {
-                    setVisible(newValue);
-                }, {
+                var newScopeContainer = new export_2.ScopeContainer({
                     bindingContext: command,
                     overrideContext: null
+                }, scopeContainer);
+                this.binding.observeExpression(newScopeContainer, "isVisible", function (newValue) {
+                    setVisible(newValue);
                 });
             }
             else if (command.isVisibleExpression) {
-                expressionProvider.createObserver(command.isVisibleExpression, function (newValue) {
+                this.binding.observeExpression(scopeContainer, command.isVisibleExpression, function (newValue) {
                     setVisible(newValue);
                 });
             }
@@ -2981,6 +3009,7 @@ define('framework/forms/services/toolbar-service',["require", "exports", "tslib"
         aurelia_framework_1.autoinject,
         tslib_1.__metadata("design:paramtypes", [command_service_1.CommandService,
             export_1.LocalizationService,
+            export_1.BindingService,
             dx_template_service_1.DxTemplateService])
     ], ToolbarService);
     exports.ToolbarService = ToolbarService;
@@ -3171,7 +3200,7 @@ define('framework/forms/services/default-commands-service',["require", "exports"
                         return (!options.isRelation || (form.models.data[info_1.id] && form.models.data[info_1.id][info_1.keyProperty])) || false;
                     };
                     cmd.isEnabled = isEnabled_1();
-                    form.expressions.createObserver("models.data." + info_1.id + "." + info_1.keyProperty, function (newValue) {
+                    form.binding.observeExpression(form.scopeContainer, "models.data." + info_1.id + "." + info_1.keyProperty, function (newValue) {
                         cmd.isEnabled = isEnabled_1();
                     });
                 }
@@ -3209,7 +3238,7 @@ define('framework/forms/services/default-commands-service',["require", "exports"
     exports.DefaultCommandsService = DefaultCommandsService;
 });
 
-define('framework/forms/services/validation-service',["require", "exports", "tslib", "aurelia-framework", "../../base/services/localization-service"], function (require, exports, tslib_1, aurelia_framework_1, localization_service_1) {
+define('framework/forms/services/validation-service',["require", "exports", "tslib", "aurelia-framework", "../../base/export"], function (require, exports, tslib_1, aurelia_framework_1, export_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var ValidationService = (function () {
@@ -3223,16 +3252,16 @@ define('framework/forms/services/validation-service',["require", "exports", "tsl
         ValidationService.prototype.registerValidator = function (type, callback) {
             this.validators[type] = callback;
         };
-        ValidationService.prototype.getValidator = function (expressionProvider, type, caption, parameters) {
+        ValidationService.prototype.getValidator = function (scopeContainer, type, caption, parameters) {
             var validator = this.validators[type];
             if (!validator) {
                 throw new Error("Validator " + type + " not found");
             }
-            return validator(expressionProvider, caption, parameters);
+            return validator(scopeContainer, caption, parameters);
         };
         ValidationService.prototype.registerRequired = function () {
             var _this = this;
-            this.registerValidator("required", function (expressionProvider, caption, parameters) {
+            this.registerValidator("required", function (scopeContainer, caption, parameters) {
                 return {
                     type: "required",
                     message: _this.localization.translate([_this.localization.translate(null, caption)], "forms.validator_required")
@@ -3241,7 +3270,7 @@ define('framework/forms/services/validation-service',["require", "exports", "tsl
         };
         ValidationService.prototype.registerEmail = function () {
             var _this = this;
-            this.registerValidator("email", function (expressionProvider, caption, parameters) {
+            this.registerValidator("email", function (scopeContainer, caption, parameters) {
                 return {
                     type: "email",
                     message: _this.localization.translate([_this.localization.translate(null, caption)], "forms.validator_email")
@@ -3250,7 +3279,7 @@ define('framework/forms/services/validation-service',["require", "exports", "tsl
         };
         ValidationService.prototype.registerStringLength = function () {
             var _this = this;
-            this.registerValidator("stringLength", function (expressionProvider, caption, parameters) {
+            this.registerValidator("stringLength", function (scopeContainer, caption, parameters) {
                 if (parameters.min && parameters.max) {
                     return {
                         type: "stringLength",
@@ -3278,7 +3307,7 @@ define('framework/forms/services/validation-service',["require", "exports", "tsl
     }());
     ValidationService = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
-        tslib_1.__metadata("design:paramtypes", [localization_service_1.LocalizationService])
+        tslib_1.__metadata("design:paramtypes", [export_1.LocalizationService])
     ], ValidationService);
     exports.ValidationService = ValidationService;
 });
@@ -3340,12 +3369,151 @@ define('framework/forms/services/export',["require", "exports", "./command-servi
     exports.SelectItemService = select_item_service_1.SelectItemService;
 });
 
-define('framework/forms/widget-services/base-widget-creator-service',["require", "exports", "tslib", "aurelia-framework"], function (require, exports, tslib_1, aurelia_framework_1) {
+define('framework/forms/widget-services/base-widget-creator-service',["require", "exports", "tslib", "aurelia-framework", "../../base/services/export", "../services/export"], function (require, exports, tslib_1, aurelia_framework_1, export_1, export_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var BaseWidgetCreatorService = (function () {
-        function BaseWidgetCreatorService() {
+        function BaseWidgetCreatorService(dataSource, location, toolbar, defaultCommands) {
+            this.dataSource = dataSource;
+            this.location = location;
+            this.toolbar = toolbar;
+            this.defaultCommands = defaultCommands;
         }
+        BaseWidgetCreatorService.prototype.checkListRelationEdit = function (form, options) {
+            if (!options.idEditPopup || !options.isRelation) {
+                return;
+            }
+            form.editPopups.onEditPopupModelLoaded.register(function (e) {
+                if (e.editPopup.id != options.idEditPopup) {
+                    return;
+                }
+                if (e.model.key !== "variables.data.$id") {
+                    return;
+                }
+                if (!e.data) {
+                    return;
+                }
+                if (e.data[e.model.keyProperty]) {
+                    return;
+                }
+                var info = form.models.getInfo(options.dataModel);
+                e.data[options.relationBinding.bindTo] = form.models.data[info.id][info.keyProperty];
+                return Promise.resolve();
+            });
+        };
+        BaseWidgetCreatorService.prototype.checkListToolbar = function (form, options) {
+            if (!options.createToolbar && !options.isMainList) {
+                return;
+            }
+            var commands = this.defaultCommands.getListCommands(form, options);
+            if (options.createToolbar) {
+                form[options.optionsToolbar.optionsName] = this.toolbar.createToolbarOptions(form.scopeContainer, options.caption, commands);
+            }
+            else if (options.isMainList) {
+                commands.forEach(function (c) { return form.commands.addCommand(c); });
+            }
+        };
+        BaseWidgetCreatorService.prototype.createListDataSource = function (form, options) {
+            if (options.dataModel) {
+                var model_1 = form.models.getInfo(options.dataModel);
+                var relationModel = options.isRelation
+                    ? form.models.getInfo(options.relationBinding.dataContext)
+                    : null;
+                var customizationOptions = {};
+                if (options.isRelation) {
+                    customizationOptions.getCustomWhere = function () {
+                        var data = form.models.data && form.models.data[model_1.id]
+                            ? form.models.data[model_1.id][model_1.keyProperty]
+                            : "0";
+                        data = data || "0";
+                        return [options.relationBinding.bindTo, data];
+                    };
+                    customizationOptions.canLoad = function () {
+                        return !!(form.models.data && form.models.data[model_1.id] && form.models.data[model_1.id][model_1.keyProperty]);
+                    };
+                    form.binding.observeExpression(form.scopeContainer, "models.data." + model_1.id + "." + model_1.keyProperty, function () {
+                        dataSource_1.reload();
+                    });
+                }
+                var dataSource_1 = this.dataSource.createDataSource(form.scopeContainer, relationModel || model_1, customizationOptions);
+                return dataSource_1;
+            }
+        };
+        BaseWidgetCreatorService.prototype.getListClickActions = function (form, options) {
+            var _this = this;
+            var clickActions = [];
+            if (options.onItemClick) {
+                clickActions.push(function (e) {
+                    form.binding.evaluate({
+                        bindingContext: e,
+                        overrideContext: null
+                    }, options.onItemClick);
+                });
+            }
+            if (options.editDataContext || options.edits.length > 0) {
+                if (options.edits.length > 0) {
+                    clickActions.push(function (e) {
+                        var edit = options.edits.find(function (c) { return c.typeName === e.data.ObjectTypeName; });
+                        if (!edit) {
+                            return;
+                        }
+                        form.models.data[edit.editDataContext] = e.data;
+                    });
+                }
+                else {
+                    clickActions.push(function (e) {
+                        form.models.data[options.editDataContext] = e.data;
+                    });
+                }
+            }
+            if ((options.editUrl || options.edits.length > 0) && options.dataModel) {
+                var model_2 = form.models.getInfo(options.dataModel);
+                if (model_2) {
+                    if (options.edits.length > 0) {
+                        clickActions.push(function (e) {
+                            var edit = options.edits.find(function (c) { return c.typeName === e.data.ObjectTypeName; });
+                            if (!edit) {
+                                return;
+                            }
+                            _this.location.goTo("#" + edit.editUrl + "/" + e.data[model_2.keyProperty], form);
+                        });
+                    }
+                    else {
+                        clickActions.push(function (e) {
+                            _this.location.goTo("#" + options.editUrl + "/" + e.data[model_2.keyProperty], form);
+                        });
+                    }
+                }
+            }
+            if (options.idEditPopup || options.edits.length > 0) {
+                form.editPopups.onEditPopupHidden.register(function (a) {
+                    if (a.editPopup.id === options.idEditPopup || options.edits.some(function (c) { return c.idEditPopup === a.editPopup.id; })) {
+                        var dataGrid = form[options.id];
+                        if (!dataGrid) {
+                            return;
+                        }
+                        dataGrid.instance.refresh();
+                    }
+                    ;
+                    return Promise.resolve();
+                });
+                if (options.edits.length > 0) {
+                    clickActions.push(function (e) {
+                        var edit = options.edits.find(function (c) { return c.typeName === e.data.ObjectTypeName; });
+                        if (!edit) {
+                            return;
+                        }
+                        form.editPopups.show(edit.idEditPopup);
+                    });
+                }
+                else {
+                    clickActions.push(function (e) {
+                        form.editPopups.show(options.idEditPopup);
+                    });
+                }
+            }
+            return clickActions;
+        };
         BaseWidgetCreatorService.prototype.createWidgetOptions = function (form, options) {
             var widgetOptions = {
                 bindingOptions: {}
@@ -3366,7 +3534,10 @@ define('framework/forms/widget-services/base-widget-creator-service',["require",
     }());
     BaseWidgetCreatorService = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
-        tslib_1.__metadata("design:paramtypes", [])
+        tslib_1.__metadata("design:paramtypes", [export_1.DataSourceService,
+            export_1.LocationService,
+            export_2.ToolbarService,
+            export_2.DefaultCommandsService])
     ], BaseWidgetCreatorService);
     exports.BaseWidgetCreatorService = BaseWidgetCreatorService;
 });
@@ -3386,24 +3557,24 @@ define('framework/forms/widget-services/simple-widget-creator-service',["require
             this.selectItem = selectItem;
         }
         SimpleWidgetCreatorService.prototype.addAccordion = function (form, options) {
-            return this.baseWidgetCreator.createWidgetOptions(form, options);
+            this.baseWidgetCreator.createWidgetOptions(form, options);
         };
         SimpleWidgetCreatorService.prototype.addCalendar = function (form, options) {
-            return this.createEditorOptions(form, options);
+            this.createEditorOptions(form, options);
         };
         SimpleWidgetCreatorService.prototype.addCheckBox = function (form, options) {
             var editorOptions = this.createEditorOptions(form, options);
             if (options.caption) {
-                editorOptions.text = this.localization.translate(form.expressions, options.caption);
+                editorOptions.text = this.localization.translate(form.scope, options.caption);
             }
-            return editorOptions;
+            editorOptions;
         };
         SimpleWidgetCreatorService.prototype.addColorBox = function (form, options) {
             var editorOptions = this.createEditorOptions(form, options);
             if (options.editAlphaChannel) {
                 editorOptions.editAlphaChannel = options.editAlphaChannel;
             }
-            return editorOptions;
+            editorOptions;
         };
         SimpleWidgetCreatorService.prototype.addDateBox = function (form, options) {
             var editorOptions = this.createEditorOptions(form, options);
@@ -3416,7 +3587,6 @@ define('framework/forms/widget-services/simple-widget-creator-service',["require
             if (options.format) {
                 editorOptions.displayFormat = this.globalization.getFormatterParser(options.format);
             }
-            return editorOptions;
         };
         SimpleWidgetCreatorService.prototype.addCommand = function (form, options) {
             var command;
@@ -3424,42 +3594,37 @@ define('framework/forms/widget-services/simple-widget-creator-service',["require
                 command = form.commandServerData[options.binding.dataContext + ";" + options.binding.bindTo];
             }
             else {
-                command = form.expressions.evaluateExpression(options.binding.bindToFQ);
+                command = form.binding.evaluate(form.scope, options.binding.bindToFQ);
             }
             var buttonOptions = {};
-            buttonOptions.text = this.localization.translate(form.expressions, command.title);
-            buttonOptions.hint = this.localization.translate(form.expressions, command.tooltip);
+            buttonOptions.text = this.localization.translate(form.scope, command.title);
+            buttonOptions.hint = this.localization.translate(form.scope, command.tooltip);
             buttonOptions.width = "100%";
             buttonOptions.onClick = function () {
                 if (typeof command.execute === "function") {
                     command.execute();
                 }
                 else if (typeof command.execute === "string") {
-                    form.expressions.evaluateExpression(command.execute);
+                    form.binding.evaluate(form.scope, command.execute);
                 }
                 else {
                     throw new Error();
                 }
             };
             form[options.options.optionsName] = buttonOptions;
-            return buttonOptions;
         };
         SimpleWidgetCreatorService.prototype.addFileUploader = function (form, options) {
             var widgetOptions = this.baseWidgetCreator.createWidgetOptions(form, options);
             if (options.acceptType) {
                 widgetOptions.accept = options.acceptType;
             }
-            return widgetOptions;
         };
         SimpleWidgetCreatorService.prototype.addFileUploaderWithViewer = function (form, options) {
             var widgetOptions = this.createEditorOptions(form, options);
-            return widgetOptions;
         };
         SimpleWidgetCreatorService.prototype.addInclude = function (form, options) {
-            return options;
         };
         SimpleWidgetCreatorService.prototype.addListView = function (form, options) {
-            return options;
         };
         SimpleWidgetCreatorService.prototype.addLookup = function (form, options) {
             var editorOptions = this.createEditorOptions(form, options);
@@ -3475,7 +3640,6 @@ define('framework/forms/widget-services/simple-widget-creator-service',["require
             if (selectItem.itemTemplate) {
                 editorOptions.itemTemplate = "from-select-item-template-" + selectItem.id;
             }
-            return editorOptions;
         };
         SimpleWidgetCreatorService.prototype.addNumberBox = function (form, options) {
             var editorOptions = this.createEditorOptions(form, options);
@@ -3494,14 +3658,12 @@ define('framework/forms/widget-services/simple-widget-creator-service',["require
             if (options.step) {
                 editorOptions.step = options.step;
             }
-            return editorOptions;
         };
         SimpleWidgetCreatorService.prototype.addPopover = function (form, options) {
             var widgetOptions = this.baseWidgetCreator.createWidgetOptions(form, options);
             if (options.caption) {
                 widgetOptions.title = this.localization.translate(null, options.caption);
             }
-            return widgetOptions;
         };
         SimpleWidgetCreatorService.prototype.addPopup = function (form, options) {
             var widgetOptions = this.baseWidgetCreator.createWidgetOptions(form, options);
@@ -3537,16 +3699,13 @@ define('framework/forms/widget-services/simple-widget-creator-service',["require
             var commands = [];
             commands.push(this.defaultCommands.getClosePopupCommand(form));
             commands.push.apply(commands, options.commands.map(function (c) {
-                var cmd = form.expressions.evaluateExpression(c.binding.bindToFQ);
+                var cmd = form.binding.evaluate(form.scope, c.binding.bindToFQ);
                 if (!cmd) {
                     throw new Error("No command for " + c.binding.bindToFQ + " found");
                 }
                 return cmd;
             }));
-            widgetOptions.toolbarItems = this.toolbar.createToolbarItems({
-                bindingContext: form,
-                overrideContext: null
-            }, form.expressions, {
+            widgetOptions.toolbarItems = this.toolbar.createToolbarItems(form.scopeContainer, {
                 getItems: function () {
                     var popup = form[options.id];
                     if (!popup) {
@@ -3562,7 +3721,6 @@ define('framework/forms/widget-services/simple-widget-creator-service',["require
                     popup.option("toolbarItems[" + index + "]." + property, value);
                 }
             }, options.caption, commands);
-            return widgetOptions;
         };
         SimpleWidgetCreatorService.prototype.addRadioGroup = function (form, options) {
             var editorOptions = this.createEditorOptions(form, options);
@@ -3571,7 +3729,6 @@ define('framework/forms/widget-services/simple-widget-creator-service',["require
             if (selectItem.itemTemplate) {
                 editorOptions.itemTemplate = "from-select-item-template-" + selectItem.id;
             }
-            return editorOptions;
         };
         SimpleWidgetCreatorService.prototype.addSelectBox = function (form, options) {
             var editorOptions = this.createEditorOptions(form, options);
@@ -3583,7 +3740,6 @@ define('framework/forms/widget-services/simple-widget-creator-service',["require
             if (selectItem.itemTemplate) {
                 editorOptions.itemTemplate = "from-select-item-template-" + selectItem.id;
             }
-            return editorOptions;
         };
         SimpleWidgetCreatorService.prototype.addTab = function (form, options) {
             var _this = this;
@@ -3596,12 +3752,12 @@ define('framework/forms/widget-services/simple-widget-creator-service',["require
             tabOptions.bindingOptions["selectedIndex"] = options.id + "Selected";
             options.pages.forEach(function (page, index) {
                 var pageOptions = {
-                    text: _this.localization.translate(form.expressions, page.caption),
+                    text: _this.localization.translate(form.scope, page.caption),
                     visible: true,
                     __options: page
                 };
                 if (page.if) {
-                    form.expressions.createObserver(page.if, function (newValue) {
+                    form.binding.observeExpression(form.scopeContainer, page.if, function (newValue) {
                         component.option("items[" + index + "].visible", newValue);
                         pageOptions.visible = newValue;
                     });
@@ -3616,9 +3772,8 @@ define('framework/forms/widget-services/simple-widget-creator-service',["require
                 if (!page || !page.__options || !page.__options.onActivated) {
                     return;
                 }
-                form.expressions.evaluateExpression(page.__options.onActivated);
+                form.binding.evaluate(form.scope, page.__options.onActivated);
             };
-            return tabOptions;
         };
         SimpleWidgetCreatorService.prototype.addTagBox = function (form, options) {
             var widgetOptions = this.baseWidgetCreator.createWidgetOptions(form, options);
@@ -3628,15 +3783,15 @@ define('framework/forms/widget-services/simple-widget-creator-service',["require
             widgetOptions.showSelectionControls = true;
             widgetOptions.applyValueMode = "useButtons";
             var model = form.models.getInfo(options.itemDataContext);
-            var dataSource = this.dataSource.createDataSource(form.expressions, model);
+            var dataSource = this.dataSource.createDataSource(form.scopeContainer, model);
             widgetOptions.dataSource = dataSource;
             widgetOptions.onSelectionChanged = function (e) {
                 var addedItems = e.addedItems;
                 var removedItems = e.removedItems;
-                var list = form.expressions.evaluateExpression(options.relationBinding.bindToFQ);
+                var list = form.binding.evaluate(form.scope, options.relationBinding.bindToFQ);
                 if (list == void (0)) {
                     list = [];
-                    form.expressions.assignExpression(options.relationBinding.bindToFQ, list);
+                    form.binding.assign(form.scope, options.relationBinding.bindToFQ, list);
                 }
                 addedItems.forEach(function (c) {
                     var exists = list.some(function (d) { return d[options.relationProperty] == c[model.keyProperty]; });
@@ -3659,7 +3814,7 @@ define('framework/forms/widget-services/simple-widget-creator-service',["require
                 if (a.model.id !== options.dataContext) {
                     return;
                 }
-                var list = form.expressions.evaluateExpression(options.relationBinding.bindToFQ)
+                var list = form.binding.evaluate(form.scope, options.relationBinding.bindToFQ)
                     || [];
                 var data = list.map(function (c) { return c[options.relationProperty]; });
                 if (form[options.id]) {
@@ -3671,7 +3826,6 @@ define('framework/forms/widget-services/simple-widget-creator-service',["require
                 }
                 return Promise.resolve();
             });
-            return widgetOptions;
         };
         SimpleWidgetCreatorService.prototype.addTextBox = function (form, options) {
             var editorOptions = this.createEditorOptions(form, options);
@@ -3681,14 +3835,15 @@ define('framework/forms/widget-services/simple-widget-creator-service',["require
             if (options.mode) {
                 editorOptions.mode = options.mode;
             }
-            return editorOptions;
         };
         SimpleWidgetCreatorService.prototype.addTextArea = function (form, options) {
-            var editorOptions = this.addTextBox(form, options);
+            var editorOptions = this.createEditorOptions(form, options);
+            if (options.maxLength) {
+                editorOptions.maxLength = options.maxLength;
+            }
             if (options.height) {
                 editorOptions.height = options.height;
             }
-            return editorOptions;
         };
         SimpleWidgetCreatorService.prototype.addValidationGroup = function (form, options) {
             var validationOptions = {};
@@ -3703,7 +3858,6 @@ define('framework/forms/widget-services/simple-widget-creator-service',["require
                     return Promise.reject(result);
                 }
             });
-            return validationOptions;
         };
         SimpleWidgetCreatorService.prototype.createEditorOptions = function (form, options) {
             var _this = this;
@@ -3718,14 +3872,14 @@ define('framework/forms/widget-services/simple-widget-creator-service',["require
                 editorOptions.bindingOptions["readOnly"] = options.isReadOnlyExpression;
             }
             if (options.placeholder) {
-                editorOptions.placeholder = this.localization.translate(form.expressions, options.placeholder);
+                editorOptions.placeholder = this.localization.translate(form.scope, options.placeholder);
             }
             editorOptions["validators"] = options.validationRules.map(function (v) {
                 if (v.binding) {
-                    return form.expressions.evaluateExpression(v.binding.bindToFQ);
+                    return form.binding.evaluate(form.scope, v.binding.bindToFQ);
                 }
                 else if (v.item) {
-                    return _this.validation.getValidator(form.expressions, v.item.type, options.caption, v.item.parameters);
+                    return _this.validation.getValidator(form.scopeContainer, v.item.type, options.caption, v.item.parameters);
                 }
                 else {
                     throw new Error("No binding/item specified");
@@ -3753,7 +3907,7 @@ define('framework/forms/widget-services/simple-widget-creator-service',["require
                 if (options.filters) {
                     filters.push.apply(filters, options.filter);
                 }
-                current.dataSource = this.dataSource.createDataSource(form.expressions, {
+                current.dataSource = this.dataSource.createDataSource(form.scopeContainer, {
                     keyProperty: selectItem.valueMember,
                     webApiAction: selectItem.action,
                     webApiColumns: selectItem.columns,
@@ -3819,7 +3973,7 @@ define('framework/forms/classes/edit-popups',["require", "exports", "tslib", "au
             this.form = form;
         };
         EditPopups.prototype.createOptions = function (editPopup) {
-            var widgetOptions = this.simpleWidgetCreator.addPopup(this.form, editPopup);
+            this.simpleWidgetCreator.addPopup(this.form, editPopup);
         };
         EditPopups.prototype.initializeContent = function (instance, editPopup) {
             var _this = this;
@@ -3834,10 +3988,7 @@ define('framework/forms/classes/edit-popups',["require", "exports", "tslib", "au
                     data: r.data
                 });
             });
-            popup.option("toolbarItems", this.toolbar.createToolbarItems({
-                bindingContext: content,
-                overrideContext: null
-            }, content.expressions, {
+            popup.option("toolbarItems", this.toolbar.createToolbarItems(this.form.scopeContainer, {
                 getItems: function () {
                     return popup.option("toolbarItems");
                 },
@@ -3848,7 +3999,7 @@ define('framework/forms/classes/edit-popups',["require", "exports", "tslib", "au
             popup.on({
                 shown: function () {
                     editPopup.mappings.forEach(function (m) {
-                        content.variables.data[m.to] = _this.form.expressions.evaluateExpression(m.binding.bindToFQ);
+                        content.variables.data[m.to] = _this.form.binding.evaluate(_this.form.scope, m.binding.bindToFQ);
                     });
                     _this.onEditPopupShown.fire({
                         editPopup: editPopup
@@ -3878,44 +4029,20 @@ define('framework/forms/classes/edit-popups',["require", "exports", "tslib", "au
     exports.EditPopups = EditPopups;
 });
 
-define('framework/forms/widget-services/data-grid-widget-creator-service',["require", "exports", "tslib", "aurelia-framework", "./base-widget-creator-service", "../../base/services/export", "../services/export", "../enums/selection-mode-enum"], function (require, exports, tslib_1, aurelia_framework_1, base_widget_creator_service_1, export_1, export_2, selection_mode_enum_1) {
+define('framework/forms/widget-services/data-grid-widget-creator-service',["require", "exports", "tslib", "aurelia-framework", "./base-widget-creator-service", "../../base/services/export", "../enums/selection-mode-enum"], function (require, exports, tslib_1, aurelia_framework_1, base_widget_creator_service_1, export_1, selection_mode_enum_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var DataGridWidgetCreatorService = (function () {
-        function DataGridWidgetCreatorService(baseWidgetCreator, dataSource, globalization, localization, location, defaultCommands, toolbar) {
+        function DataGridWidgetCreatorService(baseWidgetCreator, globalization, localization) {
             this.baseWidgetCreator = baseWidgetCreator;
-            this.dataSource = dataSource;
             this.globalization = globalization;
             this.localization = localization;
-            this.location = location;
-            this.defaultCommands = defaultCommands;
-            this.toolbar = toolbar;
         }
         DataGridWidgetCreatorService.prototype.addDataGrid = function (form, options) {
             var _this = this;
             var dataGridOptions = this.baseWidgetCreator.createWidgetOptions(form, options);
             if (options.dataModel) {
-                var model_1 = form.models.getInfo(options.dataModel);
-                var relationModel = options.isRelation
-                    ? form.models.getInfo(options.relationBinding.dataContext)
-                    : null;
-                var customizationOptions = {};
-                if (options.isRelation) {
-                    customizationOptions.getCustomWhere = function () {
-                        var data = form.models.data && form.models.data[model_1.id]
-                            ? form.models.data[model_1.id][model_1.keyProperty]
-                            : "0";
-                        data = data || "0";
-                        return [options.relationBinding.bindTo, data];
-                    };
-                    customizationOptions.canLoad = function () {
-                        return !!(form.models.data && form.models.data[model_1.id] && form.models.data[model_1.id][model_1.keyProperty]);
-                    };
-                    form.expressions.createObserver("models.data." + model_1.id + "." + model_1.keyProperty, function () {
-                        dataSource_1.reload();
-                    });
-                }
-                var dataSource_1 = this.dataSource.createDataSource(form.expressions, relationModel || model_1, customizationOptions);
+                var dataSource_1 = this.baseWidgetCreator.createListDataSource(form, options);
                 dataGridOptions.dataSource = dataSource_1;
                 dataGridOptions.remoteOperations = {
                     filtering: true,
@@ -3934,7 +4061,7 @@ define('framework/forms/widget-services/data-grid-widget-creator-service',["requ
                 dataGridOptions.columns = options.columns.map(function (col) {
                     var column = {};
                     if (col.caption) {
-                        column.caption = _this.localization.translate(form.expressions, col.caption);
+                        column.caption = _this.localization.translate(form.scope, col.caption);
                     }
                     if (col.bindTo) {
                         column.dataField = col.bindTo;
@@ -3960,77 +4087,7 @@ define('framework/forms/widget-services/data-grid-widget-creator-service',["requ
             if (options.rowScriptTemplateId) {
                 dataGridOptions.rowTemplate = options.rowScriptTemplateId;
             }
-            var clickActions = [];
-            if (options.onItemClick) {
-                clickActions.push(function (e) {
-                    form.expressions.evaluateExpression(options.onItemClick, {
-                        bindingContext: e,
-                        overrideContext: null
-                    });
-                });
-            }
-            if (options.editDataContext || options.edits.length > 0) {
-                if (options.edits.length > 0) {
-                    clickActions.push(function (e) {
-                        var edit = options.edits.find(function (c) { return c.typeName === e.data.ObjectTypeName; });
-                        if (!edit) {
-                            return;
-                        }
-                        form.models.data[edit.editDataContext] = e.data;
-                    });
-                }
-                else {
-                    clickActions.push(function (e) {
-                        form.models.data[options.editDataContext] = e.data;
-                    });
-                }
-            }
-            if ((options.editUrl || options.edits.length > 0) && options.dataModel) {
-                var model_2 = form.models.getInfo(options.dataModel);
-                if (model_2) {
-                    if (options.edits.length > 0) {
-                        clickActions.push(function (e) {
-                            var edit = options.edits.find(function (c) { return c.typeName === e.data.ObjectTypeName; });
-                            if (!edit) {
-                                return;
-                            }
-                            _this.location.goTo("#" + edit.editUrl + "/" + e.data[model_2.keyProperty], form);
-                        });
-                    }
-                    else {
-                        clickActions.push(function (e) {
-                            _this.location.goTo("#" + options.editUrl + "/" + e.data[model_2.keyProperty], form);
-                        });
-                    }
-                }
-            }
-            if (options.idEditPopup || options.edits.length > 0) {
-                form.editPopups.onEditPopupHidden.register(function (a) {
-                    if (a.editPopup.id === options.idEditPopup || options.edits.some(function (c) { return c.idEditPopup === a.editPopup.id; })) {
-                        var dataGrid = form[options.id];
-                        if (!dataGrid) {
-                            return;
-                        }
-                        dataGrid.instance.refresh();
-                    }
-                    ;
-                    return Promise.resolve();
-                });
-                if (options.edits.length > 0) {
-                    clickActions.push(function (e) {
-                        var edit = options.edits.find(function (c) { return c.typeName === e.data.ObjectTypeName; });
-                        if (!edit) {
-                            return;
-                        }
-                        form.editPopups.show(edit.idEditPopup);
-                    });
-                }
-                else {
-                    clickActions.push(function (e) {
-                        form.editPopups.show(options.idEditPopup);
-                    });
-                }
-            }
+            var clickActions = this.baseWidgetCreator.getListClickActions(form, options);
             if (clickActions.length > 0) {
                 dataGridOptions.onRowClick = function (e) {
                     clickActions.forEach(function (item) {
@@ -4055,38 +4112,8 @@ define('framework/forms/widget-services/data-grid-widget-creator-service',["requ
                     enabled: true
                 };
             }
-            if (options.createToolbar || options.isMainList) {
-                var commands = this.defaultCommands.getListCommands(form, options);
-                if (options.createToolbar) {
-                    form[options.optionsToolbar.optionsName] = this.toolbar.createToolbarOptions({
-                        bindingContext: form,
-                        overrideContext: null
-                    }, form.expressions, options.caption, commands);
-                }
-                else if (options.isMainList) {
-                    commands.forEach(function (c) { return form.commands.addCommand(c); });
-                }
-            }
-            if (options.idEditPopup && options.isRelation) {
-                form.editPopups.onEditPopupModelLoaded.register(function (e) {
-                    if (e.editPopup.id != options.idEditPopup) {
-                        return;
-                    }
-                    if (e.model.key !== "variables.data.$id") {
-                        return;
-                    }
-                    if (!e.data) {
-                        return;
-                    }
-                    if (e.data[e.model.keyProperty]) {
-                        return;
-                    }
-                    var info = form.models.getInfo(options.dataModel);
-                    e.data[options.relationBinding.bindTo] = form.models.data[info.id][info.keyProperty];
-                    return Promise.resolve();
-                });
-            }
-            return dataGridOptions;
+            this.baseWidgetCreator.checkListToolbar(form, options);
+            this.baseWidgetCreator.checkListRelationEdit(form, options);
         };
         DataGridWidgetCreatorService.prototype.getSelectionMode = function (selectionMode) {
             switch (selectionMode) {
@@ -4103,105 +4130,217 @@ define('framework/forms/widget-services/data-grid-widget-creator-service',["requ
     DataGridWidgetCreatorService = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
         tslib_1.__metadata("design:paramtypes", [base_widget_creator_service_1.BaseWidgetCreatorService,
-            export_1.DataSourceService,
             export_1.GlobalizationService,
-            export_1.LocalizationService,
-            export_1.LocationService,
-            export_2.DefaultCommandsService,
-            export_2.ToolbarService])
+            export_1.LocalizationService])
     ], DataGridWidgetCreatorService);
     exports.DataGridWidgetCreatorService = DataGridWidgetCreatorService;
 });
 
-define('framework/forms/widget-services/widget-creator-service',["require", "exports", "tslib", "aurelia-framework", "./simple-widget-creator-service", "./data-grid-widget-creator-service"], function (require, exports, tslib_1, aurelia_framework_1, simple_widget_creator_service_1, data_grid_widget_creator_service_1) {
+define('framework/forms/widget-services/list-widget-creator-service',["require", "exports", "tslib", "aurelia-framework", "./base-widget-creator-service"], function (require, exports, tslib_1, aurelia_framework_1, base_widget_creator_service_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var ListWidgetCreatorService = (function () {
+        function ListWidgetCreatorService(baseWidgetCreator) {
+            this.baseWidgetCreator = baseWidgetCreator;
+        }
+        ListWidgetCreatorService.prototype.addList = function (form, options) {
+            var listOptions = this.baseWidgetCreator.createWidgetOptions(form, options);
+            listOptions.itemTemplate = "itemTemplate";
+            if (options.dataModel) {
+                var dataSource_1 = this.baseWidgetCreator.createListDataSource(form, options);
+                listOptions.dataSource = dataSource_1;
+                form.onReactivated.register(function (e) {
+                    dataSource_1.reload();
+                    return Promise.resolve();
+                });
+            }
+            else if (options.binding.bindTo) {
+                listOptions.bindingOptions["dataSource"] = options.binding.bindToFQ;
+            }
+            var clickActions = this.baseWidgetCreator.getListClickActions(form, options);
+            if (clickActions.length > 0) {
+                listOptions.onItemClick = function (e) {
+                    e.data = e.itemData;
+                    clickActions.forEach(function (item) {
+                        item(e);
+                    });
+                };
+            }
+            this.baseWidgetCreator.checkListToolbar(form, options);
+            this.baseWidgetCreator.checkListRelationEdit(form, options);
+        };
+        return ListWidgetCreatorService;
+    }());
+    ListWidgetCreatorService = tslib_1.__decorate([
+        aurelia_framework_1.autoinject,
+        tslib_1.__metadata("design:paramtypes", [base_widget_creator_service_1.BaseWidgetCreatorService])
+    ], ListWidgetCreatorService);
+    exports.ListWidgetCreatorService = ListWidgetCreatorService;
+});
+
+define('framework/forms/widget-services/widget-creator-service',["require", "exports", "tslib", "aurelia-framework", "./simple-widget-creator-service", "./data-grid-widget-creator-service", "./list-widget-creator-service"], function (require, exports, tslib_1, aurelia_framework_1, simple_widget_creator_service_1, data_grid_widget_creator_service_1, list_widget_creator_service_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var WidgetCreatorService = (function () {
-        function WidgetCreatorService(simpleWidgetCreator, dataGridWidgetCreator) {
+        function WidgetCreatorService(simpleWidgetCreator, dataGridWidgetCreator, listWidgetCreator) {
             this.simpleWidgetCreator = simpleWidgetCreator;
             this.dataGridWidgetCreator = dataGridWidgetCreator;
+            this.listWidgetCreator = listWidgetCreator;
         }
         WidgetCreatorService.prototype.addAccordion = function (form, options) {
-            return this.simpleWidgetCreator.addAccordion(form, options);
+            var _this = this;
+            form.callOnBind(function () {
+                _this.simpleWidgetCreator.addAccordion(form, options);
+            });
         };
         WidgetCreatorService.prototype.addCalendar = function (form, options) {
-            return this.simpleWidgetCreator.addCalendar(form, options);
+            var _this = this;
+            form.callOnBind(function () {
+                _this.simpleWidgetCreator.addCalendar(form, options);
+            });
         };
         WidgetCreatorService.prototype.addCheckBox = function (form, options) {
-            return this.simpleWidgetCreator.addCheckBox(form, options);
+            var _this = this;
+            form.callOnBind(function () {
+                _this.simpleWidgetCreator.addCheckBox(form, options);
+            });
         };
         WidgetCreatorService.prototype.addColorBox = function (form, options) {
-            return this.simpleWidgetCreator.addColorBox(form, options);
+            var _this = this;
+            form.callOnBind(function () {
+                _this.simpleWidgetCreator.addColorBox(form, options);
+            });
         };
         WidgetCreatorService.prototype.addCommand = function (form, options) {
-            return this.simpleWidgetCreator.addCommand(form, options);
+            var _this = this;
+            form.callOnBind(function () {
+                _this.simpleWidgetCreator.addCommand(form, options);
+            });
         };
         WidgetCreatorService.prototype.addDateBox = function (form, options) {
-            return this.simpleWidgetCreator.addDateBox(form, options);
+            var _this = this;
+            form.callOnBind(function () {
+                _this.simpleWidgetCreator.addDateBox(form, options);
+            });
         };
         WidgetCreatorService.prototype.addDataGrid = function (form, options) {
-            return this.dataGridWidgetCreator.addDataGrid(form, options);
+            var _this = this;
+            form.callOnBind(function () {
+                _this.dataGridWidgetCreator.addDataGrid(form, options);
+            });
         };
         WidgetCreatorService.prototype.addFileUploader = function (form, options) {
-            return this.simpleWidgetCreator.addFileUploader(form, options);
+            var _this = this;
+            form.callOnBind(function () {
+                _this.simpleWidgetCreator.addFileUploader(form, options);
+            });
         };
         WidgetCreatorService.prototype.addFileUploaderWithViewer = function (form, options) {
-            return this.simpleWidgetCreator.addFileUploaderWithViewer(form, options);
+            var _this = this;
+            form.callOnBind(function () {
+                _this.simpleWidgetCreator.addFileUploaderWithViewer(form, options);
+            });
         };
         WidgetCreatorService.prototype.addInclude = function (form, options) {
-            return this.simpleWidgetCreator.addInclude(form, options);
+            var _this = this;
+            form.callOnBind(function () {
+                _this.simpleWidgetCreator.addInclude(form, options);
+            });
+        };
+        WidgetCreatorService.prototype.addList = function (form, options) {
+            var _this = this;
+            form.callOnBind(function () {
+                _this.listWidgetCreator.addList(form, options);
+            });
         };
         WidgetCreatorService.prototype.addListView = function (form, options) {
-            return this.simpleWidgetCreator.addListView(form, options);
+            var _this = this;
+            form.callOnBind(function () {
+                _this.simpleWidgetCreator.addListView(form, options);
+            });
         };
         WidgetCreatorService.prototype.addLookup = function (form, options) {
-            return this.simpleWidgetCreator.addLookup(form, options);
+            var _this = this;
+            form.callOnBind(function () {
+                _this.simpleWidgetCreator.addLookup(form, options);
+            });
         };
         WidgetCreatorService.prototype.addNumberBox = function (form, options) {
-            return this.simpleWidgetCreator.addNumberBox(form, options);
+            var _this = this;
+            form.callOnBind(function () {
+                _this.simpleWidgetCreator.addNumberBox(form, options);
+            });
         };
         WidgetCreatorService.prototype.addPopover = function (form, options) {
-            return this.simpleWidgetCreator.addPopover(form, options);
+            var _this = this;
+            form.callOnBind(function () {
+                _this.simpleWidgetCreator.addPopover(form, options);
+            });
         };
         WidgetCreatorService.prototype.addPopup = function (form, options) {
-            return this.simpleWidgetCreator.addPopup(form, options);
+            var _this = this;
+            form.callOnBind(function () {
+                _this.simpleWidgetCreator.addPopup(form, options);
+            });
         };
         WidgetCreatorService.prototype.addRadioGroup = function (form, options) {
-            return this.simpleWidgetCreator.addRadioGroup(form, options);
+            var _this = this;
+            form.callOnBind(function () {
+                _this.simpleWidgetCreator.addRadioGroup(form, options);
+            });
         };
         WidgetCreatorService.prototype.addTab = function (form, options) {
-            return this.simpleWidgetCreator.addTab(form, options);
+            var _this = this;
+            form.callOnBind(function () {
+                _this.simpleWidgetCreator.addTab(form, options);
+            });
         };
         WidgetCreatorService.prototype.addSelectBox = function (form, options) {
-            return this.simpleWidgetCreator.addSelectBox(form, options);
+            var _this = this;
+            form.callOnBind(function () {
+                _this.simpleWidgetCreator.addSelectBox(form, options);
+            });
         };
         WidgetCreatorService.prototype.addTagBox = function (form, options) {
-            return this.simpleWidgetCreator.addTagBox(form, options);
+            var _this = this;
+            form.callOnBind(function () {
+                _this.simpleWidgetCreator.addTagBox(form, options);
+            });
         };
         WidgetCreatorService.prototype.addTextBox = function (form, options) {
-            return this.simpleWidgetCreator.addTextBox(form, options);
+            var _this = this;
+            form.callOnBind(function () {
+                _this.simpleWidgetCreator.addTextBox(form, options);
+            });
         };
         WidgetCreatorService.prototype.addTextArea = function (form, options) {
-            return this.simpleWidgetCreator.addTextArea(form, options);
+            var _this = this;
+            form.callOnBind(function () {
+                _this.simpleWidgetCreator.addTextArea(form, options);
+            });
         };
         WidgetCreatorService.prototype.addValidationGroup = function (form, options) {
-            return this.simpleWidgetCreator.addValidationGroup(form, options);
+            var _this = this;
+            form.callOnBind(function () {
+                _this.simpleWidgetCreator.addValidationGroup(form, options);
+            });
         };
         return WidgetCreatorService;
     }());
     WidgetCreatorService = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
         tslib_1.__metadata("design:paramtypes", [simple_widget_creator_service_1.SimpleWidgetCreatorService,
-            data_grid_widget_creator_service_1.DataGridWidgetCreatorService])
+            data_grid_widget_creator_service_1.DataGridWidgetCreatorService,
+            list_widget_creator_service_1.ListWidgetCreatorService])
     ], WidgetCreatorService);
     exports.WidgetCreatorService = WidgetCreatorService;
 });
 
-define('framework/forms/classes/form-base-import',["require", "exports", "tslib", "aurelia-framework", "./models", "./functions", "./commands", "./variables", "./expressions", "./edit-popups", "./nested-forms", "./command-server-data", "../services/toolbar-service", "../services/default-commands-service", "../services/command-service", "../widget-services/widget-creator-service", "../../base/export", "../../stack-router/services/router-service"], function (require, exports, tslib_1, aurelia_framework_1, models_1, functions_1, commands_1, variables_1, expressions_1, edit_popups_1, nested_forms_1, command_server_data_1, toolbar_service_1, default_commands_service_1, command_service_1, widget_creator_service_1, export_1, router_service_1) {
+define('framework/forms/classes/form-base-import',["require", "exports", "tslib", "aurelia-framework", "./models", "./functions", "./commands", "./variables", "./edit-popups", "./nested-forms", "./command-server-data", "../services/toolbar-service", "../services/default-commands-service", "../services/command-service", "../widget-services/widget-creator-service", "../../base/export", "../../stack-router/services/router-service"], function (require, exports, tslib_1, aurelia_framework_1, models_1, functions_1, commands_1, variables_1, edit_popups_1, nested_forms_1, command_server_data_1, toolbar_service_1, default_commands_service_1, command_service_1, widget_creator_service_1, export_1, router_service_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var FormBaseImport = (function () {
-        function FormBaseImport(bindingEngine, taskQueue, widgetCreator, command, toolbar, defaultCommands, router, error, models, nestedForms, variables, functions, commands, editPopups, expressions, globalization, localization, commandServerData, onAttached, onReady, onReactivated, onValidating) {
+        function FormBaseImport(bindingEngine, taskQueue, widgetCreator, command, toolbar, defaultCommands, router, error, models, nestedForms, variables, functions, commands, editPopups, binding, globalization, localization, commandServerData, onAttached, onReady, onReactivated, onValidating) {
             this.bindingEngine = bindingEngine;
             this.taskQueue = taskQueue;
             this.widgetCreator = widgetCreator;
@@ -4216,7 +4355,7 @@ define('framework/forms/classes/form-base-import',["require", "exports", "tslib"
             this.functions = functions;
             this.commands = commands;
             this.editPopups = editPopups;
-            this.expressions = expressions;
+            this.binding = binding;
             this.globalization = globalization;
             this.localization = localization;
             this.commandServerData = commandServerData;
@@ -4243,7 +4382,7 @@ define('framework/forms/classes/form-base-import',["require", "exports", "tslib"
             functions_1.Functions,
             commands_1.Commands,
             edit_popups_1.EditPopups,
-            expressions_1.Expressions,
+            export_1.BindingService,
             export_1.GlobalizationService,
             export_1.LocalizationService,
             command_server_data_1.CommandServerData,
@@ -4255,13 +4394,14 @@ define('framework/forms/classes/form-base-import',["require", "exports", "tslib"
     exports.FormBaseImport = FormBaseImport;
 });
 
-define('framework/forms/classes/form-base',["require", "exports"], function (require, exports) {
+define('framework/forms/classes/form-base',["require", "exports", "../../base/export"], function (require, exports, export_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var FormBase = (function () {
         function FormBase(element, formBaseImport) {
             this.element = element;
             this.formBaseImport = formBaseImport;
+            this._callOnBind = [];
             this.isEditForm = element.getAttribute("is-edit-form") === "true";
             this.isNestedForm = element.getAttribute("is-nested-form") === "true";
             this.popupStack = [];
@@ -4273,8 +4413,8 @@ define('framework/forms/classes/form-base',["require", "exports"], function (req
             this.nestedForms = formBaseImport.nestedForms;
             this.editPopups = formBaseImport.editPopups;
             this.functions = formBaseImport.functions;
-            this.expressions = formBaseImport.expressions;
             this.commands = formBaseImport.commands;
+            this.binding = formBaseImport.binding;
             this.globalization = formBaseImport.globalization;
             this.localization = formBaseImport.localization;
             this.commandServerData = formBaseImport.commandServerData;
@@ -4287,13 +4427,14 @@ define('framework/forms/classes/form-base',["require", "exports"], function (req
             this.variables.registerForm(this);
             this.functions.registerForm(this);
             this.commands.registerForm(this);
-            this.expressions.registerForm(this);
             this.nestedForms.registerForm(this);
             this.editPopups.registerForm(this);
         }
+        FormBase.prototype.callOnBind = function (callback) {
+            this._callOnBind.push(callback);
+        };
         FormBase.prototype.created = function (owningView, myView) {
             this.owningView = owningView;
-            this.toolbarOptions = this.toolbar.createFormToolbarOptions(this);
         };
         FormBase.prototype.attached = function () {
             var _this = this;
@@ -4307,8 +4448,23 @@ define('framework/forms/classes/form-base',["require", "exports"], function (req
             });
             return promise;
         };
-        FormBase.prototype.bind = function () {
+        FormBase.prototype.bind = function (bindingContext, overrideContext) {
             this.parent = this.owningView.bindingContext;
+            this.scope = {
+                bindingContext: bindingContext,
+                overrideContext: overrideContext
+            };
+            this.scopeContainer = new export_1.ScopeContainer(this.scope);
+            this._callOnBind.forEach(function (c) {
+                c();
+            });
+            this._callOnBind = null;
+            this.loadCommands();
+            this.toolbarOptions = this.toolbar.createFormToolbarOptions(this);
+            this.models.loadModelsWithKey();
+        };
+        FormBase.prototype.unbind = function () {
+            this.scopeContainer.disposeAll();
         };
         FormBase.prototype.activate = function (routeInfo) {
             if (routeInfo && routeInfo.parameters && routeInfo.parameters.id) {
@@ -4321,7 +4477,7 @@ define('framework/forms/classes/form-base',["require", "exports"], function (req
             });
         };
         FormBase.prototype.getFileDownloadUrl = function (key) {
-            return this.expressions.evaluateExpression(key);
+            return this.binding.evaluate(this.scope, key);
         };
         FormBase.prototype.getFormsInclOwn = function () {
             return [this].concat(this.nestedForms.getNestedForms());
@@ -4347,7 +4503,7 @@ define('framework/forms/classes/form-base',["require", "exports"], function (req
                 if (!command) {
                     return;
                 }
-                this.command.execute(this.expressions, command);
+                this.command.execute(this.scope, command);
             }
             else {
                 context.executeCommand(id);
@@ -4411,39 +4567,62 @@ define('framework/forms/classes/form-base',["require", "exports"], function (req
             return this.models.delete();
         };
         FormBase.prototype.translate = function (key) {
-            return this.localization.translate(this.expressions, key);
+            return this.localization.translate(this.scope, key);
         };
         FormBase.prototype.addModel = function (model) {
-            this.models.addInfo(model);
+            var _this = this;
+            this.callOnBind(function () {
+                _this.models.addInfo(model);
+            });
         };
         FormBase.prototype.addVariable = function (variable) {
-            this.variables.addInfo(variable);
+            var _this = this;
+            this.callOnBind(function () {
+                _this.variables.addInfo(variable);
+            });
         };
         FormBase.prototype.addCommandServerData = function (id, commandServerData) {
-            this.commandServerData.add(id, commandServerData);
+            var _this = this;
+            this.callOnBind(function () {
+                _this.commandServerData.add(id, commandServerData);
+            });
         };
         FormBase.prototype.addCommand = function (command) {
-            this.commands.addInfo(command);
+            var _this = this;
+            this.callOnBind(function () {
+                _this.commands.addInfo(command);
+            });
         };
         FormBase.prototype.addFunction = function (id, functionInstance, namespace, customParameter) {
-            this.functions.add(id, functionInstance, namespace, customParameter);
+            var _this = this;
+            this.callOnBind(function () {
+                _this.functions.add(id, functionInstance, namespace, customParameter);
+            });
         };
         FormBase.prototype.addNestedForm = function (id, mappings) {
-            this.nestedForms.addInfo(id, mappings);
+            var _this = this;
+            this.callOnBind(function () {
+                _this.nestedForms.addInfo(id, mappings);
+            });
         };
         FormBase.prototype.addEditPopup = function (editPopup) {
-            this.editPopups.addInfo(editPopup);
+            var _this = this;
+            this.callOnBind(function () {
+                _this.editPopups.addInfo(editPopup);
+            });
         };
         FormBase.prototype.addMapping = function (mapping) {
         };
         FormBase.prototype.submitForm = function (commandExpression) {
-            var command = this.expressions.evaluateExpression(commandExpression);
+            var command = this.binding.evaluate(this.scope, commandExpression);
             if (!command || !command.execute) {
                 return;
             }
-            this.command.execute(this.expressions, command);
+            this.command.execute(this.scope, command);
         };
         FormBase.prototype.onConstructionFinished = function () {
+        };
+        FormBase.prototype.loadCommands = function () {
             if (!this.isNestedForm) {
                 this.commands.addCommand(this.formBaseImport.defaultCommands.getFormGoBackCommand(this));
                 if (this.isEditForm) {
@@ -4492,7 +4671,7 @@ define('framework/forms/classes/commands',["require", "exports", "tslib", "aurel
         };
         Commands.prototype.getCommands = function () {
             var _this = this;
-            var result = this.commands.map(function (i) { return _this.expressions.evaluateExpression(i.binding.bindToFQ); });
+            var result = this.commands.map(function (i) { return _this.form.binding.evaluate(_this.form.scope, i.binding.bindToFQ); });
             result.push.apply(result, this.commandData);
             return result;
         };
@@ -4501,7 +4680,6 @@ define('framework/forms/classes/commands',["require", "exports", "tslib", "aurel
                 throw new Error("Form was already registered");
             }
             this.form = form;
-            this.expressions = form.expressions;
         };
         return Commands;
     }());
@@ -4513,14 +4691,13 @@ define('framework/forms/classes/commands',["require", "exports", "tslib", "aurel
     exports.Commands = Commands;
 });
 
-define('framework/forms/classes/export',["require", "exports", "./command-server-data", "./commands", "./context-menu", "./edit-popups", "./expressions", "./form-base", "./functions", "./models", "./nested-forms", "./variables"], function (require, exports, command_server_data_1, commands_1, context_menu_1, edit_popups_1, expressions_1, form_base_1, functions_1, models_1, nested_forms_1, variables_1) {
+define('framework/forms/classes/export',["require", "exports", "./command-server-data", "./commands", "./context-menu", "./edit-popups", "./form-base", "./functions", "./models", "./nested-forms", "./variables"], function (require, exports, command_server_data_1, commands_1, context_menu_1, edit_popups_1, form_base_1, functions_1, models_1, nested_forms_1, variables_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.CommandServerData = command_server_data_1.CommandServerData;
     exports.Commands = commands_1.Commands;
     exports.ContextMenu = context_menu_1.ContextMenu;
     exports.EditPopups = edit_popups_1.EditPopups;
-    exports.Expressions = expressions_1.Expressions;
     exports.FormBase = form_base_1.FormBase;
     exports.Functions = functions_1.Functions;
     exports.Models = models_1.Models;
@@ -4629,10 +4806,10 @@ define('framework/forms/elements/file-uploader-with-viewer/tip-file-uploader-wit
             });
         };
         TipFileUploaderWithViewer.prototype.getExpressionContext = function (propertyName) {
-            return this.binding.getBindingContext(propertyName, {
+            return this.binding.getBindingContext({
                 bindingContext: this.bindingContext,
                 overrideContext: this.overrideContext
-            });
+            }, propertyName);
         };
         TipFileUploaderWithViewer.prototype.observeValue = function (propertyName, setValueCallback) {
             var _this = this;
@@ -4945,10 +5122,10 @@ define('framework/dx/elements/dx-widget',["require", "exports", "tslib", "aureli
             }
             var _loop_1 = function (property) {
                 var binding = this_1.options.bindingOptions[property];
-                var context = this_1.binding.getBindingContext(binding.parsed, {
+                var context = this_1.binding.getBindingContext({
                     bindingContext: this_1.bindingContext,
                     overrideContext: this_1.overrideContext
-                });
+                }, binding.expression);
                 this_1.bindingEngine.expressionObserver(context, binding.expression)
                     .subscribe(function (newValue, oldValue) {
                     _this.setOptionValue(property, newValue);
@@ -5107,7 +5284,7 @@ define('framework/base/attributes/icon/fa-icon-attribute',["require", "exports",
     exports.FaIconAttribute = FaIconAttribute;
 });
 
-define('framework/base/attributes/translation/translation-attribute',["require", "exports", "tslib", "aurelia-framework", "../../services/localization-service"], function (require, exports, tslib_1, aurelia_framework_1, localization_service_1) {
+define('framework/base/attributes/translation/translation-attribute',["require", "exports", "tslib", "aurelia-framework", "../../services/export", "../../classes/scope-container"], function (require, exports, tslib_1, aurelia_framework_1, export_1, scope_container_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var TrCustomAttribute = (function () {
@@ -5115,16 +5292,23 @@ define('framework/base/attributes/translation/translation-attribute',["require",
             this.element = element;
             this.localization = localization;
         }
-        TrCustomAttribute.prototype.bind = function (bindingContext) {
-            this.expressionProvider = bindingContext.expressions;
+        TrCustomAttribute.prototype.bind = function (bindingContext, overrideContext) {
+            this.scope = {
+                bindingContext: bindingContext,
+                overrideContext: overrideContext
+            };
+            this.scopeContainer = new scope_container_1.ScopeContainer(this.scope);
             this.setInnerHtml();
+        };
+        TrCustomAttribute.prototype.unbind = function () {
+            this.scopeContainer.disposeAll();
         };
         TrCustomAttribute.prototype.keyChanged = function (newValue, oldValue) {
             this.setInnerHtml();
         };
         TrCustomAttribute.prototype.setInnerHtml = function () {
             var _this = this;
-            this.localization.translate(this.expressionProvider, this.key, function (val) {
+            this.localization.translate(this.scopeContainer, this.key, function (val) {
                 _this.element.innerHTML = val;
             });
         };
@@ -5146,7 +5330,7 @@ define('framework/base/attributes/translation/translation-attribute',["require",
         aurelia_framework_1.autoinject,
         aurelia_framework_1.customAttribute("tr"),
         tslib_1.__metadata("design:paramtypes", [Element,
-            localization_service_1.LocalizationService])
+            export_1.LocalizationService])
     ], TrCustomAttribute);
     exports.TrCustomAttribute = TrCustomAttribute;
 });
@@ -5244,6 +5428,22 @@ define('framework/default-ui/views/container/container',["require", "exports", "
     exports.Container = Container;
 });
 
+define('framework/default-ui/views/content/content',["require", "exports", "tslib", "aurelia-framework", "../../services/layout-service"], function (require, exports, tslib_1, aurelia_framework_1, layout_service_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var Content = (function () {
+        function Content(layout) {
+            this.layout = layout;
+        }
+        return Content;
+    }());
+    Content = tslib_1.__decorate([
+        aurelia_framework_1.autoinject,
+        tslib_1.__metadata("design:paramtypes", [layout_service_1.LayoutService])
+    ], Content);
+    exports.Content = Content;
+});
+
 define('framework/default-ui/views/header/header',["require", "exports", "tslib", "aurelia-framework", "../../../stack-router/export", "../../../base/services/export"], function (require, exports, tslib_1, aurelia_framework_1, export_1, export_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -5265,20 +5465,20 @@ define('framework/default-ui/views/header/header',["require", "exports", "tslib"
     exports.Header = Header;
 });
 
-define('framework/default-ui/views/content/content',["require", "exports", "tslib", "aurelia-framework", "../../services/layout-service"], function (require, exports, tslib_1, aurelia_framework_1, layout_service_1) {
+define('framework/default-ui/views/loading/loading',["require", "exports", "tslib", "aurelia-framework", "../../../base/services/rest-service"], function (require, exports, tslib_1, aurelia_framework_1, rest_service_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var Content = (function () {
-        function Content(layout) {
-            this.layout = layout;
+    var Loading = (function () {
+        function Loading(rest) {
+            this.rest = rest;
         }
-        return Content;
+        return Loading;
     }());
-    Content = tslib_1.__decorate([
+    Loading = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
-        tslib_1.__metadata("design:paramtypes", [layout_service_1.LayoutService])
-    ], Content);
-    exports.Content = Content;
+        tslib_1.__metadata("design:paramtypes", [rest_service_1.RestService])
+    ], Loading);
+    exports.Loading = Loading;
 });
 
 define('framework/default-ui/views/loading-spinner/loading-spinner',["require", "exports", "tslib", "aurelia-framework"], function (require, exports, tslib_1, aurelia_framework_1) {
@@ -5304,22 +5504,6 @@ define('framework/default-ui/views/loading-spinner/loading-spinner',["require", 
         tslib_1.__metadata("design:paramtypes", [Element])
     ], LoadingSpinner);
     exports.LoadingSpinner = LoadingSpinner;
-});
-
-define('framework/default-ui/views/loading/loading',["require", "exports", "tslib", "aurelia-framework", "../../../base/services/rest-service"], function (require, exports, tslib_1, aurelia_framework_1, rest_service_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var Loading = (function () {
-        function Loading(rest) {
-            this.rest = rest;
-        }
-        return Loading;
-    }());
-    Loading = tslib_1.__decorate([
-        aurelia_framework_1.autoinject,
-        tslib_1.__metadata("design:paramtypes", [rest_service_1.RestService])
-    ], Loading);
-    exports.Loading = Loading;
 });
 
 define('framework/default-ui/views/sidebar/sidebar',["require", "exports", "tslib", "aurelia-framework", "../../services/layout-service", "../../../stack-router/export"], function (require, exports, tslib_1, aurelia_framework_1, layout_service_1, export_1) {
@@ -5542,44 +5726,6 @@ define('framework/login/views/login/login-form',["require", "exports", "tslib", 
     exports.LoginForm = LoginForm;
 });
 
-define('framework/stack-router/attributes/stack-router-link/stack-router-link',["require", "exports", "tslib", "aurelia-framework", "../../services/history-service"], function (require, exports, tslib_1, aurelia_framework_1, history_service_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var StackRouterLinkCustomAttribute = (function () {
-        function StackRouterLinkCustomAttribute(element, history) {
-            this.element = element;
-            this.history = history;
-        }
-        StackRouterLinkCustomAttribute.prototype.bind = function () {
-            var _this = this;
-            this.element.addEventListener("click", function (e) {
-                var event = window.event;
-                if (!event.ctrlKey
-                    && !event.altKey
-                    && !event.shiftKey
-                    && !event.metaKey) {
-                    var href = _this.element.getAttribute("href");
-                    if (href) {
-                        _this.history.navigateByCode(_this.element.getAttribute("href"), _this.clearStack);
-                    }
-                    e.preventDefault();
-                }
-            });
-        };
-        return StackRouterLinkCustomAttribute;
-    }());
-    tslib_1.__decorate([
-        aurelia_framework_1.bindable,
-        tslib_1.__metadata("design:type", Boolean)
-    ], StackRouterLinkCustomAttribute.prototype, "clearStack", void 0);
-    StackRouterLinkCustomAttribute = tslib_1.__decorate([
-        aurelia_framework_1.autoinject,
-        tslib_1.__metadata("design:paramtypes", [Element,
-            history_service_1.HistoryService])
-    ], StackRouterLinkCustomAttribute);
-    exports.StackRouterLinkCustomAttribute = StackRouterLinkCustomAttribute;
-});
-
 define('framework/security/views/authgroup/authgroup-edit-form',["require", "exports", "tslib", "../../../forms/form-export"], function (require, exports, tslib_1, fwx) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -5624,6 +5770,7 @@ define('framework/security/views/authgroup/authgroup-edit-form',["require", "exp
             });
             _this.widgetCreator.addSelectBox(_this, {
                 "idSelect": "mandator",
+                "customs": [],
                 "caption": "authgroup-edit.mandator_caption",
                 "binding": {
                     "dataContext": "$m_A",
@@ -5744,6 +5891,44 @@ define('framework/security/views/authgroup/authgroup-list-form',["require", "exp
     exports.AuthgroupListForm = AuthgroupListForm;
 });
 
+define('framework/stack-router/attributes/stack-router-link/stack-router-link',["require", "exports", "tslib", "aurelia-framework", "../../services/history-service"], function (require, exports, tslib_1, aurelia_framework_1, history_service_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var StackRouterLinkCustomAttribute = (function () {
+        function StackRouterLinkCustomAttribute(element, history) {
+            this.element = element;
+            this.history = history;
+        }
+        StackRouterLinkCustomAttribute.prototype.bind = function () {
+            var _this = this;
+            this.element.addEventListener("click", function (e) {
+                var event = window.event;
+                if (!event.ctrlKey
+                    && !event.altKey
+                    && !event.shiftKey
+                    && !event.metaKey) {
+                    var href = _this.element.getAttribute("href");
+                    if (href) {
+                        _this.history.navigateByCode(_this.element.getAttribute("href"), _this.clearStack);
+                    }
+                    e.preventDefault();
+                }
+            });
+        };
+        return StackRouterLinkCustomAttribute;
+    }());
+    tslib_1.__decorate([
+        aurelia_framework_1.bindable,
+        tslib_1.__metadata("design:type", Boolean)
+    ], StackRouterLinkCustomAttribute.prototype, "clearStack", void 0);
+    StackRouterLinkCustomAttribute = tslib_1.__decorate([
+        aurelia_framework_1.autoinject,
+        tslib_1.__metadata("design:paramtypes", [Element,
+            history_service_1.HistoryService])
+    ], StackRouterLinkCustomAttribute);
+    exports.StackRouterLinkCustomAttribute = StackRouterLinkCustomAttribute;
+});
+
 define('framework/stack-router/views/stack-router/stack-router',["require", "exports", "tslib", "aurelia-framework", "aurelia-event-aggregator", "../../services/router-service", "../../services/history-service"], function (require, exports, tslib_1, aurelia_framework_1, aurelia_event_aggregator_1, router_service_1, history_service_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -5844,31 +6029,31 @@ define('framework/stack-router/views/view/view',["require", "exports", "tslib", 
     exports.View = View;
 });
 
-define('text!app.html', ['module'], function(module) { module.exports = "<template>\r\n  <require from=\"./framework/default-ui/views/container/container\"></require>\r\n  <container></container>\r\n</template>\r\n"; });
-define('text!framework/login/login.html', ['module'], function(module) { module.exports = "<template>\r\n  <require from=\"../stack-router/views/stack-router/stack-router\"></require>\r\n  <require from=\"../../framework/default-ui/views/loading/loading\"></require>\r\n  <require from=\"./login.css\"></require>\r\n\r\n  <loading></loading>\r\n  <div class=\"t--login-container\">\r\n    <div class=\"t--login-image\">\r\n      <div class=\"t--login-banner\" tr=\"key.bind: title\">\r\n      </div>\r\n    </div>  \r\n    <div class=\"t--login-data\">\r\n      <stack-router create-toolbar.bind=\"false\"></stack-router>\r\n    </div>\r\n  </div>\r\n</template>"; });
-define('text!framework/dx/elements/dx-widget.html', ['module'], function(module) { module.exports = "<template class=\"dx-widget\">\r\n</template>"; });
-define('text!framework/login/login.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--login-container {\n  display: flex;\n  height: 100vh;\n  width: 100vw;\n}\n.t--login-image {\n  position: relative;\n  flex-grow: 1;\n  background-image: url('images/background-login.jpg');\n  background-position: center center;\n  background-size: cover;\n  border-right: 1px solid lightgray;\n}\n.t--login-banner {\n  position: absolute;\n  padding: 12px 36px;\n  bottom: 30vh;\n  font-size: 60px;\n  font-weight: 100;\n  color: white;\n  background-color: rgba(0, 0, 0, 0.3);\n}\n.t--login-data {\n  display: flex;\n  width: 350px;\n  align-items: center;\n  background-color: #f7f7f7;\n}\n.t--login-data .t--view-content {\n  display: flex;\n  margin-top: 4vh;\n  flex-direction: column;\n  justify-content: center;\n}\n.t--login-logo {\n  margin-bottom: 40px;\n  text-align: center;\n}\n.t--login-logo img {\n  max-width: 200px;\n}\n"; });
-define('text!framework/forms/templates/toolbar-button-template.html',[],function () { return '<a class="t--toolbar-item" click.delegate="data.guardedExecute()">\r\n  <div if.bind="data.command.badgeText" class="t--toolbar-item-badge" tr="key.bind: data.command.badgeText">\r\n  </div>\r\n  <div class="t--toolbar-item-content">\r\n    <div if.bind="data.command.icon" class="t--toolbar-item-icon">\r\n      <i class="fa-fw" fa-icon="icon.bind: data.command.icon"></i>\r\n    </div>\r\n    <div if.bind="data.command.title" class="t--toolbar-item-title" tr="key.bind: data.command.title">\r\n    </div>\r\n  </div>\r\n</a>\r\n';});
+define('text!app.html', ['module'], function(module) { module.exports = "<template>\n  <require from=\"./framework/default-ui/views/container/container\"></require>\n  <container></container>\n</template>\n"; });
+define('text!framework/login/login.html', ['module'], function(module) { module.exports = "<template>\n  <require from=\"../stack-router/views/stack-router/stack-router\"></require>\n  <require from=\"../../framework/default-ui/views/loading/loading\"></require>\n  <require from=\"./login.css\"></require>\n\n  <loading></loading>\n  <div class=\"t--login-container\">\n    <div class=\"t--login-image\">\n      <div class=\"t--login-banner\" tr=\"key.bind: title\">\n      </div>\n    </div>  \n    <div class=\"t--login-data\">\n      <stack-router create-toolbar.bind=\"false\"></stack-router>\n    </div>\n  </div>\n</template>"; });
+define('text!framework/dx/elements/dx-widget.html', ['module'], function(module) { module.exports = "<template class=\"dx-widget\">\n</template>"; });
+define('text!framework/forms/templates/toolbar-button-template.html',[],function () { return '<a class="t--toolbar-item" click.delegate="data.guardedExecute()">\n  <div if.bind="data.command.badgeText" class="t--toolbar-item-badge" tr="key.bind: data.command.badgeText">\n  </div>\n  <div class="t--toolbar-item-content">\n    <div if.bind="data.command.icon" class="t--toolbar-item-icon">\n      <i class="fa-fw" fa-icon="icon.bind: data.command.icon"></i>\n    </div>\n    <div if.bind="data.command.title" class="t--toolbar-item-title" tr="key.bind: data.command.title">\n    </div>\n  </div>\n</a>\n';});
 
-define('text!framework/default-ui/views/container/container.html', ['module'], function(module) { module.exports = "<template class=\"t--container\" class.bind=\"className\">\r\n  <require from=\"./container.css\"></require>\r\n  \r\n  <require from=\"../loading/loading\"></require>\r\n  <require from=\"../sidebar/sidebar\"></require>\r\n  <require from=\"../header/header\"></require>\r\n  <require from=\"../content/content\"></require>\r\n\r\n  <loading></loading>\r\n  <sidebar></sidebar>\r\n  <header></header>\r\n  <content></content>\r\n</template>\r\n"; });
-define('text!framework/default-ui/views/content/content.html', ['module'], function(module) { module.exports = "<template class=\"t--content\">\r\n  <require from=\"./content.css\"></require>\r\n\r\n  <stack-router></stack-router>\r\n</template>\r\n"; });
+define('text!framework/login/login.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--login-container {\n  display: flex;\n  height: 100vh;\n  width: 100vw;\n}\n.t--login-image {\n  position: relative;\n  flex-grow: 1;\n  background-image: url('images/background-login.jpg');\n  background-position: center center;\n  background-size: cover;\n  border-right: 1px solid lightgray;\n}\n.t--login-banner {\n  position: absolute;\n  padding: 12px 36px;\n  bottom: 30vh;\n  font-size: 60px;\n  font-weight: 100;\n  color: white;\n  background-color: rgba(0, 0, 0, 0.3);\n}\n.t--login-data {\n  display: flex;\n  width: 350px;\n  align-items: center;\n  background-color: #f7f7f7;\n}\n.t--login-data .t--view-content {\n  display: flex;\n  margin-top: 4vh;\n  flex-direction: column;\n  justify-content: center;\n}\n.t--login-logo {\n  margin-bottom: 40px;\n  text-align: center;\n}\n.t--login-logo img {\n  max-width: 200px;\n}\n"; });
+define('text!framework/default-ui/views/container/container.html', ['module'], function(module) { module.exports = "<template class=\"t--container\" class.bind=\"className\">\n  <require from=\"./container.css\"></require>\n  \n  <require from=\"../loading/loading\"></require>\n  <require from=\"../sidebar/sidebar\"></require>\n  <require from=\"../header/header\"></require>\n  <require from=\"../content/content\"></require>\n\n  <loading></loading>\n  <sidebar></sidebar>\n  <header></header>\n  <content></content>\n</template>\n"; });
+define('text!framework/default-ui/views/content/content.html', ['module'], function(module) { module.exports = "<template class=\"t--content\">\n  <require from=\"./content.css\"></require>\n\n  <stack-router></stack-router>\n</template>\n"; });
 define('text!framework/base/styles/styles.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\nbody {\n  margin: 0;\n  padding: 0;\n  font-family: \"Helvetica Neue\", \"Segoe UI\", Helvetica, Verdana, sans-serif;\n  font-size: 12px;\n}\n.t--margin-top {\n  margin-top: 12px;\n}\n.t--editor-caption {\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n.t--cursor-pointer {\n  cursor: pointer;\n}\n.t--invisible-submit {\n  height: 0;\n  width: 0;\n  margin: 0;\n  padding: 0;\n  border: 0;\n}\n"; });
-define('text!framework/default-ui/views/header/header.html', ['module'], function(module) { module.exports = "<template class=\"t--header\">\r\n  <require from=\"./header.css\"></require>\r\n\r\n  <div class=\"t--header-flex\">\r\n    <div class=\"t--header-title\">\r\n      TIP Technik und Informatik Partner GmbH\r\n    </div>\r\n    <div class=\"t--header-options\">\r\n      <a href=\"#\" click.delegate=\"logout()\" tr=\"key: base.logout\"></a>\r\n    </div>\r\n  </div>\r\n</template>"; });
+define('text!framework/default-ui/views/header/header.html', ['module'], function(module) { module.exports = "<template class=\"t--header\">\n  <require from=\"./header.css\"></require>\n\n  <div class=\"t--header-flex\">\n    <div class=\"t--header-title\">\n      TIP Technik und Informatik Partner GmbH\n    </div>\n    <div class=\"t--header-options\">\n      <a href=\"#\" click.delegate=\"logout()\" tr=\"key: base.logout\"></a>\n    </div>\n  </div>\n</template>"; });
 define('text!framework/base/styles/variables.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n"; });
-define('text!framework/default-ui/views/loading/loading.html', ['module'], function(module) { module.exports = "<template>\r\n  <require from=\"../loading-spinner/loading-spinner\"></require>\r\n\r\n  <loading-spinner if.bind=\"rest.isLoading\"></loading-spinner>\r\n</template>"; });
+define('text!framework/default-ui/views/loading/loading.html', ['module'], function(module) { module.exports = "<template>\n  <require from=\"../loading-spinner/loading-spinner\"></require>\n\n  <loading-spinner if.bind=\"rest.isLoading\"></loading-spinner>\n</template>"; });
 define('text!framework/default-ui/styles/popup.css', ['module'], function(module) { module.exports = ".dx-popup-wrapper:not(.dx-dialog) > .dx-popup-normal > .dx-popup-content {\n  padding: 0;\n}\n"; });
-define('text!framework/default-ui/views/loading-spinner/loading-spinner.html', ['module'], function(module) { module.exports = "<template class=\"t--loading\">\r\n  <require from=\"./loading-spinner.css\"></require>\r\n  \r\n  <div class=\"t--loading-spinner\">\r\n    <div class=\"t--loading-rect1\"></div>\r\n    <div class=\"t--loading-rect2\"></div>\r\n    <div class=\"t--loading-rect3\"></div>\r\n    <div class=\"t--loading-rect4\"></div>\r\n    <div class=\"t--loading-rect5\"></div>\r\n  </div>\r\n</template>"; });
-define('text!framework/default-ui/views/sidebar/sidebar.html', ['module'], function(module) { module.exports = "<template class=\"t--sidebar\">\r\n  <require from=\"../sidebar-sub/sidebar-sub\"></require>\r\n  <require from=\"./sidebar.css\"></require>\r\n\r\n  <div class=\"t--sidebar-header\" click.delegate=\"onHeaderClicked()\">\r\n    <div class=\"t--sidebar-header-title\" tr=\"key: base.navigation\">\r\n    </div>\r\n    <div class=\"t--sidebar-header-icon\">\r\n      <i class=\"fa fa-${headerIcon}\"></i>\r\n    </div>\r\n  </div>\r\n\r\n  <ul>\r\n    <li\r\n      repeat.for=\"route of router.navigationRoutes\">\r\n      <sidebar-sub route.bind=\"route\" if.bind=\"route.sidebarExpanded\"></sidebar-sub>\r\n      <a \r\n        href.bind=\"route.route ? '#' + route.route : ''\" \r\n        class=\"t--sidebar-item\"\r\n        click.delegate=\"onRouteClicked(route)\"\r\n        stack-router-link=\"clear-stack.bind: true\">\r\n        <span class=\"t--sidebar-item-title\" tr=\"key.bind: route.caption\">\r\n        </span>\r\n        <span class=\"t--sidebar-item-icon\" if.bind=\"route.navigation.icon\" title.bind=\"route.caption | tr\">\r\n          <i class=\"fa fa-${route.navigation.icon}\"></i>\r\n        </span>\r\n      </a>\r\n    </li>\r\n  </ul>\r\n</template>\r\n"; });
-define('text!framework/default-ui/views/sidebar-sub/sidebar-sub.html', ['module'], function(module) { module.exports = "<template class=\"t--sidebar-sub au-animate\">\r\n  <require from=\"./sidebar-sub.css\"></require>\r\n\r\n  <ul class=\"t--sidebar-sub-ul\">\r\n    <li repeat.for=\"child of route.children | sort:'caption':'asc':true\">\r\n      <a \r\n        href.bind=\"child.route ? '#' + child.route : ''\" \r\n        class=\"t--sidebar-sub-item\"\r\n        stack-router-link=\"clear-stack.bind: true\">\r\n        <span class=\"t--sidebar-sub-item-title\" tr=\"key.bind: child.caption\">\r\n        </span>\r\n      </a>\r\n    </li>\r\n  </ul>\r\n</template>"; });
+define('text!framework/default-ui/views/loading-spinner/loading-spinner.html', ['module'], function(module) { module.exports = "<template class=\"t--loading\">\n  <require from=\"./loading-spinner.css\"></require>\n  \n  <div class=\"t--loading-spinner\">\n    <div class=\"t--loading-rect1\"></div>\n    <div class=\"t--loading-rect2\"></div>\n    <div class=\"t--loading-rect3\"></div>\n    <div class=\"t--loading-rect4\"></div>\n    <div class=\"t--loading-rect5\"></div>\n  </div>\n</template>"; });
+define('text!framework/default-ui/views/sidebar/sidebar.html', ['module'], function(module) { module.exports = "<template class=\"t--sidebar\">\n  <require from=\"../sidebar-sub/sidebar-sub\"></require>\n  <require from=\"./sidebar.css\"></require>\n\n  <div class=\"t--sidebar-header\" click.delegate=\"onHeaderClicked()\">\n    <div class=\"t--sidebar-header-title\" tr=\"key: base.navigation\">\n    </div>\n    <div class=\"t--sidebar-header-icon\">\n      <i class=\"fa fa-${headerIcon}\"></i>\n    </div>\n  </div>\n\n  <ul>\n    <li\n      repeat.for=\"route of router.navigationRoutes\">\n      <sidebar-sub route.bind=\"route\" if.bind=\"route.sidebarExpanded\"></sidebar-sub>\n      <a \n        href.bind=\"route.route ? '#' + route.route : ''\" \n        class=\"t--sidebar-item\"\n        click.delegate=\"onRouteClicked(route)\"\n        stack-router-link=\"clear-stack.bind: true\">\n        <span class=\"t--sidebar-item-title\" tr=\"key.bind: route.caption\">\n        </span>\n        <span class=\"t--sidebar-item-icon\" if.bind=\"route.navigation.icon\" title.bind=\"route.caption | tr\">\n          <i class=\"fa fa-${route.navigation.icon}\"></i>\n        </span>\n      </a>\n    </li>\n  </ul>\n</template>\n"; });
 define('text!framework/default-ui/styles/styles.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--view-content {\n  opacity: 0;\n  transform: translateX(10px);\n  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n  transition-property: all;\n}\n.t--view-content.t--view-content-attached {\n  opacity: 1;\n  transform: translateX(0);\n}\n"; });
-define('text!framework/forms/elements/file-uploader-with-viewer/tip-file-uploader-with-viewer.html', ['module'], function(module) { module.exports = "<template class=\"t--file-uploader-with-viewer\">\r\n  <require from=\"./tip-file-uploader-with-viewer.css\"></require>\r\n  <input type=\"file\" accept.bind=\"options.acceptType\" ref=\"input\">\r\n\r\n  <div class=\"t--file-uploader-with-viewer-click-region\" click.delegate=\"onClick($event)\">\r\n    <div if.bind=\"placeholderImage && !downloadUrl\" class=\"t--file-uploader-placeholder-image\" css.bind=\"imageStyle\">\r\n      <img src.bind=\"placeholderImage\" />\r\n    </div>\r\n    <div if.bind=\"placeholderImageText && !downloadUrl\" class=\"t--file-uploader-placeholder-image-text\"></div>\r\n      <span>${placeholderImageText}</span>\r\n    <div if.bind=\"placeholderIcon && !downloadUrl\" class=\"t--file-uploader-placeholder-icon\">\r\n      <i class=\"fa fa-${placeholderIcon}\"></i>\r\n    </div>\r\n\r\n    <div if.bind=\"downloadUrl\" class=\"t--file-uploader-image\" css.bind=\"imageStyle\">\r\n      <img src.bind=\"downloadUrl\" />\r\n    </div>\r\n\r\n    <dx-widget class=\"t--file-uploader-with-viewer-download\" if.bind=\"downloadUrl\" view-model.ref=\"downloadButton\" name=\"dxButton\" options.bind=\"downloadButtonOptions\"></dx-widget>\r\n  </div>\r\n</template>"; });
+define('text!framework/default-ui/views/sidebar-sub/sidebar-sub.html', ['module'], function(module) { module.exports = "<template class=\"t--sidebar-sub au-animate\">\n  <require from=\"./sidebar-sub.css\"></require>\n\n  <ul class=\"t--sidebar-sub-ul\">\n    <li repeat.for=\"child of route.children | sort:'caption':'asc':true\">\n      <a \n        href.bind=\"child.route ? '#' + child.route : ''\" \n        class=\"t--sidebar-sub-item\"\n        stack-router-link=\"clear-stack.bind: true\">\n        <span class=\"t--sidebar-sub-item-title\" tr=\"key.bind: child.caption\">\n        </span>\n      </a>\n    </li>\n  </ul>\n</template>"; });
+define('text!framework/forms/elements/file-uploader-with-viewer/tip-file-uploader-with-viewer.html', ['module'], function(module) { module.exports = "<template class=\"t--file-uploader-with-viewer\">\n  <require from=\"./tip-file-uploader-with-viewer.css\"></require>\n  <input type=\"file\" accept.bind=\"options.acceptType\" ref=\"input\">\n\n  <div class=\"t--file-uploader-with-viewer-click-region\" click.delegate=\"onClick($event)\">\n    <div if.bind=\"placeholderImage && !downloadUrl\" class=\"t--file-uploader-placeholder-image\" css.bind=\"imageStyle\">\n      <img src.bind=\"placeholderImage\" />\n    </div>\n    <div if.bind=\"placeholderImageText && !downloadUrl\" class=\"t--file-uploader-placeholder-image-text\"></div>\n      <span>${placeholderImageText}</span>\n    <div if.bind=\"placeholderIcon && !downloadUrl\" class=\"t--file-uploader-placeholder-icon\">\n      <i class=\"fa fa-${placeholderIcon}\"></i>\n    </div>\n\n    <div if.bind=\"downloadUrl\" class=\"t--file-uploader-image\" css.bind=\"imageStyle\">\n      <img src.bind=\"downloadUrl\" />\n    </div>\n\n    <dx-widget class=\"t--file-uploader-with-viewer-download\" if.bind=\"downloadUrl\" view-model.ref=\"downloadButton\" name=\"dxButton\" options.bind=\"downloadButtonOptions\"></dx-widget>\n  </div>\n</template>"; });
+define('text!framework/default-ui/styles/toolbar.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--toolbar-title {\n  font-size: 16px;\n  font-weight: 100;\n  color: black;\n  padding: 0 12px;\n}\n.t--toolbar-item {\n  display: flex;\n  align-items: center;\n  height: 32px;\n  padding: 0 12px;\n  text-decoration: none;\n  cursor: pointer;\n  -webkit-user-select: none;\n}\n.t--toolbar-item i {\n  font-size: 16px;\n}\n.t--toolbar-item:hover {\n  color: white;\n  background-color: #808080;\n}\n.t--toolbar-item-content {\n  display: flex;\n  flex-direction: row;\n}\n.t--toolbar.t--toolbar-inline.dx-toolbar {\n  height: 32px;\n  background-color: #D3D3D3;\n}\n.t--toolbar.t--toolbar-inline.dx-toolbar .dx-toolbar-items-container {\n  height: 32px;\n}\n.t--toolbar.t--toolbar-inline.dx-toolbar .t--toolbar-item {\n  height: 32px;\n  color: black;\n}\n.t--toolbar.t--toolbar-inline.dx-toolbar .t--toolbar-item:hover {\n  color: white;\n}\n.t--toolbar.t--toolbar-inline.dx-toolbar .t--toolbar-item .t--toolbar-item-content {\n  flex-direction: row;\n}\n.t--toolbar.t--toolbar-inline.dx-toolbar .t--toolbar-title {\n  display: flex;\n  align-items: center;\n  height: 32px;\n  background-color: rgba(255, 255, 255, 0.4);\n  font-size: 14px;\n  font-weight: normal;\n}\n.t--toolbar.t--toolbar-inline.dx-toolbar .dx-state-disabled .t--toolbar-item {\n  color: gray;\n}\n.t--toolbar.t--toolbar-inline.dx-toolbar .dx-state-disabled .t--toolbar-item:hover {\n  color: gray;\n}\n.t--toolbar.dx-popup-normal .dx-toolbar,\n.dx-popup-wrapper:not(.dx-dialog):not(.dx-lookup-popup-search) > .dx-popup-normal.dx-popup-normal .dx-toolbar {\n  margin: 12px;\n  width: calc(100% - 12px * 2);\n  box-sizing: content-box;\n}\n.t--toolbar .dx-toolbar,\n.dx-popup-wrapper:not(.dx-dialog):not(.dx-lookup-popup-search) > .dx-popup-normal .dx-toolbar {\n  padding: 0;\n  height: 60px;\n  background-color: #808080;\n  color: white;\n}\n.t--toolbar .dx-toolbar .dx-toolbar-items-container,\n.dx-popup-wrapper:not(.dx-dialog):not(.dx-lookup-popup-search) > .dx-popup-normal .dx-toolbar .dx-toolbar-items-container {\n  height: 60px;\n}\n.t--toolbar .dx-state-disabled .t--toolbar-item,\n.dx-popup-wrapper:not(.dx-dialog):not(.dx-lookup-popup-search) > .dx-popup-normal .dx-state-disabled .t--toolbar-item {\n  cursor: default;\n  color: lightgray;\n}\n.t--toolbar .dx-state-disabled .t--toolbar-item:hover,\n.dx-popup-wrapper:not(.dx-dialog):not(.dx-lookup-popup-search) > .dx-popup-normal .dx-state-disabled .t--toolbar-item:hover {\n  background-color: inherit;\n}\n.t--toolbar .t--toolbar-title,\n.dx-popup-wrapper:not(.dx-dialog):not(.dx-lookup-popup-search) > .dx-popup-normal .t--toolbar-title {\n  font-size: 26px;\n  color: white;\n}\n.t--toolbar .t--toolbar-item,\n.dx-popup-wrapper:not(.dx-dialog):not(.dx-lookup-popup-search) > .dx-popup-normal .t--toolbar-item {\n  height: 60px;\n  flex-direction: column;\n  justify-content: center;\n  align-items: center;\n  text-align: center;\n  color: white;\n}\n.t--toolbar .t--toolbar-item:hover,\n.dx-popup-wrapper:not(.dx-dialog):not(.dx-lookup-popup-search) > .dx-popup-normal .t--toolbar-item:hover {\n  background-color: #4F4F4F;\n}\n.t--toolbar .t--toolbar-item-content,\n.dx-popup-wrapper:not(.dx-dialog):not(.dx-lookup-popup-search) > .dx-popup-normal .t--toolbar-item-content {\n  flex-direction: column;\n}\n"; });
 define('text!framework/login/views/login/login-form.html', ['module'], function(module) { module.exports = "<template>\n    <dx-widget name=\"dxValidationGroup\" options.bind=\"wd1Options\" view-model.ref=\"wd1\">\n        <div class=\"t--margin-top col-xs-12 t--login-logo\">\n            <img class=\"t--form-element-image\" src=\"http://2014.erp-future.com/sites/2014.erp-future.com/files/1_business/Logo_U_TIP.png\"></img>\n        </div>\n        <form submit.delegate=\"submitForm('functions.$f.loginCommand')\">\n            <button class=\"t--invisible-submit\" type=\"submit\"></button>\n            <div class=\"col-xs-12\">\n                <div tr=\"key: login-form.enter_user_password_text; markdown: true; mode: html\"></div>\n            </div>\n            <div class=\"t--margin-top col-xs-12\">\n                <div class=\"t--editor-caption\" tr=\"key: login-form.username_caption\"></div>\n                <dx-widget name=\"dxTextBox\" options.bind=\"usernameOptions\" view-model.ref=\"username\"></dx-widget>\n            </div>\n            <div class=\"t--margin-top col-xs-12\">\n                <div class=\"t--editor-caption\" tr=\"key: login-form.password_caption\"></div>\n                <dx-widget name=\"dxTextBox\" options.bind=\"passwordOptions\" view-model.ref=\"password\"></dx-widget>\n            </div>\n            <div class=\"t--margin-top col-xs-12\">\n                <div class=\"t--editor-caption\">&nbsp;</div>\n                <dx-widget name=\"dxCheckBox\" options.bind=\"stayLoggodOnOptions\" view-model.ref=\"stayLoggodOn\"></dx-widget>\n            </div>\n            <div class=\"t--margin-top col-xs-12\">\n                <div class=\"t--editor-caption\">&nbsp;</div>\n                <dx-widget name=\"dxButton\" options.bind=\"wd2Options\"></dx-widget>\n            </div>\n        </form>\n    </dx-widget>\n</template>"; });
-define('text!framework/default-ui/styles/toolbar.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--toolbar-title {\n  font-size: 16px;\n  font-weight: 100;\n  color: black;\n  padding: 0 12px;\n}\n.t--toolbar-item {\n  display: flex;\n  align-items: center;\n  height: 32px;\n  padding: 0 12px;\n  text-decoration: none;\n  cursor: pointer;\n  -webkit-user-select: none;\n}\n.t--toolbar-item i {\n  font-size: 16px;\n}\n.t--toolbar-item:hover {\n  color: white;\n  background-color: #808080;\n}\n.t--toolbar-item-content {\n  display: flex;\n  flex-direction: row;\n}\n.t--toolbar.t--toolbar-inline.dx-toolbar {\n  height: 32px;\n  background-color: #D3D3D3;\n}\n.t--toolbar.t--toolbar-inline.dx-toolbar .dx-toolbar-items-container {\n  height: 32px;\n}\n.t--toolbar.t--toolbar-inline.dx-toolbar .t--toolbar-item {\n  height: 32px;\n  color: black;\n}\n.t--toolbar.t--toolbar-inline.dx-toolbar .t--toolbar-item:hover {\n  color: white;\n}\n.t--toolbar.t--toolbar-inline.dx-toolbar .t--toolbar-item .t--toolbar-item-content {\n  flex-direction: row;\n}\n.t--toolbar.t--toolbar-inline.dx-toolbar .t--toolbar-title {\n  font-size: 14px;\n  color: black;\n  font-weight: normal;\n}\n.t--toolbar.t--toolbar-inline.dx-toolbar .dx-state-disabled .t--toolbar-item {\n  color: gray;\n}\n.t--toolbar.t--toolbar-inline.dx-toolbar .dx-state-disabled .t--toolbar-item:hover {\n  color: gray;\n}\n.t--toolbar.dx-popup-normal .dx-toolbar,\n.dx-popup-wrapper:not(.dx-dialog) > .dx-popup-normal.dx-popup-normal .dx-toolbar {\n  margin: 12px;\n  width: calc(100% - 12px * 2);\n  box-sizing: content-box;\n}\n.t--toolbar .dx-toolbar,\n.dx-popup-wrapper:not(.dx-dialog) > .dx-popup-normal .dx-toolbar {\n  padding: 0;\n  height: 60px;\n  background-color: #808080;\n  color: white;\n}\n.t--toolbar .dx-toolbar .dx-toolbar-items-container,\n.dx-popup-wrapper:not(.dx-dialog) > .dx-popup-normal .dx-toolbar .dx-toolbar-items-container {\n  height: 60px;\n}\n.t--toolbar .dx-state-disabled .t--toolbar-item,\n.dx-popup-wrapper:not(.dx-dialog) > .dx-popup-normal .dx-state-disabled .t--toolbar-item {\n  cursor: default;\n  color: lightgray;\n}\n.t--toolbar .dx-state-disabled .t--toolbar-item:hover,\n.dx-popup-wrapper:not(.dx-dialog) > .dx-popup-normal .dx-state-disabled .t--toolbar-item:hover {\n  background-color: inherit;\n}\n.t--toolbar .t--toolbar-title,\n.dx-popup-wrapper:not(.dx-dialog) > .dx-popup-normal .t--toolbar-title {\n  font-size: 26px;\n  color: white;\n}\n.t--toolbar .t--toolbar-item,\n.dx-popup-wrapper:not(.dx-dialog) > .dx-popup-normal .t--toolbar-item {\n  height: 60px;\n  flex-direction: column;\n  justify-content: center;\n  align-items: center;\n  text-align: center;\n  color: white;\n}\n.t--toolbar .t--toolbar-item:hover,\n.dx-popup-wrapper:not(.dx-dialog) > .dx-popup-normal .t--toolbar-item:hover {\n  background-color: #4F4F4F;\n}\n.t--toolbar .t--toolbar-item-content,\n.dx-popup-wrapper:not(.dx-dialog) > .dx-popup-normal .t--toolbar-item-content {\n  flex-direction: column;\n}\n.dx-popup-wrapper.dx-lookup-popup-search > .dx-popup-normal .dx-toolbar {\n  height: 30px;\n}\n.dx-popup-wrapper.dx-lookup-popup-search > .dx-popup-normal .dx-toolbar .dx-toolbar-items-container {\n  height: 30px;\n}\n.dx-popup-wrapper.dx-lookup-popup-search > .dx-popup-normal .dx-toolbar .dx-toolbar-item .dx-toolbar-item-content {\n  padding: 0 12px;\n  font-size: 14px;\n}\n.dx-popup-wrapper.dx-lookup-popup-search > .dx-popup-normal .dx-list .dx-scrollview-content {\n  padding: 0 12px;\n}\n.dx-popup-wrapper.dx-lookup-popup-search > .dx-popup-normal .dx-lookup-search-wrapper {\n  padding: 0 12px;\n}\n"; });
 define('text!framework/security/views/authgroup/authgroup-edit-form.html', ['module'], function(module) { module.exports = "<template>\n    <dx-widget name=\"dxValidationGroup\" options.bind=\"wd1Options\" view-model.ref=\"wd1\">\n        <div class=\"t--margin-top col-xs-12\">\n            <div tr=\"key: authgroup-edit.info_text; markdown: true; mode: html\"></div>\n        </div>\n        <div class=\"t--margin-top col-xs-12 col-md-6\">\n            <div class=\"t--editor-caption\" tr=\"key: authgroup-edit.name_caption\"></div>\n            <dx-widget name=\"dxTextBox\" options.bind=\"nameOptions\" view-model.ref=\"name\"></dx-widget>\n        </div>\n        <div class=\"t--margin-top col-xs-12 col-md-6\">\n            <div class=\"t--editor-caption\" tr=\"key: authgroup-edit.mandator_caption\"></div>\n            <dx-widget name=\"dxSelectBox\" options.bind=\"mandatorOptions\" view-model.ref=\"mandator\"></dx-widget>\n        </div>\n    </dx-widget>\n</template>"; });
 define('text!framework/security/views/authgroup/authgroup-list-form.html', ['module'], function(module) { module.exports = "<template>\n    <require from=\"./authgroup-edit-form\"></require>\n    <dx-widget name=\"dxValidationGroup\" options.bind=\"wd1Options\" view-model.ref=\"wd1\">\n        <dx-widget name=\"dxPopup\" options.bind=\"editOptions\" view-model.ref=\"edit\">\n            <dx-template name=\"contentTemplate\">\n                <div class=\"container-fluid\">\n                    <div class=\"row\">\n                        <authgroup-edit-form view-model.ref=\"editContent\" is-edit-form=\"true\"></authgroup-edit-form>\n                    </div>\n                </div>\n            </dx-template>\n        </dx-widget>\n        <div class=\"t--margin-top col-xs-12\">\n            <dx-widget name=\"dxDataGrid\" options.bind=\"authgroupsOptions\" view-model.ref=\"authgroups\"></dx-widget>\n        </div>\n    </dx-widget>\n</template>"; });
-define('text!framework/stack-router/views/view/view.html', ['module'], function(module) { module.exports = "<template class=\"t--view\" class.bind=\"className\">\r\n  <require from=\"./view.css\"></require>\r\n\r\n  <div class=\"t--toolbar\" if.bind=\"createToolbar\">\r\n    <dx-widget if.bind=\"toolbarOptions\" name=\"dxToolbar\" options.bind=\"toolbarOptions\"></dx-widget>\r\n  </div>\r\n  <div class=\"t--view-content-wrapper\">\r\n    <div class=\"container-fluid\">\r\n      <div class=\"row\">\r\n        <compose\r\n          view-model.ref=\"view.controller\" \r\n          view-model.bind=\"view.moduleId\" \r\n          model.bind=\"view.model\" \r\n          class=\"t--view-content\"></compose>\r\n      </div>\r\n    </div>\r\n  </div>\r\n</template>"; });
 define('text!framework/forms/styles/styles.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--form-element-flex-box {\n  display: flex;\n}\n.t--form-element-flex-box-with-padding > *:not(:first-child) {\n  margin-left: 12px;\n}\n.t--form-element-image-inline {\n  background-size: contain;\n  background-position: center center;\n  background-repeat: no-repeat;\n}\n.t--form-element-image {\n  max-width: 100%;\n}\n"; });
-define('text!framework/stack-router/views/stack-router/stack-router.html', ['module'], function(module) { module.exports = "<template class=\"t--stack-router\">\r\n  <require from=\"./stack-router.css\"></require>\r\n  <require from=\"../view/view\"></require>\r\n\r\n  <div \r\n    class=\"t--stack-router-item\" \r\n    class.bind=\"item.className\"\r\n    repeat.for=\"item of router.viewStack\">\r\n    <view view.bind=\"item\" create-toolbar.bind=\"$parent.createToolbar\"></view>\r\n  </div>\r\n</template>"; });
+define('text!framework/stack-router/views/stack-router/stack-router.html', ['module'], function(module) { module.exports = "<template class=\"t--stack-router\">\n  <require from=\"./stack-router.css\"></require>\n  <require from=\"../view/view\"></require>\n\n  <div \n    class=\"t--stack-router-item\" \n    class.bind=\"item.className\"\n    repeat.for=\"item of router.viewStack\">\n    <view view.bind=\"item\" create-toolbar.bind=\"$parent.createToolbar\"></view>\n  </div>\n</template>"; });
+define('text!framework/stack-router/views/view/view.html', ['module'], function(module) { module.exports = "<template class=\"t--view\" class.bind=\"className\">\n  <require from=\"./view.css\"></require>\n\n  <div class=\"t--toolbar\" if.bind=\"createToolbar\">\n    <dx-widget if.bind=\"toolbarOptions\" name=\"dxToolbar\" options.bind=\"toolbarOptions\"></dx-widget>\n  </div>\n  <div class=\"t--view-content-wrapper\">\n    <div class=\"container-fluid\">\n      <div class=\"row\">\n        <compose\n          view-model.ref=\"view.controller\" \n          view-model.bind=\"view.moduleId\" \n          model.bind=\"view.model\" \n          class=\"t--view-content\"></compose>\n      </div>\n    </div>\n  </div>\n</template>"; });
 define('text!framework/default-ui/views/container/container.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--container {\n  display: block;\n  width: 100vw;\n  height: 100vh;\n}\n.t--toolbar-title {\n  min-width: 220px;\n  padding: 0 12px;\n  font-size: 20px;\n  font-weight: 100;\n  color: white;\n}\n"; });
 define('text!framework/default-ui/views/content/content.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--content {\n  display: block;\n  margin-left: 280px;\n  height: calc(100% - 60px);\n  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n  transition-property: margin-left;\n}\n.t--sidebar-collapsed .t--content {\n  margin-left: 60px;\n}\n.t--view-current {\n  display: block;\n}\n.t--view-history {\n  display: none;\n}\n"; });
 define('text!framework/default-ui/views/header/header.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--header {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  margin-left: 280px;\n  padding: 0 12px;\n  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n  transition-property: margin-left;\n}\n.t--sidebar-collapsed .t--header {\n  margin-left: 60px;\n}\n.t--header-flex {\n  display: flex;\n  width: 100%;\n}\n.t--header-title {\n  flex-grow: 1;\n}\n"; });
@@ -5876,6 +6061,6 @@ define('text!framework/default-ui/views/loading-spinner/loading-spinner.css', ['
 define('text!framework/default-ui/views/sidebar/sidebar.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--sidebar {\n  display: block;\n  position: fixed;\n  top: 0;\n  bottom: 0;\n  left: 0;\n  z-index: 10;\n  width: 280px;\n  background-color: #2a2e35;\n  font-size: 14px;\n  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n  transition-property: left;\n}\n.t--sidebar ul {\n  padding: 0;\n  margin: 0;\n  list-style: none;\n}\n.t--sidebar-collapsed .t--sidebar {\n  left: -220px;\n}\n.t--sidebar-collapsed .t--sidebar-sub {\n  left: 60px;\n}\n.t--sidebar-header {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  background-color: #262930;\n  color: white;\n  cursor: pointer;\n}\n.t--sidebar-header-title {\n  flex-grow: 1;\n  font-size: 26px;\n  font-weight: 100;\n  padding: 12px;\n}\n.t--sidebar-header-icon {\n  display: flex;\n  width: 60px;\n  align-items: center;\n  justify-content: center;\n}\n.t--sidebar-item {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  color: lightgray;\n  text-decoration: none;\n}\n.t--sidebar-item:hover {\n  color: white;\n}\n.t--sidebar-item-title {\n  flex-grow: 1;\n  padding: 12px;\n}\n.t--sidebar-item-icon {\n  display: flex;\n  width: 60px;\n  align-items: center;\n  justify-content: center;\n}\n.t--sidebar-sub {\n  position: fixed;\n  z-index: -9;\n  left: 280px;\n  min-width: 280px;\n  background-color: #2a2e35;\n  padding: 12px;\n}\n.t--sidebar-sub.au-enter-active {\n  animation: leftFadeIn 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n}\n.t--sidebar-sub-item {\n  color: lightgray;\n  text-decoration: none;\n}\n.t--sidebar-sub-item:hover {\n  color: white;\n}\n"; });
 define('text!framework/default-ui/views/sidebar-sub/sidebar-sub.css', ['module'], function(module) { module.exports = ".t--sidebar-sub-ul {\n  column-fill: auto;\n  column-count: 2;\n  column-width: 200px;\n}\n"; });
 define('text!framework/forms/elements/file-uploader-with-viewer/tip-file-uploader-with-viewer.css', ['module'], function(module) { module.exports = ".t--file-uploader-with-viewer input {\n  height: 0;\n  width: 0;\n}\n.t--file-uploader-with-viewer .t--file-uploader-with-viewer-click-region {\n  display: block;\n  width: 100%;\n  min-height: 150px;\n  border: 3px dotted gray;\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n  align-items: center;\n  padding: 12px;\n}\n.t--file-uploader-with-viewer .t--file-uploader-image,\n.t--file-uploader-with-viewer t--file-uploader-placeholder-image {\n  width: 100%;\n  min-height: 150px;\n  position: relative;\n  display: flex;\n  justify-content: center;\n  align-content: center;\n}\n.t--file-uploader-with-viewer .t--file-uploader-with-viewer-download {\n  margin-top: 12px;\n}\n.t--file-uploader-with-viewer img {\n  max-height: 100%;\n  max-width: 100%;\n  position: absolute;\n}\n"; });
-define('text!framework/stack-router/views/view/view.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--view {\n  display: block;\n  position: relative;\n  height: 100%;\n  overflow-x: hidden;\n}\n.t--view-content-wrapper {\n  display: block;\n  height: 100%;\n  overflow-x: hidden;\n  overflow-y: auto;\n}\n.t--view-content {\n  display: table;\n  width: 100%;\n  margin-bottom: 12px;\n  -webkit-overflow-scrolling: touch;\n}\n.t--view-with-toolbar .t--view-content-wrapper {\n  height: calc(100% - 60px);\n}\n"; });
 define('text!framework/stack-router/views/stack-router/stack-router.css', ['module'], function(module) { module.exports = ".t--stack-router,\n.t--stack-router-item {\n  display: block;\n  height: 100%;\n}\n"; });
+define('text!framework/stack-router/views/view/view.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--view {\n  display: block;\n  position: relative;\n  height: 100%;\n  overflow-x: hidden;\n}\n.t--view-content-wrapper {\n  display: block;\n  height: 100%;\n  overflow-x: hidden;\n  overflow-y: auto;\n}\n.t--view-content {\n  display: table;\n  width: 100%;\n  margin-bottom: 12px;\n  -webkit-overflow-scrolling: touch;\n}\n.t--view-with-toolbar .t--view-content-wrapper {\n  height: calc(100% - 60px);\n}\n"; });
 //# sourceMappingURL=app-bundle.js.map

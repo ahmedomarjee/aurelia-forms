@@ -36,31 +36,31 @@ export class SimpleWidgetCreatorService {
     private selectItem: SelectItemService
   ) { }
 
-  addAccordion(form: FormBase, options: WidgetOptions.IAccordionOptions): DevExpress.ui.dxAccordionOptions {
-    return this.baseWidgetCreator.createWidgetOptions(form, options);
+  addAccordion(form: FormBase, options: WidgetOptions.IAccordionOptions) {
+    this.baseWidgetCreator.createWidgetOptions(form, options);
   }
-  addCalendar(form: FormBase, options: WidgetOptions.ICalendarOptions): DevExpress.ui.dxCalendarOptions {
-    return this.createEditorOptions(form, options);
+  addCalendar(form: FormBase, options: WidgetOptions.ICalendarOptions) {
+    this.createEditorOptions(form, options);
   }
-  addCheckBox(form: FormBase, options: WidgetOptions.ICheckBoxOptions): DevExpress.ui.dxCheckBoxOptions {
+  addCheckBox(form: FormBase, options: WidgetOptions.ICheckBoxOptions) {
     const editorOptions: DevExpress.ui.dxCheckBoxOptions = this.createEditorOptions(form, options);
 
     if (options.caption) {
       editorOptions.text = this.localization.translate(form.scope, options.caption);
     }
 
-    return editorOptions;
+    editorOptions;
   }
-  addColorBox(form: FormBase, options: WidgetOptions.IColorBoxOptions): DevExpress.ui.dxColorBoxOptions {
+  addColorBox(form: FormBase, options: WidgetOptions.IColorBoxOptions) {
     const editorOptions: DevExpress.ui.dxColorBoxOptions = this.createEditorOptions(form, options);
 
     if (options.editAlphaChannel) {
       editorOptions.editAlphaChannel = options.editAlphaChannel;
     }
 
-    return editorOptions;
+    editorOptions;
   }
-  addDateBox(form: FormBase, options: WidgetOptions.IDateBoxOptions): DevExpress.ui.dxDateBoxOptions {
+  addDateBox(form: FormBase, options: WidgetOptions.IDateBoxOptions) {
     const editorOptions: DevExpress.ui.dxDateBoxOptions = this.createEditorOptions(form, options);
 
     if (options.min) {
@@ -72,16 +72,14 @@ export class SimpleWidgetCreatorService {
     if (options.format) {
       editorOptions.displayFormat = this.globalization.getFormatterParser(options.format);
     }
-
-    return editorOptions;
   }
-  addCommand(form: FormBase, options: WidgetOptions.ICommandElementOptions): DevExpress.ui.dxButtonOptions {
+  addCommand(form: FormBase, options: WidgetOptions.ICommandElementOptions) {
     let command: ICommandData;
 
     if (options.binding.dataContext) {
       command = form.commandServerData[`${options.binding.dataContext};${options.binding.bindTo}`];
     } else {
-      command = form.expressions.evaluateExpression(options.binding.bindToFQ);
+      command = form.binding.evaluate(form.scope, options.binding.bindToFQ);
     }
 
     const buttonOptions: DevExpress.ui.dxButtonOptions = {};
@@ -92,35 +90,29 @@ export class SimpleWidgetCreatorService {
       if (typeof command.execute === "function") {
         command.execute();
       } else if (typeof command.execute === "string") {
-        form.expressions.evaluateExpression(command.execute);
+        form.binding.evaluate(form.scope, command.execute);
       } else {
         throw new Error();
       }
     };
 
     form[options.options.optionsName] = buttonOptions;
-    return buttonOptions;
   }
-  addFileUploader(form: FormBase, options: WidgetOptions.IFileUploaderOptions): DevExpress.ui.dxFileUploaderOptions {
+  addFileUploader(form: FormBase, options: WidgetOptions.IFileUploaderOptions) {
     const widgetOptions: DevExpress.ui.dxFileUploaderOptions = this.baseWidgetCreator.createWidgetOptions(form, options);
 
     if (options.acceptType) {
       widgetOptions.accept = options.acceptType;
     }
-
-    return widgetOptions;
   }
-  addFileUploaderWithViewer(form: FormBase, options: WidgetOptions.IFileUploaderWithViewerOptions): WidgetOptions.IFileUploaderWithViewerOptions {
+  addFileUploaderWithViewer(form: FormBase, options: WidgetOptions.IFileUploaderWithViewerOptions) {
     const widgetOptions = this.createEditorOptions(form, options);
-    return widgetOptions;
   }
-  addInclude(form: FormBase, options: WidgetOptions.IIncludeOptions): WidgetOptions.IIncludeOptions {
-    return options;
+  addInclude(form: FormBase, options: WidgetOptions.IIncludeOptions) {
   }
-  addListView(form: FormBase, options: WidgetOptions.IListViewOptions): WidgetOptions.IListViewOptions {
-    return options;
+  addListView(form: FormBase, options: WidgetOptions.IListViewOptions) {
   }
-  addLookup(form: FormBase, options: WidgetOptions.ISelectOptions): DevExpress.ui.dxLookupOptions {
+  addLookup(form: FormBase, options: WidgetOptions.ISelectOptions) {
     const editorOptions: DevExpress.ui.dxLookupOptions = this.createEditorOptions(form, options);
     const selectItem = this.selectItem.getSelectItem(options.idSelect);
 
@@ -137,9 +129,8 @@ export class SimpleWidgetCreatorService {
     if (selectItem.itemTemplate) {
       editorOptions.itemTemplate = `from-select-item-template-${selectItem.id}`;
     }
-    return editorOptions;
   }
-  addNumberBox(form: FormBase, options: WidgetOptions.INumberBoxOptions): DevExpress.ui.dxNumberBoxOptions {
+  addNumberBox(form: FormBase, options: WidgetOptions.INumberBoxOptions) {
     const editorOptions: DevExpress.ui.dxNumberBoxOptions = this.createEditorOptions(form, options);
 
     if (options.showClearButton) {
@@ -157,19 +148,15 @@ export class SimpleWidgetCreatorService {
     if (options.step) {
       editorOptions.step = options.step;
     }
-
-    return editorOptions;
   }
-  addPopover(form: FormBase, options: WidgetOptions.IPopoverOptions): DevExpress.ui.dxPopoverOptions {
+  addPopover(form: FormBase, options: WidgetOptions.IPopoverOptions) {
     const widgetOptions: DevExpress.ui.dxPopoverOptions = this.baseWidgetCreator.createWidgetOptions(form, options);
 
     if (options.caption) {
       widgetOptions.title = this.localization.translate(null, options.caption);
     }
-
-    return widgetOptions;
   }
-  addPopup(form: FormBase, options: WidgetOptions.IPopupOptions): DevExpress.ui.dxPopupOptions {
+  addPopup(form: FormBase, options: WidgetOptions.IPopupOptions) {
     const widgetOptions: DevExpress.ui.dxPopupOptions = this.baseWidgetCreator.createWidgetOptions(form, options);
 
     widgetOptions.showCloseButton = false;
@@ -208,7 +195,7 @@ export class SimpleWidgetCreatorService {
     var commands: ICommandData[] = [];
     commands.push(this.defaultCommands.getClosePopupCommand(form));
     commands.push(...options.commands.map(c => {
-      const cmd = form.expressions.evaluateExpression(c.binding.bindToFQ);
+      const cmd = form.binding.evaluate(form.scope, c.binding.bindToFQ);
       if (!cmd) {
         throw new Error(`No command for ${c.binding.bindToFQ} found`);
       }
@@ -216,10 +203,8 @@ export class SimpleWidgetCreatorService {
       return cmd;
     }));
 
-    widgetOptions.toolbarItems = this.toolbar.createToolbarItems({
-        bindingContext: form,
-        overrideContext: null
-      }, form.expressions, {
+    widgetOptions.toolbarItems = this.toolbar.createToolbarItems(
+      form.scopeContainer, {
       getItems: () => {
         const popup: DevExpress.ui.dxPopup = form[options.id];
         if (!popup) {
@@ -237,10 +222,8 @@ export class SimpleWidgetCreatorService {
         popup.option(`toolbarItems[${index}].${property}`, value);
       }
     }, options.caption, commands);
-
-    return widgetOptions;
   }
-  addRadioGroup(form: FormBase, options: WidgetOptions.ISelectOptions): DevExpress.ui.dxRadioGroupOptions {
+  addRadioGroup(form: FormBase, options: WidgetOptions.ISelectOptions) {
     const editorOptions: DevExpress.ui.dxRadioGroupOptions = this.createEditorOptions(form, options);
     const selectItem = this.selectItem.getSelectItem(options.idSelect);
 
@@ -249,10 +232,8 @@ export class SimpleWidgetCreatorService {
     if (selectItem.itemTemplate) {
       editorOptions.itemTemplate = `from-select-item-template-${selectItem.id}`;
     }
-
-    return editorOptions;
   }
-  addSelectBox(form: FormBase, options: WidgetOptions.ISelectOptions): DevExpress.ui.dxSelectBoxOptions {
+  addSelectBox(form: FormBase, options: WidgetOptions.ISelectOptions) {
     const editorOptions: DevExpress.ui.dxSelectBoxOptions = this.createEditorOptions(form, options);
     const selectItem = this.selectItem.getSelectItem(options.idSelect);
 
@@ -264,10 +245,8 @@ export class SimpleWidgetCreatorService {
     if (selectItem.itemTemplate) {
       editorOptions.itemTemplate = `from-select-item-template-${selectItem.id}`;
     }
-
-    return editorOptions;
   }
-  addTab(form: FormBase, options: WidgetOptions.ITabOptions): DevExpress.ui.dxTabsOptions {
+  addTab(form: FormBase, options: WidgetOptions.ITabOptions) {
     const tabOptions: DevExpress.ui.dxTabsOptions = this.baseWidgetCreator.createWidgetOptions(form, options);
 
     let component: DevExpress.ui.dxTabs;
@@ -286,7 +265,7 @@ export class SimpleWidgetCreatorService {
       };
 
       if (page.if) {
-        form.expressions.createObserver(page.if, (newValue) => {
+        form.binding.observeExpression(form.scopeContainer, page.if, (newValue) => {
           component.option(`items[${index}].visible`, newValue);
           pageOptions.visible = newValue;
         });
@@ -305,12 +284,10 @@ export class SimpleWidgetCreatorService {
         return;
       }
 
-      form.expressions.evaluateExpression(page.__options.onActivated);
+      form.binding.evaluate(form.scope, page.__options.onActivated);
     };
-
-    return tabOptions;
   }
-  addTagBox(form: FormBase, options: WidgetOptions.ITagBoxOptions): DevExpress.ui.dxTagBoxOptions {
+  addTagBox(form: FormBase, options: WidgetOptions.ITagBoxOptions) {
     const widgetOptions: DevExpress.ui.dxTagBoxOptions = this.baseWidgetCreator.createWidgetOptions(form, options);
 
     widgetOptions.valueExpr = options.itemValueExpr;
@@ -320,18 +297,18 @@ export class SimpleWidgetCreatorService {
     widgetOptions.applyValueMode = "useButtons";
 
     const model = form.models.getInfo(options.itemDataContext);
-    const dataSource = this.dataSource.createDataSource(form.expressions, model);
+    const dataSource = this.dataSource.createDataSource(form.scopeContainer, model);
     widgetOptions.dataSource = dataSource;
 
     widgetOptions.onSelectionChanged = (e) => {
       const addedItems: any[] = e.addedItems;
       const removedItems: any[] = e.removedItems;
 
-      let list: any[] = form.expressions.evaluateExpression(options.relationBinding.bindToFQ);
+      let list: any[] = form.binding.evaluate(form.scope, options.relationBinding.bindToFQ);
 
       if (list == void(0)) {
         list = [];
-        form.expressions.assignExpression(options.relationBinding.bindToFQ, list);
+        form.binding.assign(form.scope, options.relationBinding.bindToFQ, list);
       }
 
       addedItems.forEach(c => {
@@ -359,7 +336,7 @@ export class SimpleWidgetCreatorService {
         return;
       }
 
-      const list: any[] = form.expressions.evaluateExpression(options.relationBinding.bindToFQ)
+      const list: any[] = form.binding.evaluate(form.scope, options.relationBinding.bindToFQ)
         || [];
 
       const data = list.map(c => c[options.relationProperty]);
@@ -373,10 +350,8 @@ export class SimpleWidgetCreatorService {
 
       return Promise.resolve();
     });
-
-    return widgetOptions;
   }
-  addTextBox(form: FormBase, options: WidgetOptions.ITextBoxOptions): DevExpress.ui.dxTextBoxOptions {
+  addTextBox(form: FormBase, options: WidgetOptions.ITextBoxOptions) {
     const editorOptions: DevExpress.ui.dxTextBoxOptions = this.createEditorOptions(form, options);
 
     if (options.maxLength) {
@@ -385,19 +360,19 @@ export class SimpleWidgetCreatorService {
     if (options.mode) {
       editorOptions.mode = options.mode;
     }
-
-    return editorOptions;
   }
-  addTextArea(form: FormBase, options: WidgetOptions.ITextAreaOptions): DevExpress.ui.dxTextAreaOptions {
-    const editorOptions: DevExpress.ui.dxTextAreaOptions = this.addTextBox(form, options);
+  addTextArea(form: FormBase, options: WidgetOptions.ITextAreaOptions) {
+    const editorOptions: DevExpress.ui.dxTextAreaOptions = this.createEditorOptions(form, options);
+
+    if (options.maxLength) {
+      editorOptions.maxLength = options.maxLength;
+    }
 
     if (options.height) {
       editorOptions.height = options.height;
     }
-
-    return editorOptions;
   }
-  addValidationGroup(form: FormBase, options: WidgetOptions.IValidationGroupOptions): DevExpress.ui.dxValidationGroupOptions {
+  addValidationGroup(form: FormBase, options: WidgetOptions.IValidationGroupOptions) {
     const validationOptions: DevExpress.ui.dxValidationGroupOptions = {};
 
     form[options.options.optionsName] = validationOptions;
@@ -412,8 +387,6 @@ export class SimpleWidgetCreatorService {
         return Promise.reject(result);
       }
     });
-
-    return validationOptions;
   }
 
   private createEditorOptions(form: FormBase, options: WidgetOptions.IEditorOptions): any {
@@ -435,10 +408,10 @@ export class SimpleWidgetCreatorService {
 
     editorOptions["validators"] = options.validationRules.map(v => {
       if (v.binding) {
-        return form.expressions.evaluateExpression(v.binding.bindToFQ);
+        return form.binding.evaluate(form.scope, v.binding.bindToFQ);
       } else if (v.item) {
         return this.validation.getValidator(
-          form.expressions,
+          form.scopeContainer,
           v.item.type,
           options.caption,
           v.item.parameters
@@ -471,7 +444,7 @@ export class SimpleWidgetCreatorService {
         filters.push(...options.filter);
       }
 
-      current.dataSource = this.dataSource.createDataSource(form.expressions, {
+      current.dataSource = this.dataSource.createDataSource(form.scopeContainer, {
         keyProperty: selectItem.valueMember,
         webApiAction: selectItem.action,
         webApiColumns: selectItem.columns,

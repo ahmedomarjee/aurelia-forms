@@ -18,9 +18,6 @@ import {
   Variables
 } from "./variables";
 import {
-  Expressions
-} from "./expressions";
-import {
   EditPopups
 } from "./edit-popups";
 import {
@@ -42,6 +39,7 @@ import {
   WidgetCreatorService
 } from "../widget-services/widget-creator-service";
 import {
+  BindingService,
   CustomEvent,
   GlobalizationService,
   LocalizationService,
@@ -74,7 +72,7 @@ export class FormBaseImport {
     public functions: Functions,
     public commands: Commands,
     public editPopups: EditPopups,
-    public expressions: Expressions,
+    public binding: BindingService,
     public globalization: GlobalizationService,
     public localization: LocalizationService,
     public commandServerData: CommandServerData,
