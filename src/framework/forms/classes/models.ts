@@ -199,7 +199,7 @@ export class Models {
       return;
     }
 
-    this.form.binding.observeExpression(this.form.scopeContainer, expression, (newValue, oldValue) => {
+    this.form.binding.observe(this.form.scopeContainer, expression, (newValue, oldValue) => {
       this.onLoadRequired.fire({
         model
       });

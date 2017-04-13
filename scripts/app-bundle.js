@@ -520,7 +520,7 @@ define('framework/base/services/binding-service',["require", "exports", "tslib",
                 .parseExpression(expression)
                 .evaluate(scope);
         };
-        BindingService.prototype.observeExpression = function (scopeContainer, expression, callback) {
+        BindingService.prototype.observe = function (scopeContainer, expression, callback) {
             var disposable = this.bindingEngine
                 .expressionObserver(this.getBindingContext(scopeContainer.scope, expression), expression).subscribe(callback);
             scopeContainer.addDisposable(disposable);
@@ -708,7 +708,7 @@ define('framework/base/services/data-source-service',["require", "exports", "tsl
             if (expression == void (0)) {
                 return;
             }
-            this.binding.observeExpression(scopeContainer, expression, action);
+            this.binding.observe(scopeContainer, expression, action);
         };
         DataSourceService.prototype.addObserversWhere = function (scopeContainer, data, action) {
             var _this = this;
@@ -916,14 +916,19 @@ define('framework/base/services/deep-observer-service',["require", "exports", "t
     }());
 });
 
-define('framework/base/services/error-service',["require", "exports"], function (require, exports) {
+define('framework/base/services/error-service',["require", "exports", "tslib", "aurelia-framework", "./localization-service"], function (require, exports, tslib_1, aurelia_framework_1, localization_service_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var ErrorService = (function () {
-        function ErrorService() {
+        function ErrorService(localization) {
+            this.localization = localization;
         }
         ErrorService.prototype.showError = function (error) {
-            DevExpress.ui.dialog.alert(error, "Fehler");
+            var message = error;
+            if (error instanceof Error) {
+                message = error.message;
+            }
+            DevExpress.ui.dialog.alert(message, this.localization.translate(null, "base.error"));
         };
         ErrorService.prototype.logError = function (error) {
         };
@@ -933,6 +938,10 @@ define('framework/base/services/error-service',["require", "exports"], function 
         };
         return ErrorService;
     }());
+    ErrorService = tslib_1.__decorate([
+        aurelia_framework_1.autoinject,
+        tslib_1.__metadata("design:paramtypes", [localization_service_1.LocalizationService])
+    ], ErrorService);
     exports.ErrorService = ErrorService;
 });
 
@@ -1121,7 +1130,7 @@ define('framework/base/services/localization-service',["require", "exports", "ts
                 if (!Array.isArray(scopeContainer) && typeof item === "object" && item.parameters.length > 0) {
                     item.parameters.forEach(function (expr, index) {
                         _this.binding
-                            .observeExpression(scopeContainer, expr, function () {
+                            .observe(scopeContainer, expr, function () {
                             callback(_this.translateItem(scopeContainer, item));
                         });
                     });
@@ -2586,7 +2595,7 @@ define('framework/forms/classes/models',["require", "exports", "tslib", "aurelia
             if (expression == void (0)) {
                 return;
             }
-            this.form.binding.observeExpression(this.form.scopeContainer, expression, function (newValue, oldValue) {
+            this.form.binding.observe(this.form.scopeContainer, expression, function (newValue, oldValue) {
                 _this.onLoadRequired.fire({
                     model: model
                 });
@@ -2688,7 +2697,7 @@ define('framework/forms/classes/nested-forms',["require", "exports", "tslib", "a
         NestedForms.prototype.observeMappings = function (id, mappings) {
             var _this = this;
             var _loop_1 = function (mapping) {
-                this_1.form.binding.observeExpression(this_1.form.scopeContainer, mapping.binding.bindToFQ, function (newValue) {
+                this_1.form.binding.observe(this_1.form.scopeContainer, mapping.binding.bindToFQ, function (newValue) {
                     var nestedForm = _this.form[id];
                     nestedForm.variables.data[mapping.to] = newValue;
                 });
@@ -2791,7 +2800,7 @@ define('framework/dx/services/dx-template-service',["require", "exports", "tslib
         DxTemplateService.prototype.registerTemplate = function (key, template) {
             this.templates[key] = template;
         };
-        DxTemplateService.prototype.getTemplates = function (scope, overrideContext, resources) {
+        DxTemplateService.prototype.getTemplates = function (scope, resources) {
             var _this = this;
             var result = {};
             var _loop_1 = function (templateKey) {
@@ -2863,7 +2872,7 @@ define('framework/forms/services/toolbar-service',["require", "exports", "tslib"
             var options = this.createToolbarOptions(form.scopeContainer, form.title, form.commands.getCommands(), function (c) {
                 component = c;
             });
-            this.binding.observeExpression(form.scopeContainer, "title", function (newValue) {
+            this.binding.observe(form.scopeContainer, "title", function (newValue) {
                 var title = _this.createTitleHtml(newValue);
                 var titleItem = options.items.find(function (item) { return item[_this.titleItemTemplate] === _this.titleItemTemplate; });
                 if (titleItem) {
@@ -2962,12 +2971,12 @@ define('framework/forms/services/toolbar-service',["require", "exports", "tslib"
                     bindingContext: command,
                     overrideContext: null
                 }, scopeContainer);
-                this.binding.observeExpression(newScopeContainer, "isEnabled", function (newValue) {
+                this.binding.observe(newScopeContainer, "isEnabled", function (newValue) {
                     setEnabled(newValue);
                 });
             }
             else if (command.isEnabledExpression) {
-                this.binding.observeExpression(scopeContainer, command.isEnabledExpression, function (newValue) {
+                this.binding.observe(scopeContainer, command.isEnabledExpression, function (newValue) {
                     setEnabled(newValue);
                 });
             }
@@ -2985,12 +2994,12 @@ define('framework/forms/services/toolbar-service',["require", "exports", "tslib"
                     bindingContext: command,
                     overrideContext: null
                 }, scopeContainer);
-                this.binding.observeExpression(newScopeContainer, "isVisible", function (newValue) {
+                this.binding.observe(newScopeContainer, "isVisible", function (newValue) {
                     setVisible(newValue);
                 });
             }
             else if (command.isVisibleExpression) {
-                this.binding.observeExpression(scopeContainer, command.isVisibleExpression, function (newValue) {
+                this.binding.observe(scopeContainer, command.isVisibleExpression, function (newValue) {
                     setVisible(newValue);
                 });
             }
@@ -3200,7 +3209,7 @@ define('framework/forms/services/default-commands-service',["require", "exports"
                         return (!options.isRelation || (form.models.data[info_1.id] && form.models.data[info_1.id][info_1.keyProperty])) || false;
                     };
                     cmd.isEnabled = isEnabled_1();
-                    form.binding.observeExpression(form.scopeContainer, "models.data." + info_1.id + "." + info_1.keyProperty, function (newValue) {
+                    form.binding.observe(form.scopeContainer, "models.data." + info_1.id + "." + info_1.keyProperty, function (newValue) {
                         cmd.isEnabled = isEnabled_1();
                     });
                 }
@@ -3431,7 +3440,7 @@ define('framework/forms/widget-services/base-widget-creator-service',["require",
                     customizationOptions.canLoad = function () {
                         return !!(form.models.data && form.models.data[model_1.id] && form.models.data[model_1.id][model_1.keyProperty]);
                     };
-                    form.binding.observeExpression(form.scopeContainer, "models.data." + model_1.id + "." + model_1.keyProperty, function () {
+                    form.binding.observe(form.scopeContainer, "models.data." + model_1.id + "." + model_1.keyProperty, function () {
                         dataSource_1.reload();
                     });
                 }
@@ -3565,7 +3574,7 @@ define('framework/forms/widget-services/simple-widget-creator-service',["require
         SimpleWidgetCreatorService.prototype.addCheckBox = function (form, options) {
             var editorOptions = this.createEditorOptions(form, options);
             if (options.caption) {
-                editorOptions.text = this.localization.translate(form.scope, options.caption);
+                editorOptions.text = this.localization.translate(form.scopeContainer, options.caption);
             }
             editorOptions;
         };
@@ -3597,8 +3606,8 @@ define('framework/forms/widget-services/simple-widget-creator-service',["require
                 command = form.binding.evaluate(form.scope, options.binding.bindToFQ);
             }
             var buttonOptions = {};
-            buttonOptions.text = this.localization.translate(form.scope, command.title);
-            buttonOptions.hint = this.localization.translate(form.scope, command.tooltip);
+            buttonOptions.text = this.localization.translate(form.scopeContainer, command.title);
+            buttonOptions.hint = this.localization.translate(form.scopeContainer, command.tooltip);
             buttonOptions.width = "100%";
             buttonOptions.onClick = function () {
                 if (typeof command.execute === "function") {
@@ -3752,12 +3761,12 @@ define('framework/forms/widget-services/simple-widget-creator-service',["require
             tabOptions.bindingOptions["selectedIndex"] = options.id + "Selected";
             options.pages.forEach(function (page, index) {
                 var pageOptions = {
-                    text: _this.localization.translate(form.scope, page.caption),
+                    text: _this.localization.translate(form.scopeContainer, page.caption),
                     visible: true,
                     __options: page
                 };
                 if (page.if) {
-                    form.binding.observeExpression(form.scopeContainer, page.if, function (newValue) {
+                    form.binding.observe(form.scopeContainer, page.if, function (newValue) {
                         component.option("items[" + index + "].visible", newValue);
                         pageOptions.visible = newValue;
                     });
@@ -3855,7 +3864,9 @@ define('framework/forms/widget-services/simple-widget-creator-service',["require
                     return Promise.resolve();
                 }
                 else {
-                    return Promise.reject(result);
+                    var error = new Error();
+                    error.message = result.brokenRules[0].message;
+                    return Promise.reject(error);
                 }
             });
         };
@@ -3872,7 +3883,7 @@ define('framework/forms/widget-services/simple-widget-creator-service',["require
                 editorOptions.bindingOptions["readOnly"] = options.isReadOnlyExpression;
             }
             if (options.placeholder) {
-                editorOptions.placeholder = this.localization.translate(form.scope, options.placeholder);
+                editorOptions.placeholder = this.localization.translate(form.scopeContainer, options.placeholder);
             }
             editorOptions["validators"] = options.validationRules.map(function (v) {
                 if (v.binding) {
@@ -4061,7 +4072,7 @@ define('framework/forms/widget-services/data-grid-widget-creator-service',["requ
                 dataGridOptions.columns = options.columns.map(function (col) {
                     var column = {};
                     if (col.caption) {
-                        column.caption = _this.localization.translate(form.scope, col.caption);
+                        column.caption = _this.localization.translate(form.scopeContainer, col.caption);
                     }
                     if (col.bindTo) {
                         column.dataField = col.bindTo;
@@ -4567,7 +4578,7 @@ define('framework/forms/classes/form-base',["require", "exports", "../../base/ex
             return this.models.delete();
         };
         FormBase.prototype.translate = function (key) {
-            return this.localization.translate(this.scope, key);
+            return this.localization.translate(this.scopeContainer, key);
         };
         FormBase.prototype.addModel = function (model) {
             var _this = this;
@@ -5024,10 +5035,9 @@ define('framework/dx/elements/dx-widget',["require", "exports", "tslib", "aureli
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var DxWidget = DxWidget_1 = (function () {
-        function DxWidget(element, templatingEngine, bindingEngine, binding, deepObserver, dxTemplate) {
+        function DxWidget(element, templatingEngine, binding, deepObserver, dxTemplate) {
             this.element = element;
             this.templatingEngine = templatingEngine;
-            this.bindingEngine = bindingEngine;
             this.binding = binding;
             this.deepObserver = deepObserver;
             this.dxTemplate = dxTemplate;
@@ -5037,10 +5047,16 @@ define('framework/dx/elements/dx-widget',["require", "exports", "tslib", "aureli
             this.owningView = owningView;
         };
         DxWidget.prototype.bind = function (bindingContext, overrideContext) {
-            this.bindingContext = bindingContext;
-            this.overrideContext = overrideContext;
+            this.scope = {
+                bindingContext: bindingContext,
+                overrideContext: overrideContext
+            };
+            this.scopeContainer = new export_1.ScopeContainer(this.scope);
             this.extractTemplates();
             this.checkBindings();
+        };
+        DxWidget.prototype.unbind = function () {
+            this.scopeContainer.disposeAll();
         };
         DxWidget.prototype.attached = function () {
             this.renderInline();
@@ -5105,15 +5121,12 @@ define('framework/dx/elements/dx-widget',["require", "exports", "tslib", "aureli
                 var alias = itemJQuery.attr("alias") || "data";
                 _this.templates[name] = {
                     render: function (renderData) {
-                        return _this.dxTemplate.render(item, renderData.container, _this.owningView.resources, {
-                            bindingContext: _this.bindingContext,
-                            overrideContext: _this.overrideContext
-                        }, renderData.model);
+                        return _this.dxTemplate.render(item, renderData.container, _this.owningView.resources, _this.scope, renderData.model);
                     }
                 };
                 $(item).remove();
             });
-            Object.assign(this.templates, this.dxTemplate.getTemplates(this.bindingContext, this.overrideContext, this.owningView.resources));
+            Object.assign(this.templates, this.dxTemplate.getTemplates(this.scope, this.owningView.resources));
         };
         DxWidget.prototype.registerBindings = function () {
             var _this = this;
@@ -5122,20 +5135,12 @@ define('framework/dx/elements/dx-widget',["require", "exports", "tslib", "aureli
             }
             var _loop_1 = function (property) {
                 var binding = this_1.options.bindingOptions[property];
-                var context = this_1.binding.getBindingContext({
-                    bindingContext: this_1.bindingContext,
-                    overrideContext: this_1.overrideContext
-                }, binding.expression);
-                this_1.bindingEngine.expressionObserver(context, binding.expression)
-                    .subscribe(function (newValue, oldValue) {
-                    _this.setOptionValue(property, newValue);
+                this_1.binding.observe(this_1.scopeContainer, binding.expression, function (newValue, oldValue) {
+                    _this.setOptionValue(property, newValue, true);
                     _this.registerDeepObserver(binding, property, value);
                 });
-                var value = binding.parsed.evaluate({
-                    bindingContext: this_1.bindingContext,
-                    overrideContext: this_1.overrideContext
-                });
-                this_1.setOptionValue(property, value);
+                var value = this_1.binding.evaluate(this_1.scope, binding.expression);
+                this_1.setOptionValue(property, value, true);
                 this_1.registerDeepObserver(binding, property, value);
             };
             var this_1 = this;
@@ -5161,8 +5166,6 @@ define('framework/dx/elements/dx-widget',["require", "exports", "tslib", "aureli
                     expression: bindingOptions[property]
                 };
             }
-            var binding = bindingOptions[property];
-            binding.parsed = this.bindingEngine.parseExpression(binding.expression);
         };
         DxWidget.prototype.registerDeepObserver = function (binding, property, value) {
             var _this = this;
@@ -5174,7 +5177,7 @@ define('framework/dx/elements/dx-widget',["require", "exports", "tslib", "aureli
                 return;
             }
             binding.deepObserver = this.deepObserver.observe(value, function () {
-                _this.setOptionValue(property, value);
+                _this.setOptionValue(property, value, true);
             });
         };
         DxWidget.prototype.onOptionChanged = function (e) {
@@ -5185,20 +5188,11 @@ define('framework/dx/elements/dx-widget',["require", "exports", "tslib", "aureli
             if (!binding) {
                 return;
             }
-            if (!binding.parsed.isAssignable) {
-                return;
-            }
-            var currValue = binding.parsed.evaluate({
-                bindingContext: this.bindingContext,
-                overrideContext: this.overrideContext
-            });
+            var currValue = this.binding.evaluate(this.scope, binding.expression);
             if (currValue === e.value) {
                 return;
             }
-            binding.parsed.assign({
-                bindingContext: this.bindingContext,
-                overrideContext: this.overrideContext
-            }, e.value);
+            this.binding.assign(this.scope, binding.expression, e.value);
         };
         DxWidget.prototype.renderInline = function () {
             var _this = this;
@@ -5206,17 +5200,29 @@ define('framework/dx/elements/dx-widget',["require", "exports", "tslib", "aureli
                 var result = _this.templatingEngine.enhance({
                     element: child,
                     resources: _this.owningView.resources,
-                    bindingContext: _this.bindingContext,
-                    overrideContext: _this.overrideContext
+                    bindingContext: _this.scope.bindingContext,
+                    overrideContext: _this.scope.overrideContext
                 });
                 result.attached();
             });
         };
-        DxWidget.prototype.setOptionValue = function (propertyName, value) {
+        DxWidget.prototype.setOptionValue = function (propertyName, value, isValid) {
             if (value == void (0) && (propertyName === "items" || propertyName === "dataSource")) {
                 value = [];
             }
-            this.instance.option(propertyName, value);
+            var currentValue = this.instance.option(propertyName);
+            if (currentValue === value) {
+                return;
+            }
+            if (isValid && propertyName == "value") {
+                var data = {};
+                data[propertyName] = value;
+                data["isValid"] = true;
+                this.instance.option(data);
+            }
+            else {
+                this.instance.option(propertyName, value);
+            }
         };
         return DxWidget;
     }());
@@ -5237,7 +5243,6 @@ define('framework/dx/elements/dx-widget',["require", "exports", "tslib", "aureli
         aurelia_framework_1.processContent(false),
         tslib_1.__metadata("design:paramtypes", [Element,
             aurelia_framework_1.TemplatingEngine,
-            aurelia_framework_1.BindingEngine,
             export_1.BindingService,
             export_1.DeepObserverService,
             dx_template_service_1.DxTemplateService])
@@ -6050,10 +6055,10 @@ define('text!framework/forms/elements/file-uploader-with-viewer/tip-file-uploade
 define('text!framework/default-ui/styles/toolbar.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--toolbar-title {\n  font-size: 16px;\n  font-weight: 100;\n  color: black;\n  padding: 0 12px;\n}\n.t--toolbar-item {\n  display: flex;\n  align-items: center;\n  height: 32px;\n  padding: 0 12px;\n  text-decoration: none;\n  cursor: pointer;\n  -webkit-user-select: none;\n}\n.t--toolbar-item i {\n  font-size: 16px;\n}\n.t--toolbar-item:hover {\n  color: white;\n  background-color: #808080;\n}\n.t--toolbar-item-content {\n  display: flex;\n  flex-direction: row;\n}\n.t--toolbar.t--toolbar-inline.dx-toolbar {\n  height: 32px;\n  background-color: #D3D3D3;\n}\n.t--toolbar.t--toolbar-inline.dx-toolbar .dx-toolbar-items-container {\n  height: 32px;\n}\n.t--toolbar.t--toolbar-inline.dx-toolbar .t--toolbar-item {\n  height: 32px;\n  color: black;\n}\n.t--toolbar.t--toolbar-inline.dx-toolbar .t--toolbar-item:hover {\n  color: white;\n}\n.t--toolbar.t--toolbar-inline.dx-toolbar .t--toolbar-item .t--toolbar-item-content {\n  flex-direction: row;\n}\n.t--toolbar.t--toolbar-inline.dx-toolbar .t--toolbar-title {\n  display: flex;\n  align-items: center;\n  height: 32px;\n  background-color: rgba(255, 255, 255, 0.4);\n  font-size: 14px;\n  font-weight: normal;\n}\n.t--toolbar.t--toolbar-inline.dx-toolbar .dx-state-disabled .t--toolbar-item {\n  color: gray;\n}\n.t--toolbar.t--toolbar-inline.dx-toolbar .dx-state-disabled .t--toolbar-item:hover {\n  color: gray;\n}\n.t--toolbar.dx-popup-normal .dx-toolbar,\n.dx-popup-wrapper:not(.dx-dialog):not(.dx-lookup-popup-search) > .dx-popup-normal.dx-popup-normal .dx-toolbar {\n  margin: 12px;\n  width: calc(100% - 12px * 2);\n  box-sizing: content-box;\n}\n.t--toolbar .dx-toolbar,\n.dx-popup-wrapper:not(.dx-dialog):not(.dx-lookup-popup-search) > .dx-popup-normal .dx-toolbar {\n  padding: 0;\n  height: 60px;\n  background-color: #808080;\n  color: white;\n}\n.t--toolbar .dx-toolbar .dx-toolbar-items-container,\n.dx-popup-wrapper:not(.dx-dialog):not(.dx-lookup-popup-search) > .dx-popup-normal .dx-toolbar .dx-toolbar-items-container {\n  height: 60px;\n}\n.t--toolbar .dx-state-disabled .t--toolbar-item,\n.dx-popup-wrapper:not(.dx-dialog):not(.dx-lookup-popup-search) > .dx-popup-normal .dx-state-disabled .t--toolbar-item {\n  cursor: default;\n  color: lightgray;\n}\n.t--toolbar .dx-state-disabled .t--toolbar-item:hover,\n.dx-popup-wrapper:not(.dx-dialog):not(.dx-lookup-popup-search) > .dx-popup-normal .dx-state-disabled .t--toolbar-item:hover {\n  background-color: inherit;\n}\n.t--toolbar .t--toolbar-title,\n.dx-popup-wrapper:not(.dx-dialog):not(.dx-lookup-popup-search) > .dx-popup-normal .t--toolbar-title {\n  font-size: 26px;\n  color: white;\n}\n.t--toolbar .t--toolbar-item,\n.dx-popup-wrapper:not(.dx-dialog):not(.dx-lookup-popup-search) > .dx-popup-normal .t--toolbar-item {\n  height: 60px;\n  flex-direction: column;\n  justify-content: center;\n  align-items: center;\n  text-align: center;\n  color: white;\n}\n.t--toolbar .t--toolbar-item:hover,\n.dx-popup-wrapper:not(.dx-dialog):not(.dx-lookup-popup-search) > .dx-popup-normal .t--toolbar-item:hover {\n  background-color: #4F4F4F;\n}\n.t--toolbar .t--toolbar-item-content,\n.dx-popup-wrapper:not(.dx-dialog):not(.dx-lookup-popup-search) > .dx-popup-normal .t--toolbar-item-content {\n  flex-direction: column;\n}\n"; });
 define('text!framework/login/views/login/login-form.html', ['module'], function(module) { module.exports = "<template>\n    <dx-widget name=\"dxValidationGroup\" options.bind=\"wd1Options\" view-model.ref=\"wd1\">\n        <div class=\"t--margin-top col-xs-12 t--login-logo\">\n            <img class=\"t--form-element-image\" src=\"http://2014.erp-future.com/sites/2014.erp-future.com/files/1_business/Logo_U_TIP.png\"></img>\n        </div>\n        <form submit.delegate=\"submitForm('functions.$f.loginCommand')\">\n            <button class=\"t--invisible-submit\" type=\"submit\"></button>\n            <div class=\"col-xs-12\">\n                <div tr=\"key: login-form.enter_user_password_text; markdown: true; mode: html\"></div>\n            </div>\n            <div class=\"t--margin-top col-xs-12\">\n                <div class=\"t--editor-caption\" tr=\"key: login-form.username_caption\"></div>\n                <dx-widget name=\"dxTextBox\" options.bind=\"usernameOptions\" view-model.ref=\"username\"></dx-widget>\n            </div>\n            <div class=\"t--margin-top col-xs-12\">\n                <div class=\"t--editor-caption\" tr=\"key: login-form.password_caption\"></div>\n                <dx-widget name=\"dxTextBox\" options.bind=\"passwordOptions\" view-model.ref=\"password\"></dx-widget>\n            </div>\n            <div class=\"t--margin-top col-xs-12\">\n                <div class=\"t--editor-caption\">&nbsp;</div>\n                <dx-widget name=\"dxCheckBox\" options.bind=\"stayLoggodOnOptions\" view-model.ref=\"stayLoggodOn\"></dx-widget>\n            </div>\n            <div class=\"t--margin-top col-xs-12\">\n                <div class=\"t--editor-caption\">&nbsp;</div>\n                <dx-widget name=\"dxButton\" options.bind=\"wd2Options\"></dx-widget>\n            </div>\n        </form>\n    </dx-widget>\n</template>"; });
 define('text!framework/security/views/authgroup/authgroup-edit-form.html', ['module'], function(module) { module.exports = "<template>\n    <dx-widget name=\"dxValidationGroup\" options.bind=\"wd1Options\" view-model.ref=\"wd1\">\n        <div class=\"t--margin-top col-xs-12\">\n            <div tr=\"key: authgroup-edit.info_text; markdown: true; mode: html\"></div>\n        </div>\n        <div class=\"t--margin-top col-xs-12 col-md-6\">\n            <div class=\"t--editor-caption\" tr=\"key: authgroup-edit.name_caption\"></div>\n            <dx-widget name=\"dxTextBox\" options.bind=\"nameOptions\" view-model.ref=\"name\"></dx-widget>\n        </div>\n        <div class=\"t--margin-top col-xs-12 col-md-6\">\n            <div class=\"t--editor-caption\" tr=\"key: authgroup-edit.mandator_caption\"></div>\n            <dx-widget name=\"dxSelectBox\" options.bind=\"mandatorOptions\" view-model.ref=\"mandator\"></dx-widget>\n        </div>\n    </dx-widget>\n</template>"; });
-define('text!framework/security/views/authgroup/authgroup-list-form.html', ['module'], function(module) { module.exports = "<template>\n    <require from=\"./authgroup-edit-form\"></require>\n    <dx-widget name=\"dxValidationGroup\" options.bind=\"wd1Options\" view-model.ref=\"wd1\">\n        <dx-widget name=\"dxPopup\" options.bind=\"editOptions\" view-model.ref=\"edit\">\n            <dx-template name=\"contentTemplate\">\n                <div class=\"container-fluid\">\n                    <div class=\"row\">\n                        <authgroup-edit-form view-model.ref=\"editContent\" is-edit-form=\"true\"></authgroup-edit-form>\n                    </div>\n                </div>\n            </dx-template>\n        </dx-widget>\n        <div class=\"t--margin-top col-xs-12\">\n            <dx-widget name=\"dxDataGrid\" options.bind=\"authgroupsOptions\" view-model.ref=\"authgroups\"></dx-widget>\n        </div>\n    </dx-widget>\n</template>"; });
 define('text!framework/forms/styles/styles.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--form-element-flex-box {\n  display: flex;\n}\n.t--form-element-flex-box-with-padding > *:not(:first-child) {\n  margin-left: 12px;\n}\n.t--form-element-image-inline {\n  background-size: contain;\n  background-position: center center;\n  background-repeat: no-repeat;\n}\n.t--form-element-image {\n  max-width: 100%;\n}\n"; });
-define('text!framework/stack-router/views/stack-router/stack-router.html', ['module'], function(module) { module.exports = "<template class=\"t--stack-router\">\n  <require from=\"./stack-router.css\"></require>\n  <require from=\"../view/view\"></require>\n\n  <div \n    class=\"t--stack-router-item\" \n    class.bind=\"item.className\"\n    repeat.for=\"item of router.viewStack\">\n    <view view.bind=\"item\" create-toolbar.bind=\"$parent.createToolbar\"></view>\n  </div>\n</template>"; });
+define('text!framework/security/views/authgroup/authgroup-list-form.html', ['module'], function(module) { module.exports = "<template>\n    <require from=\"./authgroup-edit-form\"></require>\n    <dx-widget name=\"dxValidationGroup\" options.bind=\"wd1Options\" view-model.ref=\"wd1\">\n        <dx-widget name=\"dxPopup\" options.bind=\"editOptions\" view-model.ref=\"edit\">\n            <dx-template name=\"contentTemplate\">\n                <div class=\"container-fluid\">\n                    <div class=\"row\">\n                        <authgroup-edit-form view-model.ref=\"editContent\" is-edit-form=\"true\"></authgroup-edit-form>\n                    </div>\n                </div>\n            </dx-template>\n        </dx-widget>\n        <div class=\"t--margin-top col-xs-12\">\n            <dx-widget name=\"dxDataGrid\" options.bind=\"authgroupsOptions\" view-model.ref=\"authgroups\"></dx-widget>\n        </div>\n    </dx-widget>\n</template>"; });
 define('text!framework/stack-router/views/view/view.html', ['module'], function(module) { module.exports = "<template class=\"t--view\" class.bind=\"className\">\n  <require from=\"./view.css\"></require>\n\n  <div class=\"t--toolbar\" if.bind=\"createToolbar\">\n    <dx-widget if.bind=\"toolbarOptions\" name=\"dxToolbar\" options.bind=\"toolbarOptions\"></dx-widget>\n  </div>\n  <div class=\"t--view-content-wrapper\">\n    <div class=\"container-fluid\">\n      <div class=\"row\">\n        <compose\n          view-model.ref=\"view.controller\" \n          view-model.bind=\"view.moduleId\" \n          model.bind=\"view.model\" \n          class=\"t--view-content\"></compose>\n      </div>\n    </div>\n  </div>\n</template>"; });
+define('text!framework/stack-router/views/stack-router/stack-router.html', ['module'], function(module) { module.exports = "<template class=\"t--stack-router\">\n  <require from=\"./stack-router.css\"></require>\n  <require from=\"../view/view\"></require>\n\n  <div \n    class=\"t--stack-router-item\" \n    class.bind=\"item.className\"\n    repeat.for=\"item of router.viewStack\">\n    <view view.bind=\"item\" create-toolbar.bind=\"$parent.createToolbar\"></view>\n  </div>\n</template>"; });
 define('text!framework/default-ui/views/container/container.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--container {\n  display: block;\n  width: 100vw;\n  height: 100vh;\n}\n.t--toolbar-title {\n  min-width: 220px;\n  padding: 0 12px;\n  font-size: 20px;\n  font-weight: 100;\n  color: white;\n}\n"; });
 define('text!framework/default-ui/views/content/content.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--content {\n  display: block;\n  margin-left: 280px;\n  height: calc(100% - 60px);\n  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n  transition-property: margin-left;\n}\n.t--sidebar-collapsed .t--content {\n  margin-left: 60px;\n}\n.t--view-current {\n  display: block;\n}\n.t--view-history {\n  display: none;\n}\n"; });
 define('text!framework/default-ui/views/header/header.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--header {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  margin-left: 280px;\n  padding: 0 12px;\n  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n  transition-property: margin-left;\n}\n.t--sidebar-collapsed .t--header {\n  margin-left: 60px;\n}\n.t--header-flex {\n  display: flex;\n  width: 100%;\n}\n.t--header-title {\n  flex-grow: 1;\n}\n"; });
@@ -6061,6 +6066,6 @@ define('text!framework/default-ui/views/loading-spinner/loading-spinner.css', ['
 define('text!framework/default-ui/views/sidebar/sidebar.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--sidebar {\n  display: block;\n  position: fixed;\n  top: 0;\n  bottom: 0;\n  left: 0;\n  z-index: 10;\n  width: 280px;\n  background-color: #2a2e35;\n  font-size: 14px;\n  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n  transition-property: left;\n}\n.t--sidebar ul {\n  padding: 0;\n  margin: 0;\n  list-style: none;\n}\n.t--sidebar-collapsed .t--sidebar {\n  left: -220px;\n}\n.t--sidebar-collapsed .t--sidebar-sub {\n  left: 60px;\n}\n.t--sidebar-header {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  background-color: #262930;\n  color: white;\n  cursor: pointer;\n}\n.t--sidebar-header-title {\n  flex-grow: 1;\n  font-size: 26px;\n  font-weight: 100;\n  padding: 12px;\n}\n.t--sidebar-header-icon {\n  display: flex;\n  width: 60px;\n  align-items: center;\n  justify-content: center;\n}\n.t--sidebar-item {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  color: lightgray;\n  text-decoration: none;\n}\n.t--sidebar-item:hover {\n  color: white;\n}\n.t--sidebar-item-title {\n  flex-grow: 1;\n  padding: 12px;\n}\n.t--sidebar-item-icon {\n  display: flex;\n  width: 60px;\n  align-items: center;\n  justify-content: center;\n}\n.t--sidebar-sub {\n  position: fixed;\n  z-index: -9;\n  left: 280px;\n  min-width: 280px;\n  background-color: #2a2e35;\n  padding: 12px;\n}\n.t--sidebar-sub.au-enter-active {\n  animation: leftFadeIn 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n}\n.t--sidebar-sub-item {\n  color: lightgray;\n  text-decoration: none;\n}\n.t--sidebar-sub-item:hover {\n  color: white;\n}\n"; });
 define('text!framework/default-ui/views/sidebar-sub/sidebar-sub.css', ['module'], function(module) { module.exports = ".t--sidebar-sub-ul {\n  column-fill: auto;\n  column-count: 2;\n  column-width: 200px;\n}\n"; });
 define('text!framework/forms/elements/file-uploader-with-viewer/tip-file-uploader-with-viewer.css', ['module'], function(module) { module.exports = ".t--file-uploader-with-viewer input {\n  height: 0;\n  width: 0;\n}\n.t--file-uploader-with-viewer .t--file-uploader-with-viewer-click-region {\n  display: block;\n  width: 100%;\n  min-height: 150px;\n  border: 3px dotted gray;\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n  align-items: center;\n  padding: 12px;\n}\n.t--file-uploader-with-viewer .t--file-uploader-image,\n.t--file-uploader-with-viewer t--file-uploader-placeholder-image {\n  width: 100%;\n  min-height: 150px;\n  position: relative;\n  display: flex;\n  justify-content: center;\n  align-content: center;\n}\n.t--file-uploader-with-viewer .t--file-uploader-with-viewer-download {\n  margin-top: 12px;\n}\n.t--file-uploader-with-viewer img {\n  max-height: 100%;\n  max-width: 100%;\n  position: absolute;\n}\n"; });
-define('text!framework/stack-router/views/stack-router/stack-router.css', ['module'], function(module) { module.exports = ".t--stack-router,\n.t--stack-router-item {\n  display: block;\n  height: 100%;\n}\n"; });
 define('text!framework/stack-router/views/view/view.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--view {\n  display: block;\n  position: relative;\n  height: 100%;\n  overflow-x: hidden;\n}\n.t--view-content-wrapper {\n  display: block;\n  height: 100%;\n  overflow-x: hidden;\n  overflow-y: auto;\n}\n.t--view-content {\n  display: table;\n  width: 100%;\n  margin-bottom: 12px;\n  -webkit-overflow-scrolling: touch;\n}\n.t--view-with-toolbar .t--view-content-wrapper {\n  height: calc(100% - 60px);\n}\n"; });
+define('text!framework/stack-router/views/stack-router/stack-router.css', ['module'], function(module) { module.exports = ".t--stack-router,\n.t--stack-router-item {\n  display: block;\n  height: 100%;\n}\n"; });
 //# sourceMappingURL=app-bundle.js.map

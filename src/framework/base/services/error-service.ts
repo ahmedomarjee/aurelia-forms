@@ -1,10 +1,24 @@
 import {
   autoinject
 } from "aurelia-framework";
+import {
+  LocalizationService
+} from "./localization-service"
 
+@autoinject
 export class ErrorService {
+  constructor(
+    private localization: LocalizationService
+  ) {}
+
   showError(error: any) {
-    DevExpress.ui.dialog.alert(error, "Fehler");
+    let message = error;
+
+    if (error instanceof Error) {
+      message = error.message;
+    }
+
+    DevExpress.ui.dialog.alert(message, this.localization.translate(null, "base.error"));
   }
   logError(error: any) {
 

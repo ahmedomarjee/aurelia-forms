@@ -88,7 +88,7 @@ export class BaseWidgetCreatorService {
         customizationOptions.canLoad = () => {
           return !!(form.models.data && form.models.data[model.id] && form.models.data[model.id][model.keyProperty]);
         }
-        form.binding.observeExpression(
+        form.binding.observe(
           form.scopeContainer,
           `models.data.${model.id}.${model.keyProperty}`, 
           () => {

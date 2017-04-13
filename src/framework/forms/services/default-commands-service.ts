@@ -188,7 +188,7 @@ export class DefaultCommandsService {
         };
         cmd.isEnabled = isEnabled();
 
-        form.binding.observeExpression(form.scopeContainer, `models.data.${info.id}.${info.keyProperty}`, (newValue) => {
+        form.binding.observe(form.scopeContainer, `models.data.${info.id}.${info.keyProperty}`, (newValue) => {
           cmd.isEnabled = isEnabled();
         });
       }

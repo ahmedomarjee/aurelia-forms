@@ -289,7 +289,7 @@ export class FormBase {
   }
 
   translate(key: string): string {
-    return this.localization.translate(this.scope, key);
+    return this.localization.translate(this.scopeContainer, key);
   }
 
   protected addModel(model: Interfaces.IModel): void {

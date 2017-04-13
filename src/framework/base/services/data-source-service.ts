@@ -180,7 +180,7 @@ export class DataSourceService {
         return;
       }
 
-      this.binding.observeExpression(scopeContainer, expression, action);
+      this.binding.observe(scopeContainer, expression, action);
     }
     private addObserversWhere(scopeContainer: ScopeContainer, data: any, action: {(): void}) {
       if (data == void (0)) {

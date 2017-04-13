@@ -17,7 +17,7 @@ export class DxTemplateService {
     this.templates[key] = template;
   }
 
-  getTemplates(scope: Scope, overrideContext: any, resources: any): any {
+  getTemplates(scope: Scope, resources: any): any {
     const result = {};
 
     for (let templateKey in this.templates) {

@@ -24,7 +24,7 @@ export class BindingService {
       .parseExpression(expression)
       .evaluate(scope);
   }
-  observeExpression(scopeContainer: ScopeContainer, expression: string, callback: {(newValue?: any, oldValue?: any): void}): Disposable {
+  observe(scopeContainer: ScopeContainer, expression: string, callback: {(newValue?: any, oldValue?: any): void}): Disposable {
     const disposable = this.bindingEngine
       .expressionObserver(
         this.getBindingContext(scopeContainer.scope, expression),

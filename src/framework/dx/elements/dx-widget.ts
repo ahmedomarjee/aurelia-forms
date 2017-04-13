@@ -2,7 +2,7 @@ import {
   autoinject,
   processContent,
   bindable,
-  BindingEngine,
+  Scope,
   TemplatingEngine,
   OverrideContext
 } from "aurelia-framework";
@@ -12,6 +12,7 @@ import {
 import {
   BindingService,
   DeepObserverService,
+  ScopeContainer
 } from "../../base/export";
 import * as $ from "jquery";
 
@@ -25,13 +26,12 @@ export class DxWidget {
   owningView: any;
   instance: any;
   templates = {};
-  bindingContext: any;
-  overrideContext: any;
+  scope: Scope;
+  scopeContainer: ScopeContainer;
 
   constructor(
     private element: Element,
     private templatingEngine: TemplatingEngine,
-    private bindingEngine: BindingEngine,
     private binding: BindingService,
     private deepObserver: DeepObserverService,
     private dxTemplate: DxTemplateService) {
@@ -41,11 +41,17 @@ export class DxWidget {
     this.owningView = owningView;
   }
   bind(bindingContext: any, overrideContext: OverrideContext) {
-    this.bindingContext = bindingContext;
-    this.overrideContext = overrideContext;
+    this.scope = {
+      bindingContext: bindingContext,
+      overrideContext: overrideContext
+    };
+    this.scopeContainer = new ScopeContainer(this.scope);
     
     this.extractTemplates();
     this.checkBindings();
+  }
+  unbind() {
+    this.scopeContainer.disposeAll();
   }
   attached() {
     this.renderInline();
@@ -121,10 +127,8 @@ export class DxWidget {
             return this.dxTemplate.render(
               item,
               renderData.container,
-              this.owningView.resources, {
-                bindingContext: this.bindingContext,
-                overrideContext: this.overrideContext
-              },
+              this.owningView.resources,
+              this.scope,
               renderData.model
             );
           }
@@ -132,7 +136,7 @@ export class DxWidget {
         $(item).remove();
       });
 
-      Object.assign(this.templates, this.dxTemplate.getTemplates(this.bindingContext, this.overrideContext, this.owningView.resources));
+      Object.assign(this.templates, this.dxTemplate.getTemplates(this.scope, this.owningView.resources));
   }
   private registerBindings(): void {
     if (!this.options.bindingOptions) {
@@ -142,23 +146,17 @@ export class DxWidget {
     for (let property in this.options.bindingOptions) {
       const binding = this.options.bindingOptions[property];
 
-      const context = this.binding.getBindingContext({
-          bindingContext: this.bindingContext,
-          overrideContext: this.overrideContext
-        }, binding.expression);
-
-      this.bindingEngine.expressionObserver(context, binding.expression)
-        .subscribe((newValue, oldValue) => {
-          this.setOptionValue(property, newValue);
+      this.binding.observe(
+        this.scopeContainer, 
+        binding.expression, 
+        (newValue, oldValue) => {
+          this.setOptionValue(property, newValue, true);
           this.registerDeepObserver(binding, property, value);
         });
 
-      const value = binding.parsed.evaluate({
-        bindingContext: this.bindingContext,
-        overrideContext: this.overrideContext
-      });
+      const value = this.binding.evaluate(this.scope, binding.expression);
 
-      this.setOptionValue(property, value);
+      this.setOptionValue(property, value, true);
       this.registerDeepObserver(binding, property, value);
     }
   }
@@ -183,9 +181,6 @@ export class DxWidget {
         expression: bindingOptions[property]
       }
     }
-
-    const binding = bindingOptions[property];
-    binding.parsed = this.bindingEngine.parseExpression(binding.expression);
   }
   private registerDeepObserver(binding, property, value): void {
     if (binding.deepObserver) {
@@ -198,7 +193,7 @@ export class DxWidget {
     }
 
     binding.deepObserver = this.deepObserver.observe(value, () => {
-      this.setOptionValue(property, value);
+      this.setOptionValue(property, value, true);
     });
   }
   private onOptionChanged(e): void {
@@ -211,41 +206,44 @@ export class DxWidget {
       return;
     }
 
-    if (!binding.parsed.isAssignable) {
-      return;
-    }
-
-    const currValue = binding.parsed.evaluate({
-      bindingContext: this.bindingContext,
-      overrideContext: this.overrideContext
-    });
+    const currValue = this.binding.evaluate(this.scope, binding.expression);
 
     if (currValue === e.value) {
       return;
     }
 
-    binding.parsed.assign({
-      bindingContext: this.bindingContext,
-      overrideContext: this.overrideContext
-    }, e.value);
+    this.binding.assign(this.scope, binding.expression, e.value);
   }
   private renderInline(): void {
     $(this.element).children().each((index, child) => {
       const result = this.templatingEngine.enhance({
         element: child,
         resources: this.owningView.resources,
-        bindingContext: this.bindingContext,
-        overrideContext: this.overrideContext
+        bindingContext: this.scope.bindingContext,
+        overrideContext: this.scope.overrideContext
       });
 
       result.attached();
     });
   }
-  private setOptionValue(propertyName: string, value: any) {
+  private setOptionValue(propertyName: string, value: any, isValid?: boolean) {
     if (value == void(0) && (propertyName === "items" || propertyName === "dataSource")) {
       value = [];
     }
 
-    this.instance.option(propertyName, value);
+    const currentValue = this.instance.option(propertyName);
+    if (currentValue === value) {
+      return;
+    }
+
+    if (isValid && propertyName == "value") {
+      const data = {};
+      data[propertyName] = value;
+      data["isValid"] = true;
+
+      this.instance.option(data);
+    } else {
+      this.instance.option(propertyName, value);
+    }
   }
 }

@@ -46,7 +46,7 @@ export class ToolbarService {
         component = c;
       });
 
-    this.binding.observeExpression(form.scopeContainer, "title", (newValue) => {
+    this.binding.observe(form.scopeContainer, "title", (newValue) => {
       const title = this.createTitleHtml(newValue);
       const titleItem = options.items.find(item => item[this.titleItemTemplate] === this.titleItemTemplate);
 
@@ -167,11 +167,11 @@ export class ToolbarService {
         overrideContext: null
       }, scopeContainer);
 
-      this.binding.observeExpression(newScopeContainer, "isEnabled", (newValue) => {
+      this.binding.observe(newScopeContainer, "isEnabled", (newValue) => {
         setEnabled(newValue);
       });
     } else if (command.isEnabledExpression) {
-      this.binding.observeExpression(scopeContainer, command.isEnabledExpression, (newValue) => {
+      this.binding.observe(scopeContainer, command.isEnabledExpression, (newValue) => {
         setEnabled(newValue);
       });
     }
@@ -190,11 +190,11 @@ export class ToolbarService {
         overrideContext: null
       }, scopeContainer);
 
-      this.binding.observeExpression(newScopeContainer, "isVisible", (newValue) => {
+      this.binding.observe(newScopeContainer, "isVisible", (newValue) => {
         setVisible(newValue);
       });
     } else if (command.isVisibleExpression) {
-      this.binding.observeExpression(scopeContainer, command.isVisibleExpression, (newValue) => {
+      this.binding.observe(scopeContainer, command.isVisibleExpression, (newValue) => {
         setVisible(newValue);
       });
     }

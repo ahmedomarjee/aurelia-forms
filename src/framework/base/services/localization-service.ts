@@ -40,7 +40,7 @@ export class LocalizationService {
       if (!Array.isArray(scopeContainer) && typeof item === "object" && item.parameters.length > 0) {
         item.parameters.forEach((expr, index) => {
           this.binding
-            .observeExpression(scopeContainer, expr, () => {
+            .observe(scopeContainer, expr, () => {
               callback(this.translateItem(scopeContainer, item))
             });
         });

@@ -46,7 +46,7 @@ export class SimpleWidgetCreatorService {
     const editorOptions: DevExpress.ui.dxCheckBoxOptions = this.createEditorOptions(form, options);
 
     if (options.caption) {
-      editorOptions.text = this.localization.translate(form.scope, options.caption);
+      editorOptions.text = this.localization.translate(form.scopeContainer, options.caption);
     }
 
     editorOptions;
@@ -83,8 +83,8 @@ export class SimpleWidgetCreatorService {
     }
 
     const buttonOptions: DevExpress.ui.dxButtonOptions = {};
-    buttonOptions.text = this.localization.translate(form.scope, command.title);
-    buttonOptions.hint = this.localization.translate(form.scope, command.tooltip);
+    buttonOptions.text = this.localization.translate(form.scopeContainer, command.title);
+    buttonOptions.hint = this.localization.translate(form.scopeContainer, command.tooltip);
     buttonOptions.width = "100%";
     buttonOptions.onClick = () => {
       if (typeof command.execute === "function") {
@@ -259,13 +259,13 @@ export class SimpleWidgetCreatorService {
 
     options.pages.forEach((page, index) => {
       const pageOptions = {
-        text: this.localization.translate(form.scope, page.caption),
+        text: this.localization.translate(form.scopeContainer, page.caption),
         visible: true,
         __options: page
       };
 
       if (page.if) {
-        form.binding.observeExpression(form.scopeContainer, page.if, (newValue) => {
+        form.binding.observe(form.scopeContainer, page.if, (newValue) => {
           component.option(`items[${index}].visible`, newValue);
           pageOptions.visible = newValue;
         });
@@ -384,7 +384,9 @@ export class SimpleWidgetCreatorService {
       if (result.isValid) {
         return Promise.resolve();
       } else {
-        return Promise.reject(result);
+        const error = new Error();
+        error.message = result.brokenRules[0].message;
+        return Promise.reject(error);
       }
     });
   }
@@ -403,7 +405,7 @@ export class SimpleWidgetCreatorService {
     }
 
     if (options.placeholder) {
-      (<any>editorOptions).placeholder = this.localization.translate(form.scope, options.placeholder);
+      (<any>editorOptions).placeholder = this.localization.translate(form.scopeContainer, options.placeholder);
     }
 
     editorOptions["validators"] = options.validationRules.map(v => {
