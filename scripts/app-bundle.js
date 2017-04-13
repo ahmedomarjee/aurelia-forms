@@ -613,15 +613,20 @@ define('framework/base/services/data-source-service',["require", "exports", "tsl
                         url: _this.rest.getWebApiUrl(options.webApiAction),
                         getOptions: getOptions
                     }).then(function (r) {
+                        var result;
                         if (loadOptions.requireTotalCount) {
-                            return {
+                            result = {
                                 data: r.rows,
                                 totalCount: r.count
                             };
                         }
                         else {
-                            return r;
+                            result = r;
                         }
+                        if (customizationOptions && customizationOptions.resultInterceptor) {
+                            result = customizationOptions.resultInterceptor(result);
+                        }
+                        return result;
                     });
                 }
             }));
@@ -687,6 +692,9 @@ define('framework/base/services/data-source-service',["require", "exports", "tsl
                         getOptions.where = customWhere;
                     }
                 }
+            }
+            if (customizationOptions && customizationOptions.getSearchText) {
+                getOptions.searchText = customizationOptions.getSearchText();
             }
             if (options.webApiMaxRecords > 0) {
                 getOptions.maxRecords = options.webApiMaxRecords;

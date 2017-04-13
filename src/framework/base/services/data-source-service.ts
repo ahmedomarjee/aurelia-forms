@@ -76,14 +76,21 @@ export class DataSourceService {
             url: this.rest.getWebApiUrl(options.webApiAction),
             getOptions
           }).then(r => {
+            let result;
             if (loadOptions.requireTotalCount) {
-              return {
+              result = {
                 data: r.rows,
                 totalCount: r.count
               };
             } else {
-              return r;
+              result = r;
             }
+
+            if (customizationOptions && customizationOptions.resultInterceptor) {
+              result = customizationOptions.resultInterceptor(result);
+            }
+
+            return result;
           });
         }
       }));
@@ -155,6 +162,10 @@ export class DataSourceService {
             getOptions.where = customWhere;
           }
         }
+      }
+
+      if (customizationOptions && customizationOptions.getSearchText) {
+        getOptions.searchText = customizationOptions.getSearchText();
       }
       
       if (options.webApiMaxRecords > 0) {
