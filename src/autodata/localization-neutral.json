@@ -31,6 +31,7 @@
     "error": "Fehler",
     "sure_delete_question": "Sind Sie sicher, dass sie den aktuellen Datensatz löschen wollen?",
     "save_success": "Daten wurden erfolgreich gespeichert",
+    "validation_error": "Daten können aufgrund ungültiger Validierung nicht gespeichert werden",
     "login": "Anmelden",
     "logout": "Abmelden",
     "navigation": "Navigation"
@@ -48,7 +49,8 @@
   "routes": {
     "settings": "Einstellungen"
   },
-  "default-ui": {
-    "navigation_title": "Navigation"
+  "default_ui": {
+    "navigation_title": "Navigation",
+    "search": "Suchen ..."
   }
 }

@@ -3,12 +3,12 @@ import {
   computedFrom
 } from "aurelia-framework";
 import {
-  RestService
-} from "../../../base/services/rest-service";
+  LoadingService
+} from "../../services/loading-service";
 
 @autoinject
 export class Loading {
   constructor(
-    private rest: RestService
+    private loading: LoadingService
   ) { }
 }

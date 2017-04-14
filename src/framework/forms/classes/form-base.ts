@@ -57,7 +57,8 @@ import {
   FormBaseImport
 } from "./form-base-import";
 import {
-  IPopupInfo
+  IPopupInfo,
+  IValidationResult
 } from "../interfaces/export";
 
 export class FormBase {
@@ -168,7 +169,7 @@ export class FormBase {
 
     this.scope = {
       bindingContext: this,
-      overrideContext: createOverrideContext(this) 
+      overrideContext: createOverrideContext(this)
     };
     this.scopeContainer = new ScopeContainer(this.scope);
 
@@ -227,19 +228,23 @@ export class FormBase {
     }
   }
 
-  validate(): Promise<any> {
-    return this.onValidating.fire({
-      form: this
-    }).then(() => {
-      const forms = this.nestedForms.getNestedForms();
+  validate(validationResult: IValidationResult): Promise<any> {
+    const args: IFormValidatingEventArgs = {
+      form: this,
+      validationResult: validationResult
+    }
 
-      let promise = Promise.resolve();
-      for (let form of forms) {
-        promise = form.validate();
-      }
+    return this.onValidating.fire(args)
+      .then(() => {
+        const forms = this.nestedForms.getNestedForms();
 
-      return promise;
-    });
+        let promise = Promise.resolve();
+        for (let form of forms) {
+          promise = form.validate(validationResult);
+        }
+
+        return promise;
+      });
   }
 
   canSave(): boolean {
@@ -268,12 +273,39 @@ export class FormBase {
       }));
   }
   save(): Promise<any> {
+    const validationResult: IValidationResult = {
+      isValid: true,
+      messages: []
+    };
+
     if (!this.canSave() || !this.canSaveNow()) {
-      return Promise.resolve();
+      return Promise.resolve(validationResult);
     }
 
-    return this.validate()
-      .then(c => this.models.save());
+    return this.validate(validationResult)
+      .then(() => {
+        if (validationResult.isValid) {
+          return this.models
+            .save()
+            .then(() => {
+              DevExpress.ui.notify(
+                this.translate("base.save_success"),
+                "SUCCESS",
+                3000);
+
+              return Promise.resolve(validationResult);
+            });
+        } else {
+          DevExpress.ui.notify(
+            validationResult.messages.length > 0
+              ? validationResult.messages[0]
+              : this.translate("base.validation_error"),
+            "ERROR",
+            3000);
+          
+          return Promise.resolve()
+        }
+      });
   }
 
   canDeleteNow(): boolean {

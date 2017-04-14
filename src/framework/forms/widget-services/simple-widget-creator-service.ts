@@ -19,8 +19,9 @@ import {
   BaseWidgetCreatorService
 } from "./base-widget-creator-service";
 import {
-  ICommandData
-} from "../interfaces/command-data";
+  ICommandData,
+  IValidationResult
+} from "../interfaces/export";
 import * as WidgetOptions from "../widget-options/export";
 
 @autoinject
@@ -381,12 +382,16 @@ export class SimpleWidgetCreatorService {
       const instance: DevExpress.ui.dxValidationGroup = form[options.id].instance;
       
       const result = instance.validate();
+
       if (result.isValid) {
-        return Promise.resolve();
+        return Promise.resolve(r.validationResult);
       } else {
-        const error = new Error();
-        error.message = result.brokenRules[0].message;
-        return Promise.reject(error);
+        r.validationResult.isValid = false;
+        r.validationResult.messages.push(...result
+          .brokenRules
+          .map(c => c.message));
+
+        return Promise.resolve();
       }
     });
   }

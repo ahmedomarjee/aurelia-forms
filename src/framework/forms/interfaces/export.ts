@@ -9,3 +9,4 @@ export * from "./model";
 export * from "./popup-info";
 export * from "./toolbar-manager";
 export * from "./variable";
+export * from "./validation-result";

@@ -36,15 +36,10 @@ export class DefaultCommandsService {
       isVisible: form.canSave(),
       isEnabled: form.canSaveNow(),
       execute() {
-        form.save().then(() => {
-          DevExpress.ui.notify(
-            form.translate("base.save_success"), 
-            "SUCCESS",
-            3000);
-        })
-        .catch(r => {
-          form.error.showAndLogError(r);
-        });
+        form.save()
+          .catch(r => {
+            form.error.showAndLogError(r);
+          });
       }
     };
 
