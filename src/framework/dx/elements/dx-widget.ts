@@ -25,6 +25,7 @@ export class DxWidget {
 
   owningView: any;
   instance: any;
+  validatorInstance: any;
   templates = {};
   scope: Scope;
   scopeContainer: ScopeContainer;
@@ -70,12 +71,17 @@ export class DxWidget {
 
     element = element[this.name](this.options);
 
+    let validatorElement;
     if (this.validator) {
-      element.dxValidator(this.validator);
+      validatorElement = element.dxValidator(this.validator);
     } else if (this.options["validators"]) {
-      element.dxValidator({
+      validatorElement = element.dxValidator({
         validationRules: this.options["validators"]
       });
+    }
+
+    if (validatorElement) {
+      this.validatorInstance = validatorElement.dxValidator("instance");
     }
     
     this.instance = element[this.name]("instance");
@@ -85,6 +91,10 @@ export class DxWidget {
     if (this.instance) {
       this.instance._dispose();
       this.instance = null;
+    }
+    if (this.validatorInstance) {
+      this.validatorInstance._dispose();
+      this.validatorInstance = null;
     }
 
     if (this.options && this.options.bindingOptions) {
@@ -108,11 +118,11 @@ export class DxWidget {
       element = element.get(0);
     }
 
-    if (!element.au || !element.au.controller || !element.au.controller.viewModel) {
+    if (!element.au || !element.au.controller || !element.au.controller.viewModel || !element.au.controller.viewModel.scope) {
       return null;
     }
 
-    return element.au.controller.viewModel.bindingContext;
+    return element.au.controller.viewModel.scope.bindingContext;
   }
   private extractTemplates(): void {
     $(this.element)
