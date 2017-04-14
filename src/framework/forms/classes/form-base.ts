@@ -1,6 +1,7 @@
 import * as Interfaces from "../interfaces/export";
 import {
   bindable,
+  createOverrideContext,
   BindingEngine,
   Expression,
   Container,
@@ -141,6 +142,11 @@ export class FormBase {
     this._callOnBind.push(callback);
   }
 
+  activate(routeInfo: any) {
+    if (routeInfo && routeInfo.parameters && routeInfo.parameters.id) {
+      this.variables.data.$id = routeInfo.parameters.id;
+    }
+  }
   created(owningView: any, myView: any) {
     this.owningView = owningView;
   }
@@ -161,8 +167,8 @@ export class FormBase {
     this.parent = this.owningView.bindingContext;
 
     this.scope = {
-      bindingContext: bindingContext,
-      overrideContext: overrideContext
+      bindingContext: this,
+      overrideContext: createOverrideContext(this) 
     };
     this.scopeContainer = new ScopeContainer(this.scope);
 
@@ -177,11 +183,6 @@ export class FormBase {
   }
   unbind() {
     this.scopeContainer.disposeAll();
-  }
-  activate(routeInfo: any) {
-    if (routeInfo && routeInfo.parameters && routeInfo.parameters.id) {
-      this.variables.data.$id = routeInfo.parameters.id;
-    }
   }
   reactivate() {
     this.onReactivated.fire({
