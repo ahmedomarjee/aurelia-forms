@@ -84,6 +84,8 @@ export class DataGridWidgetCreatorService {
 
     const clickActions = this.baseWidgetCreator.getListClickActions(form, options);
     if (clickActions.length > 0) {
+      dataGridOptions.hoverStateEnabled = true;
+
       dataGridOptions.onRowClick = (e) => {
         clickActions.forEach(item => {
           item(e)

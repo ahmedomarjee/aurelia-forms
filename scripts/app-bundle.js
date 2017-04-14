@@ -4119,6 +4119,7 @@ define('framework/forms/widget-services/data-grid-widget-creator-service',["requ
             }
             var clickActions = this.baseWidgetCreator.getListClickActions(form, options);
             if (clickActions.length > 0) {
+                dataGridOptions.hoverStateEnabled = true;
                 dataGridOptions.onRowClick = function (e) {
                     clickActions.forEach(function (item) {
                         item(e);
