@@ -19,6 +19,8 @@ import * as $ from "jquery";
 @autoinject
 @processContent(false)
 export class DxWidget {
+  private _currentChangingProperty: string;
+
   @bindable name: string;
   @bindable options: any;
   @bindable validator: any;
@@ -105,6 +107,10 @@ export class DxWidget {
         }
       }
     }
+  }
+
+  isChangingProperty(propertyName: string) {
+    return this._currentChangingProperty === propertyName;
   }
 
   resetValidation() {
@@ -246,6 +252,8 @@ export class DxWidget {
       return;
     }
 
+    this._currentChangingProperty = propertyName;
+
     if (isValid && propertyName == "value") {
       const data = {};
       data[propertyName] = value;
@@ -255,5 +263,7 @@ export class DxWidget {
     } else {
       this.instance.option(propertyName, value);
     }
+
+    this._currentChangingProperty = null;
   }
 }
