@@ -15,7 +15,7 @@ export class ListWidgetCreatorService {
     private baseWidgetCreator: BaseWidgetCreatorService
   ) { }
 
-  addList(form: FormBase, options: WidgetOptions.IListOptions): DevExpress.ui.dxListOptions {
+  addList(form: FormBase, options: WidgetOptions.IListOptions) {
     const listOptions: DevExpress.ui.dxListOptions = this.baseWidgetCreator.createWidgetOptions(form, options);
 
     listOptions.itemTemplate = "itemTemplate";
@@ -47,7 +47,5 @@ export class ListWidgetCreatorService {
 
     this.baseWidgetCreator.checkListToolbar(form, options);
     this.baseWidgetCreator.checkListRelationEdit(form, options);
-
-    return listOptions;
   }
 }

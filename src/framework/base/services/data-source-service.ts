@@ -3,20 +3,26 @@ import {
 } from "aurelia-framework";
 import {
   IDataSourceOptions,
-  IDataSourceCustomizationOptions,
-  IExpressionProvider
+  IDataSourceCustomizationOptions
 } from "../interfaces/export";
 import {
   RestService
 } from "./rest-service";
+import {
+  BindingService
+} from "./binding-service";
+import {
+  ScopeContainer
+} from "../classes/scope-container";
 
 @autoinject
 export class DataSourceService {
   constructor(
-    private rest: RestService
+    private rest: RestService,
+    private binding: BindingService
   ) {}
 
-    createDataSource(expressionProvider: IExpressionProvider, options: IDataSourceOptions, customizationOptions?: IDataSourceCustomizationOptions, loadRequiredAction?: {(): void}): DevExpress.data.DataSource {
+    createDataSource(scopeContainer: ScopeContainer, options: IDataSourceOptions, customizationOptions?: IDataSourceCustomizationOptions, loadRequiredAction?: {(): void}): DevExpress.data.DataSource {
       const dataSource = new DevExpress.data.DataSource(new DevExpress.data.CustomStore({
         key: options.keyProperty,
         byKey: (key) => {
@@ -24,7 +30,7 @@ export class DataSourceService {
             return Promise.resolve(null);
           }
 
-          const getOptions = this.createGetOptions(expressionProvider, options, customizationOptions);
+          const getOptions = this.createGetOptions(scopeContainer, options, customizationOptions);
 
           return this.rest.get({
             url: this.rest.getWebApiUrl(`${options.webApiAction}/${key}`),
@@ -32,7 +38,7 @@ export class DataSourceService {
           });
         },
         load: (loadOptions) => {
-          const getOptions = this.createGetOptions(expressionProvider, options, customizationOptions);
+          const getOptions = this.createGetOptions(scopeContainer, options, customizationOptions);
           
           if (getOptions == null || !this.canLoad(customizationOptions)) {
             if (loadOptions.requireTotalCount) {
@@ -70,20 +76,27 @@ export class DataSourceService {
             url: this.rest.getWebApiUrl(options.webApiAction),
             getOptions
           }).then(r => {
+            let result;
             if (loadOptions.requireTotalCount) {
-              return {
+              result = {
                 data: r.rows,
                 totalCount: r.count
               };
             } else {
-              return r;
+              result = r;
             }
+
+            if (customizationOptions && customizationOptions.resultInterceptor) {
+              result = customizationOptions.resultInterceptor(result);
+            }
+
+            return result;
           });
         }
       }));
 
       let timeout = null;
-      this.addObservers(expressionProvider, options, () => {
+      this.addObservers(scopeContainer, options, () => {
         if (timeout) {
           clearTimeout(timeout);
           timeout = null;
@@ -104,7 +117,7 @@ export class DataSourceService {
 
       return dataSource;
     }
-    createGetOptions(expressionProvider: IExpressionProvider, options: IDataSourceOptions, customizationOptions?: IDataSourceCustomizationOptions): any {
+    createGetOptions(scopeContainer: ScopeContainer, options: IDataSourceOptions, customizationOptions?: IDataSourceCustomizationOptions): any {
       const getOptions: any = {};
       getOptions.columns = options.webApiColumns;
       getOptions.expand = options.webApiExpand;
@@ -112,7 +125,7 @@ export class DataSourceService {
 
       if (options.webApiWhere) {
         const where = [];
-        if (!this.constructWhere(expressionProvider, options.webApiWhere, where)) {
+        if (!this.constructWhere(scopeContainer, options.webApiWhere, where)) {
           return null;
         }
 
@@ -124,7 +137,7 @@ export class DataSourceService {
         const customs = [];
         const where = [];
 
-        if (!this.constructFilters(expressionProvider, options, customs, where)) {
+        if (!this.constructFilters(scopeContainer, options, customs, where)) {
           return null;
         }
 
@@ -150,6 +163,10 @@ export class DataSourceService {
           }
         }
       }
+
+      if (customizationOptions && customizationOptions.getSearchText) {
+        getOptions.searchText = customizationOptions.getSearchText();
+      }
       
       if (options.webApiMaxRecords > 0) {
         getOptions.maxRecords = options.webApiMaxRecords;
@@ -158,37 +175,37 @@ export class DataSourceService {
       return getOptions;
     }
 
-    addObservers(expressionProvider: IExpressionProvider, options: IDataSourceOptions, action: {(): void}) {
-      this.addObserversWhere(expressionProvider, options.webApiWhere, action);
+    addObservers(scopeContainer: ScopeContainer, options: IDataSourceOptions, action: {(): void}) {
+      this.addObserversWhere(scopeContainer, options.webApiWhere, action);
 
       if (options.filters) {
         for (let item of options.filters) {
-          this.addObserversDetail(expressionProvider, item.if, action);
-          this.addObserversDetail(expressionProvider, item.webApiCustomValue, action);
-          this.addObserversWhere(expressionProvider, item.webApiWhere, action);
+          this.addObserversDetail(scopeContainer, item.if, action);
+          this.addObserversDetail(scopeContainer, item.webApiCustomValue, action);
+          this.addObserversWhere(scopeContainer, item.webApiWhere, action);
         }
       }
     }
-    private addObserversDetail(expressionProvider: IExpressionProvider, expression: string, action: {(): void}) {
+    private addObserversDetail(scopeContainer: ScopeContainer, expression: string, action: {(): void}) {
       if (expression == void (0)) {
         return;
       }
 
-      expressionProvider.createObserver(expression, action);
+      this.binding.observe(scopeContainer, expression, action);
     }
-    private addObserversWhere(expressionProvider: IExpressionProvider, data: any, action: {(): void}) {
+    private addObserversWhere(scopeContainer: ScopeContainer, data: any, action: {(): void}) {
       if (data == void (0)) {
         return;
       }
 
       if (Array.isArray(data)) {
-        (<any[]>data).forEach(item => this.addObserversWhere(expressionProvider, item, action));
+        (<any[]>data).forEach(item => this.addObserversWhere(scopeContainer, item, action));
       } else if (typeof data === "object") {
         if (data.isBound === true && data.expression != void (0)) {
-          this.addObserversDetail(expressionProvider, data.expression, action);
+          this.addObserversDetail(scopeContainer, data.expression, action);
         } else {
           for (let property in data) {
-            this.addObserversWhere(expressionProvider, data[property], action);
+            this.addObserversWhere(scopeContainer, data[property], action);
           }
         }
       }
@@ -198,7 +215,7 @@ export class DataSourceService {
         || !customizationOptions.canLoad 
         || customizationOptions.canLoad();
     }
-    private constructWhere(expressionProvider: IExpressionProvider, data: any, where: any[]): boolean {
+    private constructWhere(scopeContainer: ScopeContainer, data: any, where: any[]): boolean {
       if (data == void (0)) {
         return true;
       }
@@ -209,7 +226,7 @@ export class DataSourceService {
 
         let cancel = false;
         (<any[]>data).forEach(item => {
-          if (!this.constructWhere(expressionProvider, item, newArr)) {
+          if (!this.constructWhere(scopeContainer, item, newArr)) {
             cancel = true;
           }
         });
@@ -219,7 +236,7 @@ export class DataSourceService {
         }
       } else if (typeof data === "object") {
         if (data.isBound === true && data.expression != void (0)) {
-          const val = expressionProvider.evaluateExpression(data.expression);
+          const val = this.binding.evaluate(scopeContainer.scope, data.expression);
           if (val == void (0)) {
             return false;
           }
@@ -227,7 +244,7 @@ export class DataSourceService {
           where.push(val);
         } else {
           for (let property in data) {
-            if (!this.constructWhere(expressionProvider, data[property], where)) {
+            if (!this.constructWhere(scopeContainer, data[property], where)) {
               return false;
             }
           }
@@ -238,10 +255,10 @@ export class DataSourceService {
 
       return true;
     }
-    private constructFilters(expressionProvider: IExpressionProvider, options: IDataSourceOptions, customs: any[], where: any[]): boolean {
+    private constructFilters(scopeContainer: ScopeContainer, options: IDataSourceOptions, customs: any[], where: any[]): boolean {
       for(let item of options.filters) {
         if (item.if) {
-          if (!expressionProvider.evaluateExpression(item.if)) {
+          if (!this.binding.evaluate(scopeContainer.scope, item.if)) {
             continue;
           }
         }
@@ -249,11 +266,11 @@ export class DataSourceService {
         if (item.webApiCustomKey && item.webApiCustomValue) {
           customs.push({
             key: item.webApiCustomKey,
-            value: expressionProvider.evaluateExpression(item.webApiCustomValue)
+            value: this.binding.evaluate(scopeContainer.scope, item.webApiCustomValue)
           });
         } else if (item.webApiWhere) {
           const w = [];
-          if (!this.constructWhere(expressionProvider, item.webApiWhere, w)) {
+          if (!this.constructWhere(scopeContainer, item.webApiWhere, w)) {
             return false;
           }
 

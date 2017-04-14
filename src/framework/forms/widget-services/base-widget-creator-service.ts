@@ -59,10 +59,10 @@ export class BaseWidgetCreatorService {
     const commands = this.defaultCommands.getListCommands(form, options);
 
     if (options.createToolbar) {
-      form[options.optionsToolbar.optionsName] = this.toolbar.createToolbarOptions({
-        bindingContext: form,
-        overrideContext: null
-      }, form.expressions, options.caption, commands);
+      form[options.optionsToolbar.optionsName] = this.toolbar.createToolbarOptions(
+        form.scopeContainer,
+        options.caption, 
+        commands);
     } else if (options.isMainList) {
       commands.forEach(c => form.commands.addCommand(c));
     }
@@ -88,12 +88,16 @@ export class BaseWidgetCreatorService {
         customizationOptions.canLoad = () => {
           return !!(form.models.data && form.models.data[model.id] && form.models.data[model.id][model.keyProperty]);
         }
-        form.expressions.createObserver(`models.data.${model.id}.${model.keyProperty}`, () => {
-          dataSource.reload();
-        });
+        form.binding.observe(
+          form.scopeContainer,
+          `models.data.${model.id}.${model.keyProperty}`, 
+          () => {
+            dataSource.reload();
+          }
+        );
       }
 
-      const dataSource = this.dataSource.createDataSource(form.expressions, relationModel || model, customizationOptions);
+      const dataSource = this.dataSource.createDataSource(form.scopeContainer, relationModel || model, customizationOptions);
       return dataSource;
     }
   }
@@ -102,10 +106,10 @@ export class BaseWidgetCreatorService {
 
     if (options.onItemClick) {
       clickActions.push(e => {
-        form.expressions.evaluateExpression(options.onItemClick, {
-          bindingContext: e,
-          overrideContext: null
-        });
+        form.binding.evaluate({
+            bindingContext: e,
+            overrideContext: null
+          }, options.onItemClick);
       });
     }
     if (options.editDataContext || options.edits.length > 0) {

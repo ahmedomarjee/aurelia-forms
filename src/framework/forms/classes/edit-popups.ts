@@ -67,8 +67,7 @@ export class EditPopups {
   }
 
   private createOptions(editPopup: Interfaces.IEditPopup) {
-    const widgetOptions: DevExpress.ui.dxPopupOptions = this.simpleWidgetCreator.addPopup(this.form, editPopup);
-
+    this.simpleWidgetCreator.addPopup(this.form, editPopup);
   }
   private initializeContent(instance: DevExpress.ui.dxPopup, editPopup: Interfaces.IEditPopup) {
     editPopup.isInitialized = true;
@@ -86,10 +85,8 @@ export class EditPopups {
       });
     });
     
-    popup.option("toolbarItems", this.toolbar.createToolbarItems({
-        bindingContext: content,
-        overrideContext: null
-      }, content.expressions, {
+    popup.option("toolbarItems", this.toolbar.createToolbarItems(
+      this.form.scopeContainer, {
       getItems: () => {
         return popup.option("toolbarItems");
       },
@@ -102,7 +99,8 @@ export class EditPopups {
     (<any>popup).on({
       shown: () => {
         editPopup.mappings.forEach(m => {
-          content.variables.data[m.to] = this.form.expressions.evaluateExpression(
+          content.variables.data[m.to] = this.form.binding.evaluate(
+            this.form.scope, 
             m.binding.bindToFQ
           );
         });

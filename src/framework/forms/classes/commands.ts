@@ -6,15 +6,11 @@ import * as Interfaces from "../interfaces/export";
 import {
   FormBase
 } from "../classes/form-base";
-import {
-  Expressions
-} from "./expressions";
 
 @autoinject
 @singleton(true)
 export class Commands {
   private form: FormBase;
-  private expressions: Expressions;
   private commands: Interfaces.ICommand[] = [];
   private commandData: Interfaces.ICommandData[] = [];
 
@@ -28,7 +24,7 @@ export class Commands {
   }
 
   getCommands(): Interfaces.ICommandData[] {
-    const result = this.commands.map(i => this.expressions.evaluateExpression(i.binding.bindToFQ));
+    const result = this.commands.map(i => this.form.binding.evaluate(this.form.scope, i.binding.bindToFQ));
 
     result.push(...this.commandData);
 
@@ -41,6 +37,5 @@ export class Commands {
     }
 
     this.form = form;
-    this.expressions = form.expressions;
   }
 }

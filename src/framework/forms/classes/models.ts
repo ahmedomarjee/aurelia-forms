@@ -16,16 +16,12 @@ import {
 import {
   DataSourceService
 } from "../../base/services/data-source-service";
-import {
-  Expressions
-} from "./expressions";
 import * as Interfaces from "../interfaces/export";
 
 @autoinject
 @singleton(true)
 export class Models {
   private form: FormBase;
-  private expressions: Expressions;
   private info: any;
 
   constructor(
@@ -42,7 +38,7 @@ export class Models {
 
     this.onLoadRequired.register((args) => {
       if (args.model.key || args.model.autoLoad) {
-        const key = this.expressions.evaluateExpression(args.model.key);
+        const key = this.form.binding.evaluate(this.form.scope, args.model.key);
         return this.loadModel(args.model, key);
       }
 
@@ -83,10 +79,10 @@ export class Models {
 
     return arr;
   }
-  loadModel(model: Interfaces.IModel, key: any): Promise<any> {
-    const getOptions = this.dataSource.createGetOptions(this.expressions, model);
+  loadModel(model: Interfaces.IModel, keyValue: any): Promise<any> {
+    const getOptions = this.dataSource.createGetOptions(this.form.scopeContainer, model);
 
-    if (key == void (0)) {
+    if (keyValue == void (0)) {
       this.data[model.id] = null;
 
       this.onLoaded.fire({
@@ -95,7 +91,7 @@ export class Models {
       })
     } else {
       return this.rest.get({
-        url: this.rest.getWebApiUrl(`${model.webApiAction}/${key}`),
+        url: this.rest.getWebApiUrl(`${model.webApiAction}/${keyValue}`),
         getOptions,
         increaseLoadingCount: true
       }).then(r => {
@@ -113,13 +109,28 @@ export class Models {
       });
     }
   }
+  loadModelsWithKey() {
+    for (let id in this.info) {
+      const model: Interfaces.IModel = this.info[id];
+
+      if (!model.key) {
+        continue;
+      }
+
+      const keyValue = this.form.binding.evaluate(this.form.scope, model.key);
+      if (keyValue == void(0)) {
+        continue;
+      }
+
+      this.loadModel(model, keyValue);
+    }
+  }
   registerForm(form: FormBase) {
     if (this.form) {
       throw new Error("Form was already registered");
     }
 
     this.form = form;
-    this.expressions = form.expressions;
   }
 
   save(): Promise<any> {
@@ -137,7 +148,7 @@ export class Models {
           url: this.rest.getWebApiUrl(m.webApiAction),
           data: this.data[m.id],
           increaseLoadingCount: true,
-          getOptions: this.dataSource.createGetOptions(this.expressions, m)
+          getOptions: this.dataSource.createGetOptions(this.form.scopeContainer, m)
         }).then(r => {
           this.data[m.id] = r;
           this.onLoaded.fire({
@@ -177,7 +188,7 @@ export class Models {
   private addObservers(model: Interfaces.IModel) {
     this.addObserversDetail(model, model.key);
 
-    this.dataSource.addObservers(this.form.expressions, model, () => {
+    this.dataSource.addObservers(this.form.scopeContainer, model, () => {
       this.onLoadRequired.fire({
         model
       });
@@ -188,7 +199,7 @@ export class Models {
       return;
     }
 
-    this.expressions.createObserver(expression, (newValue, oldValue) => {
+    this.form.binding.observe(this.form.scopeContainer, expression, (newValue, oldValue) => {
       this.onLoadRequired.fire({
         model
       });

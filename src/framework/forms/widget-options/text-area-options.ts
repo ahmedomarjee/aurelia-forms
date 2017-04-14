@@ -5,4 +5,5 @@ import {IEditorOptions} from "./editor-options";
 
 export interface ITextAreaOptions extends IEditorOptions {
     height?: string;
+    maxLength?: number;
 }

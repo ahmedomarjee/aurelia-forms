@@ -1,14 +1,43 @@
 import {
   autoinject,
+  BindingEngine,
+  Disposable,
   Scope
 } from "aurelia-framework";
+import {
+  ScopeContainer
+} from "../classes/scope-container"
 
 @autoinject
 export class BindingService {
-  constructor() {}
+  constructor(
+    private bindingEngine: BindingEngine
+  ) {}
 
-  getBindingContext(expression: any, scope: Scope) {
-    let obj = expression;
+  assign(scope: Scope, expression: string, value: any) {
+    this.bindingEngine
+      .parseExpression(expression)
+      .assign(scope, value, null);
+  }
+  evaluate(scope: Scope, expression: string): any {
+    return this.bindingEngine
+      .parseExpression(expression)
+      .evaluate(scope);
+  }
+  observe(scopeContainer: ScopeContainer, expression: string, callback: {(newValue?: any, oldValue?: any): void}): Disposable {
+    const disposable = this.bindingEngine
+      .expressionObserver(
+        this.getBindingContext(scopeContainer.scope, expression),
+        expression
+      ).subscribe(callback);
+
+      scopeContainer.addDisposable(disposable);
+      return disposable;
+  }
+  getBindingContext(scope: Scope, expression: string) {
+    let obj: any = this.bindingEngine
+      .parseExpression(expression);
+    
     while (obj.object) {
       obj = obj.object;
     }

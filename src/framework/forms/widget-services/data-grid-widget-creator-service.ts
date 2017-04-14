@@ -24,7 +24,7 @@ export class DataGridWidgetCreatorService {
     private localization: LocalizationService
   ) { }
 
-  addDataGrid(form: FormBase, options: WidgetOptions.IDataGridOptions): DevExpress.ui.dxDataGridOptions {
+  addDataGrid(form: FormBase, options: WidgetOptions.IDataGridOptions) {
     const dataGridOptions: DevExpress.ui.dxDataGridOptions = this.baseWidgetCreator.createWidgetOptions(form, options);
 
     if (options.dataModel) {
@@ -51,7 +51,7 @@ export class DataGridWidgetCreatorService {
         const column: DevExpress.ui.dxDataGridColumn = {};
 
         if (col.caption) {
-          column.caption = this.localization.translate(form.scope, col.caption);
+          column.caption = this.localization.translate(form.scopeContainer, col.caption);
         }
         if (col.bindTo) {
           column.dataField = col.bindTo;
@@ -113,8 +113,6 @@ export class DataGridWidgetCreatorService {
 
     this.baseWidgetCreator.checkListToolbar(form, options);
     this.baseWidgetCreator.checkListRelationEdit(form, options);
-
-    return dataGridOptions;
   }
 
   private getSelectionMode(selectionMode: SelectionModeEnum): string {

@@ -2,11 +2,9 @@ import {
   autoinject
 } from "aurelia-framework";
 import {
-  LocalizationService
-} from "../../base/services/localization-service";
-import {
-  IExpressionProvider
-} from "../../base/interfaces/export";
+  LocalizationService,
+  ScopeContainer
+} from "../../base/export";
 
 @autoinject
 export class ValidationService {
@@ -20,22 +18,22 @@ export class ValidationService {
     this.registerStringLength();
   }
 
-  registerValidator(type: string, callback: {(expressionProvider: IExpressionProvider, caption: string, parameters: any): any}) {
+  registerValidator(type: string, callback: {(scopeContainer: ScopeContainer, caption: string, parameters: any): any}) {
     this.validators[type] = callback;
   }
 
-  getValidator(expressionProvider: IExpressionProvider, type: string, caption: string, parameters: any): any {
+  getValidator(scopeContainer: ScopeContainer, type: string, caption: string, parameters: any): any {
     const validator = this.validators[type];
 
     if (!validator) {
       throw new Error(`Validator ${type} not found`);
     }
 
-    return validator(expressionProvider, caption, parameters);
+    return validator(scopeContainer, caption, parameters);
   }
 
   private registerRequired() {
-    this.registerValidator("required", (expressionProvider, caption, parameters) => {
+    this.registerValidator("required", (scopeContainer, caption, parameters) => {
       return {
         type: "required",
         message: this.localization.translate(
@@ -45,7 +43,7 @@ export class ValidationService {
     });
   }
   private registerEmail() {
-    this.registerValidator("email", (expressionProvider, caption, parameters) => {
+    this.registerValidator("email", (scopeContainer, caption, parameters) => {
       return {
         type: "email",
         message: this.localization.translate(
@@ -55,7 +53,7 @@ export class ValidationService {
     });
   }
   private registerStringLength() {
-    this.registerValidator("stringLength", (expressionProvider, caption, parameters) => {
+    this.registerValidator("stringLength", (scopeContainer, caption, parameters) => {
       if (parameters.min && parameters.max) {
         return {
           type: "stringLength",

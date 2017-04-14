@@ -6,11 +6,12 @@ import {
   FormBase
 } from "../classes/form-base";
 import {
-  IExpressionProvider
-} from "../../base/interfaces/export";
-import {
+  BindingService,
   LocalizationService
 } from "../../base/services/export";
+import {
+  ScopeContainer
+} from "../../base/classes/export";
 import {
   CommandService
 } from "../services/command-service";
@@ -30,26 +31,28 @@ export class ToolbarService {
   constructor(
     private command: CommandService,
     private localization: LocalizationService,
+    private binding: BindingService,
     private dxTemplate: DxTemplateService
   ) { }
 
   createFormToolbarOptions(form: FormBase): DevExpress.ui.dxToolbarOptions {
     let component: DevExpress.ui.dxToolbar;
 
-    const options = this.createToolbarOptions({
-        bindingContext: form,
-        overrideContext: null
-      }, form.expressions, form.title, form.commands.getCommands(), (c) => {
-      component = c;
-    });
+    const options = this.createToolbarOptions(
+      form.scopeContainer,
+      form.title,
+      form.commands.getCommands(),
+      (c) => {
+        component = c;
+      });
 
-    form.expressions.createObserver("title", (newValue) => {
+    this.binding.observe(form.scopeContainer, "title", (newValue) => {
       const title = this.createTitleHtml(newValue);
       const titleItem = options.items.find(item => item[this.titleItemTemplate] === this.titleItemTemplate);
 
       if (titleItem) {
         const indexOfTitleItem = options.items.indexOf(titleItem);
-        
+
         if (component) {
           component.option(`items[${indexOfTitleItem}].html`, title);
         }
@@ -60,7 +63,7 @@ export class ToolbarService {
 
     return options;
   }
-  createToolbarOptions(scope: Scope, expressionProvider: IExpressionProvider, title: string, commands: Interfaces.ICommandData[], componentCreatedCallback?: {(component: DevExpress.ui.dxToolbar)}): DevExpress.ui.dxToolbarOptions {
+  createToolbarOptions(scopeContainer: ScopeContainer, title: string, commands: Interfaces.ICommandData[], componentCreatedCallback?: { (component: DevExpress.ui.dxToolbar) }): DevExpress.ui.dxToolbarOptions {
     let component: DevExpress.ui.dxToolbar
 
     const options: DevExpress.ui.dxToolbarOptions = {
@@ -73,7 +76,7 @@ export class ToolbarService {
       }
     };
 
-    options.items = this.createToolbarItems(scope, expressionProvider, {
+    options.items = this.createToolbarItems(scopeContainer, {
       getItems: () => {
         if (!component) {
           return options.items;
@@ -91,21 +94,21 @@ export class ToolbarService {
     }, title, commands);
     return options;
   }
-  createToolbarItems(scope: Scope, expressionProvider: IExpressionProvider, toolbarManager: IToolbarManager, title: string, commands: Interfaces.ICommandData[]): DevExpress.ui.dxPopupToolbarItemOptions[] {
+  createToolbarItems(scopeContainer: ScopeContainer, toolbarManager: IToolbarManager, title: string, commands: Interfaces.ICommandData[]): DevExpress.ui.dxPopupToolbarItemOptions[] {
     const items = commands
       .sort((a, b) => {
-        const s1 = a.sort == void(0) ? 500 : a.sort;
-        const s2 = b.sort == void(0) ? 500 : b.sort;
+        const s1 = a.sort == void (0) ? 500 : a.sort;
+        const s2 = b.sort == void (0) ? 500 : b.sort;
 
         if (s1 < s2) {
-            return -1;
+          return -1;
         } else if (s1 > s2) {
-            return 1;
+          return 1;
         } else {
-            return 0;
+          return 0;
         }
       })
-      .map(i => this.createToolbarItem(scope, expressionProvider, toolbarManager, i));
+      .map(i => this.createToolbarItem(scopeContainer, toolbarManager, i));
 
     const titleItem: DevExpress.ui.dxPopupToolbarItemOptions = {
       html: this.createTitleHtml(title),
@@ -117,26 +120,26 @@ export class ToolbarService {
     items.splice(0, 0, titleItem);
     return items;
   }
-  createToolbarItem(scope: Scope, expressionProvider: IExpressionProvider, toolbarManager: IToolbarManager, command: Interfaces.ICommandData): DevExpress.ui.dxPopupToolbarItemOptions {
+  createToolbarItem(scopeContainer: ScopeContainer, toolbarManager: IToolbarManager, command: Interfaces.ICommandData): DevExpress.ui.dxPopupToolbarItemOptions {
     const item: DevExpress.ui.dxPopupToolbarItemOptions = {};
 
-    this.setEnabled(expressionProvider, toolbarManager, command, item);
-    this.setVisible(expressionProvider, toolbarManager, command, item);
+    this.setEnabled(scopeContainer, toolbarManager, command, item);
+    this.setVisible(scopeContainer, toolbarManager, command, item);
     item.template = (model, dummy, container) => {
       return this.dxTemplate.render(
         <string>toolbarButtonTemplate,
         container,
         null,
-        scope,
+        scopeContainer.scope,
         model
       );
     };
-    
+
     item.location = command.location || "before";
     (<any>item).locateInMenu = command.locateInMenu;
     (<any>item).command = command;
     (<any>item).guardedExecute = () => {
-      this.command.execute(expressionProvider, command);
+      this.command.execute(scopeContainer.scope, command);
     };
 
     return item;
@@ -150,44 +153,48 @@ export class ToolbarService {
     return `<div class="t--toolbar-title">${this.localization.translate(null, title)}</div>`;
   }
 
-  private setEnabled(expressionProvider: IExpressionProvider, toolbarManager: IToolbarManager, command: Interfaces.ICommandData, item: DevExpress.ui.dxPopupToolbarItemOptions) {
+  private setEnabled(scopeContainer: ScopeContainer, toolbarManager: IToolbarManager, command: Interfaces.ICommandData, item: DevExpress.ui.dxPopupToolbarItemOptions) {
     const setEnabled = (val) => {
       this.setItemOption(toolbarManager, item, "disabled", !val);
       item.disabled = !val;
       command.isEnabled = val;
     }
 
-    item.disabled = !this.command.isEnabled(expressionProvider, command);
+    item.disabled = !this.command.isEnabled(scopeContainer.scope, command);
     if (command.isEnabled != undefined) {
-      expressionProvider.createObserver("isEnabled", (newValue) => {
-        setEnabled(newValue);
-      }, {
+      const newScopeContainer = new ScopeContainer({
         bindingContext: command,
-        overrideContext: null 
+        overrideContext: null
+      }, scopeContainer);
+
+      this.binding.observe(newScopeContainer, "isEnabled", (newValue) => {
+        setEnabled(newValue);
       });
     } else if (command.isEnabledExpression) {
-      expressionProvider.createObserver(command.isEnabledExpression, (newValue) => {
+      this.binding.observe(scopeContainer, command.isEnabledExpression, (newValue) => {
         setEnabled(newValue);
       });
     }
   }
-  private setVisible(expressionProvider: IExpressionProvider, toolbarManager: IToolbarManager, command: Interfaces.ICommandData, item: DevExpress.ui.dxPopupToolbarItemOptions) {
+  private setVisible(scopeContainer: ScopeContainer, toolbarManager: IToolbarManager, command: Interfaces.ICommandData, item: DevExpress.ui.dxPopupToolbarItemOptions) {
     const setVisible = (val) => {
       this.setItemOption(toolbarManager, item, "visible", val);
       item.visible = val;
       command.isVisible = val;
     }
 
-    item.visible = this.command.isVisible(expressionProvider, command);
+    item.visible = this.command.isVisible(scopeContainer.scope, command);
     if (command.isVisible != undefined) {
-      expressionProvider.createObserver("isVisible", (newValue) => {
-        setVisible(newValue);
-      }, {
+      const newScopeContainer = new ScopeContainer({
         bindingContext: command,
         overrideContext: null
+      }, scopeContainer);
+
+      this.binding.observe(newScopeContainer, "isVisible", (newValue) => {
+        setVisible(newValue);
       });
     } else if (command.isVisibleExpression) {
-      expressionProvider.createObserver(command.isVisibleExpression, (newValue) => {
+      this.binding.observe(scopeContainer, command.isVisibleExpression, (newValue) => {
         setVisible(newValue);
       });
     }
