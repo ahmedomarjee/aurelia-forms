@@ -230,6 +230,15 @@ export class FormBase {
   validate(): Promise<any> {
     return this.onValidating.fire({
       form: this
+    }).then(() => {
+      const forms = this.nestedForms.getNestedForms();
+
+      let promise = Promise.resolve();
+      for (let form of forms) {
+        promise = form.validate();
+      }
+
+      return promise;
     });
   }
 
