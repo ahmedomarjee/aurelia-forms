@@ -2,7 +2,6 @@ import {Aurelia} from "aurelia-framework"
 import environment from "./environment";
 import {AuthorizationService} from "./framework/base/services/authorization-service";
 
-//Configure Bluebird Promises.
 (<any>Promise).config({
   longStackTraces: environment.debug,
   warnings: {
