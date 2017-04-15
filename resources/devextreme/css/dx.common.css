@@ -1,9 +1,9 @@
 /*!
 * DevExtreme
-* Version: 16.2.3
-* Build date: Dec 13, 2016
+* Version: 16.2.6
+* Build date: Mar 28, 2017
 *
-* Copyright (c) 2012 - 2016 Developer Express Inc. ALL RIGHTS RESERVED
+* Copyright (c) 2012 - 2017 Developer Express Inc. ALL RIGHTS RESERVED
 * EULA: https://www.devexpress.com/Support/EULAs/DevExtreme.xml
 */
 .dx-clearfix:before,
@@ -53,12 +53,6 @@
   bottom: 0;
   opacity: 0;
   z-index: 2147483647;
-}
-.dx-deferrendering.dx-pending-rendering .dx-invisible-while-pending-rendering {
-  display: none !important;
-}
-.dx-deferrendering:not(.dx-pending-rendering) .dx-visible-while-pending-rendering {
-  display: none !important;
 }
 .dx-animating {
   pointer-events: none;
@@ -686,6 +680,9 @@
   direction: rtl;
   unicode-bidi: embed;
 }
+.dx-state-disabled {
+  pointer-events: none;
+}
 .dx-badge {
   padding: 0px 5px;
   -webkit-border-radius: 14px;
@@ -713,6 +710,7 @@
   cursor: default;
 }
 .dx-resizable {
+  display: block;
   position: relative;
 }
 .dx-resizable-handle {
@@ -930,6 +928,7 @@
   position: relative;
 }
 .dx-scrollable {
+  display: block;
   height: 100%;
   min-height: 0;
 }
@@ -3710,6 +3709,7 @@
   width: 100%;
   height: 100%;
   top: 0;
+  z-index: 100;
 }
 .dx-slideoutview-shield {
   position: absolute;
@@ -4153,7 +4153,7 @@
 .dx-datagrid.dx-datagrid-borders > .dx-datagrid-header-panel {
   border-bottom: 0;
 }
-.dx-datagrid.dx-datagrid-borders > .dx-datagrid-rowsview.dx-last-row-border .dx-data-row.dx-row-lines:nth-last-child(2) td {
+.dx-datagrid.dx-datagrid-borders > .dx-datagrid-rowsview.dx-last-row-border tbody:last-child > .dx-data-row:nth-last-child(2) > td {
   border-bottom-width: 0;
 }
 .dx-datagrid .dx-menu-horizontal {
@@ -4200,15 +4200,14 @@
   vertical-align: top;
   white-space: nowrap;
 }
+.dx-datagrid .dx-column-indicators.dx-visibility-hidden {
+  visibility: hidden;
+}
 .dx-datagrid .dx-column-indicators .dx-sort.dx-sort,
 .dx-datagrid .dx-column-indicators .dx-header-filter.dx-sort,
 .dx-datagrid .dx-column-indicators .dx-sort.dx-header-filter,
 .dx-datagrid .dx-column-indicators .dx-header-filter.dx-header-filter {
   display: inline-block;
-}
-.dx-datagrid .dx-column-indicators .dx-sort.dx-sort-none,
-.dx-datagrid .dx-column-indicators .dx-header-filter.dx-sort-none {
-  width: 14px;
 }
 .dx-datagrid .dx-column-indicators .dx-sort.dx-header-filter:after,
 .dx-datagrid .dx-column-indicators .dx-header-filter.dx-header-filter:after {
@@ -4348,6 +4347,18 @@ input.dx-hidden {
 .dx-datagrid-content .dx-datagrid-table.dx-datagrid-table-fixed .dx-column-indicators .dx-sort.dx-sort-none {
   display: none;
 }
+.dx-datagrid-content .dx-datagrid-table:not(.dx-datagrid-table-fixed) .dx-column-indicators {
+  float: none !important;
+}
+.dx-datagrid-content .dx-datagrid-table:not(.dx-datagrid-table-fixed) .dx-column-indicators > span {
+  width: 14px;
+}
+.dx-datagrid-content .dx-datagrid-table:not(.dx-datagrid-table-fixed) .dx-text-content-alignment-left {
+  margin-right: 3px;
+}
+.dx-datagrid-content .dx-datagrid-table:not(.dx-datagrid-table-fixed) .dx-text-content-alignment-right {
+  margin-left: 3px;
+}
 .dx-datagrid-content .dx-datagrid-table [class*="column"] + [class*="column"]:last-child {
   float: none;
 }
@@ -4469,17 +4480,34 @@ input.dx-hidden {
 }
 .dx-datagrid-headers .dx-header-row > td > .dx-datagrid-text-content {
   white-space: normal;
-  display: inline-block;
   vertical-align: top;
 }
-.dx-datagrid-headers .dx-header-row.dx-column-lines > td > .dx-datagrid-text-content {
-  display: block;
+.dx-header-row .dx-text-content-alignment-left,
+.dx-header-row .dx-text-content-alignment-right {
+  display: inline-block;
+  max-width: 100%;
 }
-.dx-header-row .dx-indicator-alignment-left {
+.dx-header-row .dx-sort-indicator,
+.dx-header-row .dx-header-filter-indicator {
+  max-width: calc(100% -  17px);
+}
+.dx-header-row .dx-sort-indicator.dx-text-content-alignment-left,
+.dx-header-row .dx-header-filter-indicator.dx-text-content-alignment-left {
+  margin-right: 3px;
+}
+.dx-header-row .dx-sort-indicator.dx-text-content-alignment-right,
+.dx-header-row .dx-header-filter-indicator.dx-text-content-alignment-right {
   margin-left: 3px;
 }
-.dx-header-row .dx-indicator-alignment-right {
-  margin-right: 3px;
+.dx-header-row .dx-sort-indicator.dx-text-content-alignment-left.dx-text-content-alignment-right,
+.dx-header-row .dx-header-filter-indicator.dx-text-content-alignment-left.dx-text-content-alignment-right {
+  max-width: calc(100% -  34px);
+}
+.dx-header-row .dx-sort-indicator.dx-header-filter-indicator {
+  max-width: calc(100% -  31px);
+}
+.dx-header-row .dx-sort-indicator.dx-header-filter-indicator.dx-text-content-alignment-left.dx-text-content-alignment-right {
+  max-width: calc(100% -  62px);
 }
 .dx-datagrid-filter-range-overlay .dx-texteditor {
   border-width: 0px;
@@ -4615,6 +4643,9 @@ input.dx-hidden {
 }
 .dx-datagrid-rowsview.dx-scrollable .dx-scrollable-content {
   z-index: 2;
+}
+.dx-datagrid-rowsview .dx-datagrid-content {
+  overflow-anchor: none;
 }
 .dx-datagrid-rowsview .dx-scrollable-scrollbar {
   z-index: 3;
@@ -4894,12 +4925,15 @@ input.dx-hidden {
   width: 100%;
   position: relative;
 }
+.dx-pivotgrid.dx-overflow-hidden {
+  overflow: hidden;
+}
 .dx-pivotgrid .dx-area-data-cell,
 .dx-pivotgrid .dx-area-column-cell {
   width: 100%;
 }
-.dx-pivotgrid.dx-overflow-hidden {
-  overflow: hidden;
+.dx-pivotgrid .dx-area-data-cell {
+  position: relative;
 }
 .dx-pivotgrid table,
 .dx-pivotgrid tbody,
@@ -5685,6 +5719,7 @@ input.dx-hidden {
   -ms-transform-origin: 50% 100%;
   -o-transform-origin: 50% 100%;
   transform-origin: 50% 100%;
+  -webkit-backface-visibility: hidden;
 }
 .dx-timeview-field .dx-numberbox {
   width: 70px;
@@ -5928,4 +5963,15 @@ input.dx-hidden {
 .dx-rtl .dx-form-group-with-caption .dx-form-group.dx-form-group-with-caption {
   padding-left: 0;
   padding-right: 20px;
+}
+.dx-deferrendering .dx-deferrendering-loadindicator-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+.dx-deferrendering.dx-pending-rendering .dx-invisible-while-pending-rendering {
+  display: none !important;
+}
+.dx-deferrendering:not(.dx-pending-rendering) .dx-visible-while-pending-rendering {
+  display: none !important;
 }

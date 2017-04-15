@@ -2167,6 +2167,17 @@ define('framework/base/index',["require", "exports"], function (require, exports
     exports.configure = configure;
 });
 
+define('framework/dx/index',["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    function configure(config) {
+        config
+            .globalResources("devextreme")
+            .globalResources("./elements/dx-widget");
+    }
+    exports.configure = configure;
+});
+
 define('framework/default-ui/export',["require", "exports", "./services/export"], function (require, exports, export_1) {
     "use strict";
     function __export(m) {
@@ -2184,17 +2195,6 @@ define('framework/default-ui/index',["require", "exports"], function (require, e
             .globalResources("./styles/styles.css")
             .globalResources("./styles/toolbar.css")
             .globalResources("./styles/popup.css");
-    }
-    exports.configure = configure;
-});
-
-define('framework/dx/index',["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    function configure(config) {
-        config
-            .globalResources("devextreme")
-            .globalResources("./elements/dx-widget");
     }
     exports.configure = configure;
 });
@@ -5639,6 +5639,31 @@ define('framework/default-ui/views/loading/loading',["require", "exports", "tsli
     exports.Loading = Loading;
 });
 
+define('framework/default-ui/views/loading-spinner/loading-spinner',["require", "exports", "tslib", "aurelia-framework"], function (require, exports, tslib_1, aurelia_framework_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var LoadingSpinner = (function () {
+        function LoadingSpinner(element) {
+            this.element = element;
+        }
+        LoadingSpinner.prototype.bind = function () {
+            $(this.element).removeClass("t--loading-active");
+        };
+        LoadingSpinner.prototype.attached = function () {
+            var _this = this;
+            setTimeout(function () {
+                $(_this.element).addClass("t--loading-active");
+            }, 500);
+        };
+        return LoadingSpinner;
+    }());
+    LoadingSpinner = tslib_1.__decorate([
+        aurelia_framework_1.autoinject,
+        tslib_1.__metadata("design:paramtypes", [Element])
+    ], LoadingSpinner);
+    exports.LoadingSpinner = LoadingSpinner;
+});
+
 define('framework/default-ui/views/sidebar/sidebar',["require", "exports", "tslib", "aurelia-framework", "../../services/layout-service", "../../../stack-router/export"], function (require, exports, tslib_1, aurelia_framework_1, layout_service_1, export_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -5704,31 +5729,6 @@ define('framework/default-ui/views/sidebar/sidebar',["require", "exports", "tsli
             export_1.RouterService])
     ], Sidebar);
     exports.Sidebar = Sidebar;
-});
-
-define('framework/default-ui/views/loading-spinner/loading-spinner',["require", "exports", "tslib", "aurelia-framework"], function (require, exports, tslib_1, aurelia_framework_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var LoadingSpinner = (function () {
-        function LoadingSpinner(element) {
-            this.element = element;
-        }
-        LoadingSpinner.prototype.bind = function () {
-            $(this.element).removeClass("t--loading-active");
-        };
-        LoadingSpinner.prototype.attached = function () {
-            var _this = this;
-            setTimeout(function () {
-                $(_this.element).addClass("t--loading-active");
-            }, 500);
-        };
-        return LoadingSpinner;
-    }());
-    LoadingSpinner = tslib_1.__decorate([
-        aurelia_framework_1.autoinject,
-        tslib_1.__metadata("design:paramtypes", [Element])
-    ], LoadingSpinner);
-    exports.LoadingSpinner = LoadingSpinner;
 });
 
 define('framework/default-ui/views/sidebar-sub/sidebar-sub',["require", "exports", "tslib", "aurelia-framework"], function (require, exports, tslib_1, aurelia_framework_1) {
@@ -6196,17 +6196,17 @@ define('text!framework/login/login.css', ['module'], function(module) { module.e
 define('text!framework/default-ui/views/container/container.html', ['module'], function(module) { module.exports = "<template class=\"t--container\" class.bind=\"className\">\r\n  <require from=\"./container.css\"></require>\r\n  \r\n  <require from=\"../loading/loading\"></require>\r\n  <require from=\"../sidebar/sidebar\"></require>\r\n  <require from=\"../header/header\"></require>\r\n  <require from=\"../content/content\"></require>\r\n\r\n  <loading></loading>\r\n  <sidebar></sidebar>\r\n  <header></header>\r\n  <content></content>\r\n</template>\r\n"; });
 define('text!framework/default-ui/views/content/content.html', ['module'], function(module) { module.exports = "<template class=\"t--content\">\r\n  <require from=\"./content.css\"></require>\r\n\r\n  <stack-router></stack-router>\r\n</template>\r\n"; });
 define('text!framework/base/styles/styles.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\nbody {\n  margin: 0;\n  padding: 0;\n  font-family: \"Helvetica Neue\", \"Segoe UI\", Helvetica, Verdana, sans-serif;\n  font-size: 12px;\n}\n.t--editor-caption {\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n.t--cursor-pointer {\n  cursor: pointer;\n}\n.t--invisible-submit {\n  height: 0;\n  width: 0;\n  margin: 0;\n  padding: 0;\n  border: 0;\n}\n"; });
-define('text!framework/default-ui/views/loading/loading.html', ['module'], function(module) { module.exports = "<template>\r\n  <require from=\"../loading-spinner/loading-spinner\"></require>\r\n\r\n  <loading-spinner if.bind=\"loading.isLoading\"></loading-spinner>\r\n</template>"; });
-define('text!framework/base/styles/variables.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n"; });
 define('text!framework/default-ui/views/header/header.html', ['module'], function(module) { module.exports = "<template class=\"t--header\">\r\n  <require from=\"./header.css\"></require>\r\n\r\n  <div class=\"t--header-flex\">\r\n    <div class=\"t--header-title\" if.bind=\"header.text\">\r\n      ${header.text}\r\n    </div>\r\n    <div class=\"t--header-search\" if.bind=\"header.onSearch.anyRegistered\">\r\n      <dx-widget name=\"dxTextBox\" options.bind=\"searchTextOptions\"></dx-widget>\r\n    </div>\r\n    <div class=\"t--header-between\"></div>\r\n    <div class=\"t--header-options\">\r\n      <a href=\"#\" click.delegate=\"logout()\" tr=\"key: base.logout\"></a>\r\n    </div>\r\n  </div>\r\n</template>"; });
+define('text!framework/base/styles/variables.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n"; });
+define('text!framework/default-ui/views/loading/loading.html', ['module'], function(module) { module.exports = "<template>\r\n  <require from=\"../loading-spinner/loading-spinner\"></require>\r\n\r\n  <loading-spinner if.bind=\"loading.isLoading\"></loading-spinner>\r\n</template>"; });
 define('text!framework/default-ui/styles/popup.css', ['module'], function(module) { module.exports = ".dx-popup-wrapper:not(.dx-dialog) > .dx-popup-normal > .dx-popup-content {\n  padding: 0;\n}\n"; });
 define('text!framework/default-ui/views/loading-spinner/loading-spinner.html', ['module'], function(module) { module.exports = "<template class=\"t--loading\">\r\n  <require from=\"./loading-spinner.css\"></require>\r\n  \r\n  <div class=\"t--loading-spinner\">\r\n    <div class=\"t--loading-rect1\"></div>\r\n    <div class=\"t--loading-rect2\"></div>\r\n    <div class=\"t--loading-rect3\"></div>\r\n    <div class=\"t--loading-rect4\"></div>\r\n    <div class=\"t--loading-rect5\"></div>\r\n  </div>\r\n</template>"; });
 define('text!framework/default-ui/views/sidebar/sidebar.html', ['module'], function(module) { module.exports = "<template class=\"t--sidebar\">\r\n  <require from=\"../sidebar-sub/sidebar-sub\"></require>\r\n  <require from=\"./sidebar.css\"></require>\r\n\r\n  <div class=\"t--sidebar-header\" click.delegate=\"onHeaderClicked()\">\r\n    <div class=\"t--sidebar-header-title\" tr=\"key: base.navigation\">\r\n    </div>\r\n    <div class=\"t--sidebar-header-icon\">\r\n      <i class=\"fa fa-${headerIcon}\"></i>\r\n    </div>\r\n  </div>\r\n\r\n  <ul>\r\n    <li\r\n      repeat.for=\"route of router.navigationRoutes\">\r\n      <sidebar-sub route.bind=\"route\" if.bind=\"route.sidebarExpanded\"></sidebar-sub>\r\n      <a \r\n        href.bind=\"route.route ? '#' + route.route : ''\" \r\n        class=\"t--sidebar-item\"\r\n        click.delegate=\"onRouteClicked(route)\"\r\n        stack-router-link=\"clear-stack.bind: true\">\r\n        <span class=\"t--sidebar-item-title\" tr=\"key.bind: route.caption\">\r\n        </span>\r\n        <span class=\"t--sidebar-item-icon\" if.bind=\"route.navigation.icon\" title.bind=\"route.caption | tr\">\r\n          <i class=\"fa fa-${route.navigation.icon}\"></i>\r\n        </span>\r\n      </a>\r\n    </li>\r\n  </ul>\r\n</template>\r\n"; });
-define('text!framework/default-ui/views/sidebar-sub/sidebar-sub.html', ['module'], function(module) { module.exports = "<template class=\"t--sidebar-sub au-animate\">\r\n  <require from=\"./sidebar-sub.css\"></require>\r\n\r\n  <ul class=\"t--sidebar-sub-ul\">\r\n    <li repeat.for=\"child of route.children | sort:'caption':'asc':true\">\r\n      <a \r\n        href.bind=\"child.route ? '#' + child.route : ''\" \r\n        class=\"t--sidebar-sub-item\"\r\n        stack-router-link=\"clear-stack.bind: true\">\r\n        <span class=\"t--sidebar-sub-item-title\" tr=\"key.bind: child.caption\">\r\n        </span>\r\n      </a>\r\n    </li>\r\n  </ul>\r\n</template>"; });
 define('text!framework/default-ui/styles/styles.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--view-content {\n  opacity: 0;\n  transform: translateX(10px);\n  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n  transition-property: all;\n}\n.t--view-content.t--view-content-attached {\n  opacity: 1;\n  transform: translateX(0);\n}\n"; });
+define('text!framework/default-ui/views/sidebar-sub/sidebar-sub.html', ['module'], function(module) { module.exports = "<template class=\"t--sidebar-sub au-animate\">\r\n  <require from=\"./sidebar-sub.css\"></require>\r\n\r\n  <ul class=\"t--sidebar-sub-ul\">\r\n    <li repeat.for=\"child of route.children | sort:'caption':'asc':true\">\r\n      <a \r\n        href.bind=\"child.route ? '#' + child.route : ''\" \r\n        class=\"t--sidebar-sub-item\"\r\n        stack-router-link=\"clear-stack.bind: true\">\r\n        <span class=\"t--sidebar-sub-item-title\" tr=\"key.bind: child.caption\">\r\n        </span>\r\n      </a>\r\n    </li>\r\n  </ul>\r\n</template>"; });
 define('text!framework/forms/elements/file-uploader-with-viewer/tip-file-uploader-with-viewer.html', ['module'], function(module) { module.exports = "<template class=\"t--file-uploader-with-viewer\">\r\n  <require from=\"./tip-file-uploader-with-viewer.css\"></require>\r\n  <input type=\"file\" accept.bind=\"options.acceptType\" ref=\"input\">\r\n\r\n  <div class=\"t--file-uploader-with-viewer-click-region\" click.delegate=\"onClick($event)\">\r\n    <div if.bind=\"placeholderImage && !downloadUrl\" class=\"t--file-uploader-placeholder-image\" css.bind=\"imageStyle\">\r\n      <img src.bind=\"placeholderImage\" />\r\n    </div>\r\n    <div if.bind=\"placeholderImageText && !downloadUrl\" class=\"t--file-uploader-placeholder-image-text\"></div>\r\n      <span>${placeholderImageText}</span>\r\n    <div if.bind=\"placeholderIcon && !downloadUrl\" class=\"t--file-uploader-placeholder-icon\">\r\n      <i class=\"fa fa-${placeholderIcon}\"></i>\r\n    </div>\r\n\r\n    <div if.bind=\"downloadUrl\" class=\"t--file-uploader-image\" css.bind=\"imageStyle\">\r\n      <img src.bind=\"downloadUrl\" />\r\n    </div>\r\n\r\n    <dx-widget class=\"t--file-uploader-with-viewer-download\" if.bind=\"downloadUrl\" view-model.ref=\"downloadButton\" name=\"dxButton\" options.bind=\"downloadButtonOptions\"></dx-widget>\r\n  </div>\r\n</template>"; });
-define('text!framework/login/views/login/login-form.html', ['module'], function(module) { module.exports = "<template>\n    <dx-widget name=\"dxValidationGroup\" options.bind=\"wd1Options\" view-model.ref=\"wd1\">\n        <div class=\"container\">\n            <div class=\"col-xs-12 t--login-logo\">\n                <img class=\"t--form-element-image\" src=\"http://2014.erp-future.com/sites/2014.erp-future.com/files/1_business/Logo_U_TIP.png\"></img>\n            </div>\n            <div class=\"col-xs-12\">\n                <form submit.delegate=\"submitForm('functions.$f.loginCommand')\">\n                    <button class=\"t--invisible-submit\" type=\"submit\"></button>\n                    <div class=\"container\">\n                        <div class=\"col-xs-12\">\n                            <div tr=\"key: login-form.enter_user_password_text; markdown: true; mode: html\"></div>\n                        </div>\n                        <div class=\"col-xs-12\">\n                            <div class=\"t--editor-caption\" tr=\"key: login-form.username_caption\"></div>\n                            <dx-widget name=\"dxTextBox\" options.bind=\"usernameOptions\" view-model.ref=\"username\"></dx-widget>\n                        </div>\n                        <div class=\"col-xs-12\">\n                            <div class=\"t--editor-caption\" tr=\"key: login-form.password_caption\"></div>\n                            <dx-widget name=\"dxTextBox\" options.bind=\"passwordOptions\" view-model.ref=\"password\"></dx-widget>\n                        </div>\n                        <div class=\"col-xs-12\">\n                            <div class=\"t--editor-caption\">&nbsp;</div>\n                            <dx-widget name=\"dxCheckBox\" options.bind=\"stayLoggodOnOptions\" view-model.ref=\"stayLoggodOn\"></dx-widget>\n                        </div>\n                        <div class=\"col-xs-12\">\n                            <dx-widget name=\"dxButton\" options.bind=\"wd2Options\"></dx-widget>\n                        </div>\n                    </div>\n                </form>\n            </div>\n        </div>\n    </dx-widget>\n</template>"; });
 define('text!framework/default-ui/styles/toolbar.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--toolbar-title {\n  font-size: 16px;\n  font-weight: 100;\n  color: black;\n  padding: 0 12px;\n}\n.t--toolbar-item {\n  display: flex;\n  align-items: center;\n  height: 32px;\n  padding: 0 12px;\n  text-decoration: none;\n  cursor: pointer;\n  -webkit-user-select: none;\n}\n.t--toolbar-item i {\n  font-size: 16px;\n}\n.t--toolbar-item:hover {\n  color: white;\n  background-color: #808080;\n}\n.t--toolbar-item-content {\n  display: flex;\n  flex-direction: row;\n}\n.t--toolbar.t--toolbar-inline.dx-toolbar {\n  height: 32px;\n  background-color: #E5E5E5;\n}\n.t--toolbar.t--toolbar-inline.dx-toolbar .dx-toolbar-items-container {\n  height: 32px;\n}\n.t--toolbar.t--toolbar-inline.dx-toolbar .t--toolbar-item {\n  height: 32px;\n  color: black;\n}\n.t--toolbar.t--toolbar-inline.dx-toolbar .t--toolbar-item:hover {\n  color: white;\n}\n.t--toolbar.t--toolbar-inline.dx-toolbar .t--toolbar-item .t--toolbar-item-content {\n  flex-direction: row;\n}\n.t--toolbar.t--toolbar-inline.dx-toolbar .t--toolbar-title {\n  display: flex;\n  align-items: center;\n  height: 32px;\n  font-size: 14px;\n  font-weight: normal;\n}\n.t--toolbar.t--toolbar-inline.dx-toolbar .dx-state-disabled .t--toolbar-item {\n  color: gray;\n}\n.t--toolbar.t--toolbar-inline.dx-toolbar .dx-state-disabled .t--toolbar-item:hover {\n  color: gray;\n}\n.t--toolbar.dx-popup-normal .dx-toolbar,\n.dx-popup-wrapper:not(.dx-dialog):not(.dx-lookup-popup-search):not(.dx-tagbox-popup-wrapper) > .dx-popup-normal.dx-popup-normal .dx-toolbar {\n  margin: 12px;\n  width: calc(100% - 12px * 2);\n  box-sizing: content-box;\n}\n.t--toolbar .dx-toolbar,\n.dx-popup-wrapper:not(.dx-dialog):not(.dx-lookup-popup-search):not(.dx-tagbox-popup-wrapper) > .dx-popup-normal .dx-toolbar {\n  padding: 0;\n  height: 60px;\n  background-color: #808080;\n  color: white;\n}\n.t--toolbar .dx-toolbar .dx-toolbar-items-container,\n.dx-popup-wrapper:not(.dx-dialog):not(.dx-lookup-popup-search):not(.dx-tagbox-popup-wrapper) > .dx-popup-normal .dx-toolbar .dx-toolbar-items-container {\n  height: 60px;\n}\n.t--toolbar .dx-state-disabled .t--toolbar-item,\n.dx-popup-wrapper:not(.dx-dialog):not(.dx-lookup-popup-search):not(.dx-tagbox-popup-wrapper) > .dx-popup-normal .dx-state-disabled .t--toolbar-item {\n  cursor: default;\n  color: lightgray;\n}\n.t--toolbar .dx-state-disabled .t--toolbar-item:hover,\n.dx-popup-wrapper:not(.dx-dialog):not(.dx-lookup-popup-search):not(.dx-tagbox-popup-wrapper) > .dx-popup-normal .dx-state-disabled .t--toolbar-item:hover {\n  background-color: inherit;\n}\n.t--toolbar .t--toolbar-title,\n.dx-popup-wrapper:not(.dx-dialog):not(.dx-lookup-popup-search):not(.dx-tagbox-popup-wrapper) > .dx-popup-normal .t--toolbar-title {\n  font-size: 26px;\n  color: white;\n}\n.t--toolbar .t--toolbar-item,\n.dx-popup-wrapper:not(.dx-dialog):not(.dx-lookup-popup-search):not(.dx-tagbox-popup-wrapper) > .dx-popup-normal .t--toolbar-item {\n  height: 60px;\n  flex-direction: column;\n  justify-content: center;\n  align-items: center;\n  text-align: center;\n  color: white;\n}\n.t--toolbar .t--toolbar-item:hover,\n.dx-popup-wrapper:not(.dx-dialog):not(.dx-lookup-popup-search):not(.dx-tagbox-popup-wrapper) > .dx-popup-normal .t--toolbar-item:hover {\n  background-color: #4F4F4F;\n}\n.t--toolbar .t--toolbar-item-content,\n.dx-popup-wrapper:not(.dx-dialog):not(.dx-lookup-popup-search):not(.dx-tagbox-popup-wrapper) > .dx-popup-normal .t--toolbar-item-content {\n  flex-direction: column;\n}\n"; });
+define('text!framework/login/views/login/login-form.html', ['module'], function(module) { module.exports = "<template>\n    <dx-widget name=\"dxValidationGroup\" options.bind=\"wd1Options\" view-model.ref=\"wd1\">\n        <div class=\"container\">\n            <div class=\"col-xs-12 t--login-logo\">\n                <img class=\"t--form-element-image\" src=\"http://2014.erp-future.com/sites/2014.erp-future.com/files/1_business/Logo_U_TIP.png\"></img>\n            </div>\n            <div class=\"col-xs-12\">\n                <form submit.delegate=\"submitForm('functions.$f.loginCommand')\">\n                    <button class=\"t--invisible-submit\" type=\"submit\"></button>\n                    <div class=\"container\">\n                        <div class=\"col-xs-12\">\n                            <div tr=\"key: login-form.enter_user_password_text; markdown: true; mode: html\"></div>\n                        </div>\n                        <div class=\"col-xs-12\">\n                            <div class=\"t--editor-caption\" tr=\"key: login-form.username_caption\"></div>\n                            <dx-widget name=\"dxTextBox\" options.bind=\"usernameOptions\" view-model.ref=\"username\"></dx-widget>\n                        </div>\n                        <div class=\"col-xs-12\">\n                            <div class=\"t--editor-caption\" tr=\"key: login-form.password_caption\"></div>\n                            <dx-widget name=\"dxTextBox\" options.bind=\"passwordOptions\" view-model.ref=\"password\"></dx-widget>\n                        </div>\n                        <div class=\"col-xs-12\">\n                            <div class=\"t--editor-caption\">&nbsp;</div>\n                            <dx-widget name=\"dxCheckBox\" options.bind=\"stayLoggodOnOptions\" view-model.ref=\"stayLoggodOn\"></dx-widget>\n                        </div>\n                        <div class=\"col-xs-12\">\n                            <dx-widget name=\"dxButton\" options.bind=\"wd2Options\"></dx-widget>\n                        </div>\n                    </div>\n                </form>\n            </div>\n        </div>\n    </dx-widget>\n</template>"; });
 define('text!framework/security/views/authgroup/authgroup-edit-form.html', ['module'], function(module) { module.exports = "<template>\n    <dx-widget name=\"dxValidationGroup\" options.bind=\"wd1Options\" view-model.ref=\"wd1\">\n        <div class=\"container\">\n            <div class=\"col-xs-12\">\n                <div tr=\"key: authgroup-edit.info_text; markdown: true; mode: html\"></div>\n            </div>\n            <div class=\"col-xs-12 col-md-6\">\n                <div class=\"t--editor-caption\" tr=\"key: authgroup-edit.name_caption\"></div>\n                <dx-widget name=\"dxTextBox\" options.bind=\"nameOptions\" view-model.ref=\"name\"></dx-widget>\n            </div>\n            <div class=\"col-xs-12 col-md-6\">\n                <div class=\"t--editor-caption\" tr=\"key: authgroup-edit.mandator_caption\"></div>\n                <dx-widget name=\"dxSelectBox\" options.bind=\"mandatorOptions\" view-model.ref=\"mandator\"></dx-widget>\n            </div>\n        </div>\n    </dx-widget>\n</template>"; });
 define('text!framework/security/views/authgroup/authgroup-list-form.html', ['module'], function(module) { module.exports = "<template>\n    <require from=\"./authgroup-edit-form\"></require>\n    <dx-widget name=\"dxValidationGroup\" options.bind=\"wd1Options\" view-model.ref=\"wd1\">\n        <div class=\"container\">\n            <dx-widget name=\"dxPopup\" options.bind=\"editOptions\" view-model.ref=\"edit\">\n                <dx-template name=\"contentTemplate\">\n                    <div class=\"parent-container\">\n                        <authgroup-edit-form view-model.ref=\"editContent\" is-edit-form=\"true\"></authgroup-edit-form>\n                    </div>\n                </dx-template>\n            </dx-widget>\n            <div class=\"col-xs-12\">\n                <dx-widget name=\"dxDataGrid\" options.bind=\"authgroupsOptions\" view-model.ref=\"authgroups\"></dx-widget>\n            </div>\n        </div>\n    </dx-widget>\n</template>"; });
 define('text!framework/forms/styles/styles.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--form-element-flex-box {\n  display: flex;\n}\n.t--form-element-flex-box-with-padding > *:not(:first-child) {\n  margin-left: 12px;\n}\n.t--form-element-image-inline {\n  background-size: contain;\n  background-position: center center;\n  background-repeat: no-repeat;\n}\n.t--form-element-image {\n  max-width: 100%;\n}\n"; });
