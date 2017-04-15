@@ -5,14 +5,12 @@
     <dx-widget if.bind="toolbarOptions" name="dxToolbar" options.bind="toolbarOptions"></dx-widget>
   </div>
   <div class="t--view-content-wrapper">
-    <div class="container-fluid">
-      <div class="row">
-        <compose
-          view-model.ref="view.controller" 
-          view-model.bind="view.moduleId" 
-          model.bind="view.model" 
-          class="t--view-content"></compose>
-      </div>
+    <div class="container">
+      <compose
+        view-model.ref="view.controller" 
+        view-model.bind="view.moduleId" 
+        model.bind="view.model" 
+        class="t--view-content"></compose>
     </div>
   </div>
 </template>
