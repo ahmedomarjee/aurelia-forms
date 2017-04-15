@@ -2126,7 +2126,7 @@ define('environment',["require", "exports"], function (require, exports) {
     };
 });
 
-define('main',["require", "exports", "./environment", "./framework/base/services/authorization-service"], function (require, exports, environment_1, authorization_service_1) {
+define('main',["require", "exports", "./environment", "./framework/base/services/authorization-service", "whatwg-fetch"], function (require, exports, environment_1, authorization_service_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     function configure(aurelia) {
@@ -2184,6 +2184,17 @@ define('framework/default-ui/index',["require", "exports"], function (require, e
             .globalResources("./styles/styles.css")
             .globalResources("./styles/toolbar.css")
             .globalResources("./styles/popup.css");
+    }
+    exports.configure = configure;
+});
+
+define('framework/dx/index',["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    function configure(config) {
+        config
+            .globalResources("devextreme")
+            .globalResources("./elements/dx-widget");
     }
     exports.configure = configure;
 });
@@ -5056,17 +5067,6 @@ define('framework/forms/index',["require", "exports", "../dx/services/dx-templat
     exports.configure = configure;
 });
 
-define('framework/dx/index',["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    function configure(config) {
-        config
-            .globalResources("devextreme")
-            .globalResources("./elements/dx-widget");
-    }
-    exports.configure = configure;
-});
-
 define('framework/stack-router/classes/export',["require", "exports", "./view-item"], function (require, exports, view_item_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -5639,31 +5639,6 @@ define('framework/default-ui/views/loading/loading',["require", "exports", "tsli
     exports.Loading = Loading;
 });
 
-define('framework/default-ui/views/loading-spinner/loading-spinner',["require", "exports", "tslib", "aurelia-framework"], function (require, exports, tslib_1, aurelia_framework_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var LoadingSpinner = (function () {
-        function LoadingSpinner(element) {
-            this.element = element;
-        }
-        LoadingSpinner.prototype.bind = function () {
-            $(this.element).removeClass("t--loading-active");
-        };
-        LoadingSpinner.prototype.attached = function () {
-            var _this = this;
-            setTimeout(function () {
-                $(_this.element).addClass("t--loading-active");
-            }, 500);
-        };
-        return LoadingSpinner;
-    }());
-    LoadingSpinner = tslib_1.__decorate([
-        aurelia_framework_1.autoinject,
-        tslib_1.__metadata("design:paramtypes", [Element])
-    ], LoadingSpinner);
-    exports.LoadingSpinner = LoadingSpinner;
-});
-
 define('framework/default-ui/views/sidebar/sidebar',["require", "exports", "tslib", "aurelia-framework", "../../services/layout-service", "../../../stack-router/export"], function (require, exports, tslib_1, aurelia_framework_1, layout_service_1, export_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -5729,6 +5704,31 @@ define('framework/default-ui/views/sidebar/sidebar',["require", "exports", "tsli
             export_1.RouterService])
     ], Sidebar);
     exports.Sidebar = Sidebar;
+});
+
+define('framework/default-ui/views/loading-spinner/loading-spinner',["require", "exports", "tslib", "aurelia-framework"], function (require, exports, tslib_1, aurelia_framework_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var LoadingSpinner = (function () {
+        function LoadingSpinner(element) {
+            this.element = element;
+        }
+        LoadingSpinner.prototype.bind = function () {
+            $(this.element).removeClass("t--loading-active");
+        };
+        LoadingSpinner.prototype.attached = function () {
+            var _this = this;
+            setTimeout(function () {
+                $(_this.element).addClass("t--loading-active");
+            }, 500);
+        };
+        return LoadingSpinner;
+    }());
+    LoadingSpinner = tslib_1.__decorate([
+        aurelia_framework_1.autoinject,
+        tslib_1.__metadata("design:paramtypes", [Element])
+    ], LoadingSpinner);
+    exports.LoadingSpinner = LoadingSpinner;
 });
 
 define('framework/default-ui/views/sidebar-sub/sidebar-sub',["require", "exports", "tslib", "aurelia-framework"], function (require, exports, tslib_1, aurelia_framework_1) {
@@ -6209,8 +6209,8 @@ define('text!framework/login/views/login/login-form.html', ['module'], function(
 define('text!framework/default-ui/styles/toolbar.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--toolbar-title {\n  font-size: 16px;\n  font-weight: 100;\n  color: black;\n  padding: 0 12px;\n}\n.t--toolbar-item {\n  display: flex;\n  align-items: center;\n  height: 32px;\n  padding: 0 12px;\n  text-decoration: none;\n  cursor: pointer;\n  -webkit-user-select: none;\n}\n.t--toolbar-item i {\n  font-size: 16px;\n}\n.t--toolbar-item:hover {\n  color: white;\n  background-color: #808080;\n}\n.t--toolbar-item-content {\n  display: flex;\n  flex-direction: row;\n}\n.t--toolbar.t--toolbar-inline.dx-toolbar {\n  height: 32px;\n  background-color: #E5E5E5;\n}\n.t--toolbar.t--toolbar-inline.dx-toolbar .dx-toolbar-items-container {\n  height: 32px;\n}\n.t--toolbar.t--toolbar-inline.dx-toolbar .t--toolbar-item {\n  height: 32px;\n  color: black;\n}\n.t--toolbar.t--toolbar-inline.dx-toolbar .t--toolbar-item:hover {\n  color: white;\n}\n.t--toolbar.t--toolbar-inline.dx-toolbar .t--toolbar-item .t--toolbar-item-content {\n  flex-direction: row;\n}\n.t--toolbar.t--toolbar-inline.dx-toolbar .t--toolbar-title {\n  display: flex;\n  align-items: center;\n  height: 32px;\n  font-size: 14px;\n  font-weight: normal;\n}\n.t--toolbar.t--toolbar-inline.dx-toolbar .dx-state-disabled .t--toolbar-item {\n  color: gray;\n}\n.t--toolbar.t--toolbar-inline.dx-toolbar .dx-state-disabled .t--toolbar-item:hover {\n  color: gray;\n}\n.t--toolbar.dx-popup-normal .dx-toolbar,\n.dx-popup-wrapper:not(.dx-dialog):not(.dx-lookup-popup-search):not(.dx-tagbox-popup-wrapper) > .dx-popup-normal.dx-popup-normal .dx-toolbar {\n  margin: 12px;\n  width: calc(100% - 12px * 2);\n  box-sizing: content-box;\n}\n.t--toolbar .dx-toolbar,\n.dx-popup-wrapper:not(.dx-dialog):not(.dx-lookup-popup-search):not(.dx-tagbox-popup-wrapper) > .dx-popup-normal .dx-toolbar {\n  padding: 0;\n  height: 60px;\n  background-color: #808080;\n  color: white;\n}\n.t--toolbar .dx-toolbar .dx-toolbar-items-container,\n.dx-popup-wrapper:not(.dx-dialog):not(.dx-lookup-popup-search):not(.dx-tagbox-popup-wrapper) > .dx-popup-normal .dx-toolbar .dx-toolbar-items-container {\n  height: 60px;\n}\n.t--toolbar .dx-state-disabled .t--toolbar-item,\n.dx-popup-wrapper:not(.dx-dialog):not(.dx-lookup-popup-search):not(.dx-tagbox-popup-wrapper) > .dx-popup-normal .dx-state-disabled .t--toolbar-item {\n  cursor: default;\n  color: lightgray;\n}\n.t--toolbar .dx-state-disabled .t--toolbar-item:hover,\n.dx-popup-wrapper:not(.dx-dialog):not(.dx-lookup-popup-search):not(.dx-tagbox-popup-wrapper) > .dx-popup-normal .dx-state-disabled .t--toolbar-item:hover {\n  background-color: inherit;\n}\n.t--toolbar .t--toolbar-title,\n.dx-popup-wrapper:not(.dx-dialog):not(.dx-lookup-popup-search):not(.dx-tagbox-popup-wrapper) > .dx-popup-normal .t--toolbar-title {\n  font-size: 26px;\n  color: white;\n}\n.t--toolbar .t--toolbar-item,\n.dx-popup-wrapper:not(.dx-dialog):not(.dx-lookup-popup-search):not(.dx-tagbox-popup-wrapper) > .dx-popup-normal .t--toolbar-item {\n  height: 60px;\n  flex-direction: column;\n  justify-content: center;\n  align-items: center;\n  text-align: center;\n  color: white;\n}\n.t--toolbar .t--toolbar-item:hover,\n.dx-popup-wrapper:not(.dx-dialog):not(.dx-lookup-popup-search):not(.dx-tagbox-popup-wrapper) > .dx-popup-normal .t--toolbar-item:hover {\n  background-color: #4F4F4F;\n}\n.t--toolbar .t--toolbar-item-content,\n.dx-popup-wrapper:not(.dx-dialog):not(.dx-lookup-popup-search):not(.dx-tagbox-popup-wrapper) > .dx-popup-normal .t--toolbar-item-content {\n  flex-direction: column;\n}\n"; });
 define('text!framework/security/views/authgroup/authgroup-edit-form.html', ['module'], function(module) { module.exports = "<template>\n    <dx-widget name=\"dxValidationGroup\" options.bind=\"wd1Options\" view-model.ref=\"wd1\">\n        <div class=\"container\">\n            <div class=\"col-xs-12\">\n                <div tr=\"key: authgroup-edit.info_text; markdown: true; mode: html\"></div>\n            </div>\n            <div class=\"col-xs-12 col-md-6\">\n                <div class=\"t--editor-caption\" tr=\"key: authgroup-edit.name_caption\"></div>\n                <dx-widget name=\"dxTextBox\" options.bind=\"nameOptions\" view-model.ref=\"name\"></dx-widget>\n            </div>\n            <div class=\"col-xs-12 col-md-6\">\n                <div class=\"t--editor-caption\" tr=\"key: authgroup-edit.mandator_caption\"></div>\n                <dx-widget name=\"dxSelectBox\" options.bind=\"mandatorOptions\" view-model.ref=\"mandator\"></dx-widget>\n            </div>\n        </div>\n    </dx-widget>\n</template>"; });
 define('text!framework/security/views/authgroup/authgroup-list-form.html', ['module'], function(module) { module.exports = "<template>\n    <require from=\"./authgroup-edit-form\"></require>\n    <dx-widget name=\"dxValidationGroup\" options.bind=\"wd1Options\" view-model.ref=\"wd1\">\n        <div class=\"container\">\n            <dx-widget name=\"dxPopup\" options.bind=\"editOptions\" view-model.ref=\"edit\">\n                <dx-template name=\"contentTemplate\">\n                    <div class=\"parent-container\">\n                        <authgroup-edit-form view-model.ref=\"editContent\" is-edit-form=\"true\"></authgroup-edit-form>\n                    </div>\n                </dx-template>\n            </dx-widget>\n            <div class=\"col-xs-12\">\n                <dx-widget name=\"dxDataGrid\" options.bind=\"authgroupsOptions\" view-model.ref=\"authgroups\"></dx-widget>\n            </div>\n        </div>\n    </dx-widget>\n</template>"; });
-define('text!framework/stack-router/views/stack-router/stack-router.html', ['module'], function(module) { module.exports = "<template class=\"t--stack-router\">\r\n  <require from=\"./stack-router.css\"></require>\r\n  <require from=\"../view/view\"></require>\r\n\r\n  <div \r\n    class=\"t--stack-router-item\" \r\n    class.bind=\"item.className\"\r\n    repeat.for=\"item of router.viewStack\">\r\n    <view view.bind=\"item\" create-toolbar.bind=\"$parent.createToolbar\"></view>\r\n  </div>\r\n</template>"; });
 define('text!framework/forms/styles/styles.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--form-element-flex-box {\n  display: flex;\n}\n.t--form-element-flex-box-with-padding > *:not(:first-child) {\n  margin-left: 12px;\n}\n.t--form-element-image-inline {\n  background-size: contain;\n  background-position: center center;\n  background-repeat: no-repeat;\n}\n.t--form-element-image {\n  max-width: 100%;\n}\n"; });
+define('text!framework/stack-router/views/stack-router/stack-router.html', ['module'], function(module) { module.exports = "<template class=\"t--stack-router\">\r\n  <require from=\"./stack-router.css\"></require>\r\n  <require from=\"../view/view\"></require>\r\n\r\n  <div \r\n    class=\"t--stack-router-item\" \r\n    class.bind=\"item.className\"\r\n    repeat.for=\"item of router.viewStack\">\r\n    <view view.bind=\"item\" create-toolbar.bind=\"$parent.createToolbar\"></view>\r\n  </div>\r\n</template>"; });
 define('text!framework/stack-router/views/view/view.html', ['module'], function(module) { module.exports = "<template class=\"t--view\" class.bind=\"className\">\r\n  <require from=\"./view.css\"></require>\r\n\r\n  <div class=\"t--toolbar\" if.bind=\"createToolbar\">\r\n    <dx-widget if.bind=\"toolbarOptions\" name=\"dxToolbar\" options.bind=\"toolbarOptions\"></dx-widget>\r\n  </div>\r\n  <div class=\"t--view-content-wrapper\">\r\n    <div class=\"parent-container\">\r\n      <compose\r\n        view-model.ref=\"view.controller\" \r\n        view-model.bind=\"view.moduleId\" \r\n        model.bind=\"view.model\" \r\n        class=\"t--view-content\"></compose>\r\n    </div>\r\n  </div>\r\n</template>"; });
 define('text!framework/default-ui/views/container/container.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--container {\n  display: block;\n  width: 100vw;\n  height: 100vh;\n}\n.t--toolbar-title {\n  min-width: 220px;\n  padding: 0 12px;\n  font-size: 20px;\n  font-weight: 100;\n  color: white;\n}\n"; });
 define('text!framework/default-ui/views/content/content.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--content {\n  display: block;\n  margin-left: 280px;\n  height: calc(100% - 60px);\n  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n  transition-property: margin-left;\n}\n.t--sidebar-collapsed .t--content {\n  margin-left: 60px;\n}\n.t--view-current {\n  display: block;\n}\n.t--view-history {\n  display: none;\n}\n"; });
@@ -6219,6 +6219,6 @@ define('text!framework/default-ui/views/loading-spinner/loading-spinner.css', ['
 define('text!framework/default-ui/views/sidebar/sidebar.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--sidebar {\n  display: block;\n  position: fixed;\n  top: 0;\n  bottom: 0;\n  left: 0;\n  z-index: 10;\n  width: 280px;\n  background-color: #2a2e35;\n  font-size: 14px;\n  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n  transition-property: left;\n}\n.t--sidebar ul {\n  padding: 0;\n  margin: 0;\n  list-style: none;\n}\n.t--sidebar-collapsed .t--sidebar {\n  left: -220px;\n}\n.t--sidebar-collapsed .t--sidebar-sub {\n  left: 60px;\n}\n.t--sidebar-header {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  background-color: #262930;\n  color: white;\n  cursor: pointer;\n}\n.t--sidebar-header-title {\n  flex-grow: 1;\n  font-size: 26px;\n  font-weight: 100;\n  padding: 12px;\n}\n.t--sidebar-header-icon {\n  display: flex;\n  width: 60px;\n  align-items: center;\n  justify-content: center;\n}\n.t--sidebar-item {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  color: lightgray;\n  text-decoration: none;\n}\n.t--sidebar-item:hover {\n  color: white;\n}\n.t--sidebar-item-title {\n  flex-grow: 1;\n  padding: 12px;\n}\n.t--sidebar-item-icon {\n  display: flex;\n  width: 60px;\n  align-items: center;\n  justify-content: center;\n}\n.t--sidebar-sub {\n  position: fixed;\n  z-index: -9;\n  left: 280px;\n  min-width: 280px;\n  background-color: #2a2e35;\n  padding: 12px;\n}\n.t--sidebar-sub.au-enter-active {\n  animation: leftFadeIn 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n}\n.t--sidebar-sub-item {\n  color: lightgray;\n  text-decoration: none;\n}\n.t--sidebar-sub-item:hover {\n  color: white;\n}\n"; });
 define('text!framework/default-ui/views/sidebar-sub/sidebar-sub.css', ['module'], function(module) { module.exports = ".t--sidebar-sub-ul {\n  column-fill: auto;\n  column-count: 2;\n  column-width: 200px;\n}\n"; });
 define('text!framework/forms/elements/file-uploader-with-viewer/tip-file-uploader-with-viewer.css', ['module'], function(module) { module.exports = ".t--file-uploader-with-viewer input {\n  height: 0;\n  width: 0;\n}\n.t--file-uploader-with-viewer .t--file-uploader-with-viewer-click-region {\n  display: block;\n  width: 100%;\n  min-height: 150px;\n  border: 3px dotted gray;\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n  align-items: center;\n  padding: 12px;\n}\n.t--file-uploader-with-viewer .t--file-uploader-image,\n.t--file-uploader-with-viewer t--file-uploader-placeholder-image {\n  width: 100%;\n  min-height: 150px;\n  position: relative;\n  display: flex;\n  justify-content: center;\n  align-content: center;\n}\n.t--file-uploader-with-viewer .t--file-uploader-with-viewer-download {\n  margin-top: 12px;\n}\n.t--file-uploader-with-viewer img {\n  max-height: 100%;\n  max-width: 100%;\n  position: absolute;\n}\n"; });
-define('text!framework/stack-router/views/stack-router/stack-router.css', ['module'], function(module) { module.exports = ".t--stack-router,\n.t--stack-router-item {\n  display: block;\n  height: 100%;\n}\n"; });
+define('text!framework/stack-router/views/stack-router/stack-router.css', ['module'], function(module) { module.exports = ".t--stack-router,\n.t--stack-router-item {\n  display: block;\n  height: 100%;\n  width: 100%;\n}\n"; });
 define('text!framework/stack-router/views/view/view.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--view {\n  display: block;\n  position: relative;\n  height: 100%;\n  overflow-x: hidden;\n}\n.t--view-content-wrapper {\n  display: block;\n  height: 100%;\n  overflow-x: hidden;\n  overflow-y: auto;\n}\n.t--view-content {\n  display: table;\n  width: 100%;\n  margin-bottom: 12px;\n  -webkit-overflow-scrolling: touch;\n}\n.t--view-with-toolbar .t--view-content-wrapper {\n  height: calc(100% - 60px);\n}\n"; });
 //# sourceMappingURL=app-bundle.js.map

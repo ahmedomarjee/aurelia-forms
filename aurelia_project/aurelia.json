@@ -129,6 +129,7 @@
           "text",
           "jquery",
           "moment",
+          "whatwg-fetch",
           {
             "name": "aurelia-templating-resources",
             "path": "../node_modules/aurelia-templating-resources/dist/amd",

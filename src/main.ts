@@ -1,6 +1,7 @@
 import {Aurelia} from "aurelia-framework"
 import environment from "./environment";
 import {AuthorizationService} from "./framework/base/services/authorization-service";
+import "whatwg-fetch";
 
 // (<any>Promise).config({
 //   longStackTraces: environment.debug,
