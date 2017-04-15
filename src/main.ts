@@ -2,12 +2,12 @@ import {Aurelia} from "aurelia-framework"
 import environment from "./environment";
 import {AuthorizationService} from "./framework/base/services/authorization-service";
 
-(<any>Promise).config({
-  longStackTraces: environment.debug,
-  warnings: {
-    wForgottenReturn: false
-  }
-});
+// (<any>Promise).config({
+//   longStackTraces: environment.debug,
+//   warnings: {
+//     wForgottenReturn: false
+//   }
+// });
 
 export function configure(aurelia: Aurelia) {
   aurelia.use

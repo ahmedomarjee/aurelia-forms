@@ -11,9 +11,13 @@ body {
 .container {
   display: flex;
   flex-wrap: wrap;
-  flex: 1;
-  margin: -6px -6px;
+  flex-grow: 1;
+  flex-shrink: 1;
+  margin: -6px;
   overflow: hidden;
+}
+.parent-container {
+  margin: 12px;
 }
 .align-items-center {
   align-items: center;
@@ -37,8 +41,8 @@ body {
   justify-content: center;
 }
 
-div[class^="col-"] {
-  padding: 6px 6px;
+div[class*="col-xs-"], div[class*="col-sm-"], div[class*="col-md-"], div[class*="col-lg-"] {
+  padding: 6px;
   overflow-y: hidden;
 }
 div.col-xs-auto {

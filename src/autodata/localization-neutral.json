@@ -6,6 +6,38 @@
     "password_caption": "Passwort",
     "stayloggodon_caption": "Angemeldet bleiben"
   },
+  "base": {
+    "add": "Neuer Datensatz",
+    "save": "Speichern",
+    "delete": "Löschen",
+    "question": "Frage",
+    "information": "Information",
+    "error": "Fehler",
+    "sure_delete_question": "Sind Sie sicher, dass sie den aktuellen Datensatz löschen wollen?",
+    "save_success": "Daten wurden erfolgreich gespeichert",
+    "validation_error": "Daten können aufgrund ungültiger Validierung nicht gespeichert werden",
+    "login": "Anmelden",
+    "logout": "Abmelden",
+    "navigation": "Navigation"
+  },
+  "default_ui": {
+    "search": "Suchen ..."
+  },
+  "forms": {
+    "validator_required": "{0} ist ein Pflichtfeld",
+    "validator_email": "{0} ist keine gültige Emailadresse",
+    "validator_stringLengthMinMax": "{0} muss zwischen {1} und {2} Zeichen haben",
+    "validator_stringLengthMin": "{0} muss mindestens {1} Zeichen haben",
+    "validator_stringLengthMax": "{0} darf maximal {1} Zeichen haben",
+    "file_uploadClickHere": "Hier klicken, um eine Datei hochzuladen.",
+    "lookup_selectItem": "Element auswählen"
+  },
+  "login-form-funcs": {
+    "anmelden_caption": "Anmelden"
+  },
+  "routes": {
+    "settings": "Einstellungen"
+  },
   "authgroup-edit": {
     "authgroup-edit_caption": "Berechtigungsgruppe",
     "info_text": {
@@ -21,36 +53,5 @@
     "authgroup-list_caption": "Berechtigungsgruppen",
     "name_caption": "Bezeichnung",
     "mandantor_caption": "Mandant"
-  },
-  "base": {
-    "add": "Neuer Datensatz",
-    "save": "Speichern",
-    "delete": "Löschen",
-    "question": "Frage",
-    "information": "Information",
-    "error": "Fehler",
-    "sure_delete_question": "Sind Sie sicher, dass sie den aktuellen Datensatz löschen wollen?",
-    "save_success": "Daten wurden erfolgreich gespeichert",
-    "validation_error": "Daten können aufgrund ungültiger Validierung nicht gespeichert werden",
-    "login": "Anmelden",
-    "logout": "Abmelden",
-    "navigation": "Navigation"
-  },
-  "forms": {
-    "validator_required": "{0} ist ein Pflichtfeld",
-    "validator_email": "{0} ist keine gültige Emailadresse",
-    "validator_stringLengthMinMax": "{0} muss zwischen {1} und {2} Zeichen haben",
-    "validator_stringLengthMin": "{0} muss mindestens {1} Zeichen haben",
-    "validator_stringLengthMax": "{0} darf maximal {1} Zeichen haben"
-  },
-  "login-form-funcs": {
-    "anmelden_caption": "Anmelden"
-  },
-  "routes": {
-    "settings": "Einstellungen"
-  },
-  "default_ui": {
-    "navigation_title": "Navigation",
-    "search": "Suchen ..."
   }
 }

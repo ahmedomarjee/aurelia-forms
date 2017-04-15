@@ -15,7 +15,7 @@
         <check-box id="stayLoggodOn" caption="Angemeldet bleiben" bind-to="StayLoggedOn" />
       </data-context>
 
-      <command-button bind-to="$f.loginCommand" />
+      <command-button bind-to="$f.loginCommand" no-caption="true" />
     </form-container>
   </content>
 </form>
