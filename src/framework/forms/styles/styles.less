@@ -6,9 +6,6 @@
 .t--form-element-flex-box {
   display: flex;
 }
-.t--form-element-flex-box-with-padding > *:not(:first-child) {
-  margin-left: @padding;
-}
 .t--form-element-image-inline {
   background-size: contain;
   background-position: center center;
@@ -16,4 +13,22 @@
 }
 .t--form-element-image {
   max-width: 100%;
+}
+.t--form-validation-group {
+  height: 1px;
+  min-height: 100%;
+}
+.t--form-container {
+  height: 1px;
+  min-height: 100%;
+  align-content: flex-start;
+}
+.t--form-relative-container {
+  position: relative;
+  height: 100%;
+}
+.t--form-absolute-container {
+  position: absolute;
+  height: ~"calc(100% - 12px)";
+  width: ~"calc(100% - 12px)";
 }

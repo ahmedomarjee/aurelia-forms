@@ -11,7 +11,8 @@
     </edit-popup>
   </edit-popups>
   <content>
-    <data-grid id="authgroups" data-context="$m_A" edit-url="security/authgroup" add-shortcuts="true" is-main-list="true">
+    <data-grid id="authgroups" data-context="$m_A" id-edit-popup="edit" edit-data-context="$m_A_Edit" add-shortcuts="true" is-main-list="true" height="100%">
+    <!--<data-grid id="authgroups" data-context="$m_A" edit-url="security/authgroup" add-shortcuts="true" is-main-list="true" height="100%">-->
       <data-grid-columns>
         <data-grid-column id="name" bind-to="Name" sort-index="0" sort-order="asc" />
         <data-grid-column id="mandantor" bind-to="Mandator.Name" caption="Mandant" />

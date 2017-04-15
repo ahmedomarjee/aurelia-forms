@@ -72,6 +72,19 @@
 .t--toolbar,
 .dx-popup-wrapper:not(.dx-dialog):not(.dx-lookup-popup-search):not(.dx-tagbox-popup-wrapper) > .dx-popup-normal {
   &.dx-popup-normal {
+    > .dx-popup-content {
+      > dx-template {
+        display: block;
+        height: 1px;
+        min-height: ~"calc(100% - 24px)";
+
+        > .parent-container {
+          height: 1px;
+          min-height: 100%;
+        }
+      }
+    }
+
     .dx-toolbar {
       margin: @padding;
       width:~"calc(100% - @{padding} * 2)";

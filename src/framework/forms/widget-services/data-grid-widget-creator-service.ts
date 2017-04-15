@@ -113,6 +113,10 @@ export class DataGridWidgetCreatorService {
       }
     }
 
+    if (options.height) {
+      dataGridOptions.height = options.height;
+    }
+
     this.baseWidgetCreator.checkListToolbar(form, options);
     this.baseWidgetCreator.checkListRelationEdit(form, options);
   }

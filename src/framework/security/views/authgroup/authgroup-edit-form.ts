@@ -22,23 +22,31 @@ export class AuthgroupEditForm extends fwx.FormBase {
                 "optionsNameFQ": "wd1Options"
             }
         });
-        this.widgetCreator.addTextBox(this, {
-            "caption": "authgroup-edit.name_caption",
+        this.widgetCreator.addDataGrid(this, {
+            "columns": [{
+                "id": "colNichts",
+                "caption": "authgroup-edit.colnichts_caption"
+            }, {
+                "id": "colNichts2",
+                "caption": "authgroup-edit.colnichts2_caption"
+            }],
+            "optionsToolbar": {
+                "optionsName": "dataGridTestToolbarOptions",
+                "optionsNameFQ": "dataGridTestToolbarOptions"
+            },
             "binding": {
                 "dataContext": "$m_A",
-                "bindTo": "Name",
-                "bindToFQ": "models.data.$m_A.Name"
+                "bindToFQ": "models.data.$m_A."
             },
-            "validationRules": [{
-                "item": {
-                    "type": "required",
-                    "parameters": []
-                }
-            }],
-            "id": "name",
+            "dataModel": "$m_A",
+            "height": "100%",
+            "edits": [],
+            "filters": [],
+            "commands": [],
+            "id": "dataGridTest",
             "options": {
-                "optionsName": "nameOptions",
-                "optionsNameFQ": "nameOptions"
+                "optionsName": "dataGridTestOptions",
+                "optionsNameFQ": "dataGridTestOptions"
             }
         });
         this.widgetCreator.addSelectBox(this, {

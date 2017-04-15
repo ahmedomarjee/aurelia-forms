@@ -46,7 +46,8 @@
         "models.data.$m_A.Name"
       ]
     },
-    "name_caption": "Bezeichnung",
+    "colnichts_caption": "Nichts",
+    "colnichts2_caption": "Nichts2",
     "mandator_caption": "Mandant"
   },
   "authgroup-list": {

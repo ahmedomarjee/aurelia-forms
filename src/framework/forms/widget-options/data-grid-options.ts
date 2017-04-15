@@ -5,7 +5,6 @@ export interface IDataGridOptions extends IListOptionsBase {
     columns?: IDataGridColumnOptions[]
 
     showFilterRow?: boolean;
-    autoHeight?: boolean;
     
     rowScriptTemplateId?: string;
 }

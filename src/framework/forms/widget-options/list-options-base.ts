@@ -26,6 +26,7 @@ export interface IListOptionsBase extends IWidgetOptions {
     showToolbarTitle?: boolean;
 
     pageSize?: number;
+    height?: string;
 
     selectionMode?: SelectionModeEnum;
 

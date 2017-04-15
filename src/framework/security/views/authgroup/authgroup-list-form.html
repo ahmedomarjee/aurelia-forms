@@ -1,7 +1,7 @@
 <template>
     <require from="./authgroup-edit-form"></require>
-    <dx-widget name="dxValidationGroup" options.bind="wd1Options" view-model.ref="wd1">
-        <div class="container">
+    <dx-widget class="t--form-validation-group" name="dxValidationGroup" options.bind="wd1Options" view-model.ref="wd1">
+        <div class="container t--form-container">
             <dx-widget name="dxPopup" options.bind="editOptions" view-model.ref="edit">
                 <dx-template name="contentTemplate">
                     <div class="parent-container">
@@ -9,8 +9,10 @@
                     </div>
                 </dx-template>
             </dx-widget>
-            <div class="col-xs-12">
-                <dx-widget name="dxDataGrid" options.bind="authgroupsOptions" view-model.ref="authgroups"></dx-widget>
+            <div class="col-xs-12 t--form-relative-container">
+                <div class="t--form-absolute-container">
+                    <dx-widget name="dxDataGrid" options.bind="authgroupsOptions" view-model.ref="authgroups"></dx-widget>
+                </div>
             </div>
         </div>
     </dx-widget>

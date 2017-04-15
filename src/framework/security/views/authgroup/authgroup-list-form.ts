@@ -65,9 +65,11 @@ export class AuthgroupListForm extends fwx.FormBase {
                 "bindToFQ": "models.data.$m_A."
             },
             "dataModel": "$m_A",
-            "editUrl": "security/authgroup",
+            "editDataContext": "$m_A_Edit",
+            "idEditPopup": "edit",
             "addShortscuts": true,
             "isMainList": true,
+            "height": "100%",
             "edits": [],
             "filters": [],
             "commands": [],
