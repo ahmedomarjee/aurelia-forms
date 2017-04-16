@@ -2,6 +2,9 @@
   <require from="./header.css"></require>
 
   <div class="t--header-flex">
+    <div class="t--header-logo" if.bind="header.logoUrl">
+      <img src.bind="header.logoUrl">
+    </div>
     <div class="t--header-title" if.bind="header.text">
       ${header.text}
     </div>
@@ -10,7 +13,21 @@
     </div>
     <div class="t--header-between"></div>
     <div class="t--header-options">
-      <a href="#" click.delegate="logout()" tr="key: base.logout"></a>
+      <div class="t--header-avatar" click.delegate="onAvatarClick()" ref="avatar">
+        <div css.bind="header.avatarStyle"></div>
+      </div>
     </div>
   </div>
+
+  <dx-widget name="dxPopover" options.bind="avatarPopoverOptions" view-model.ref="avatarPopover">
+    <dx-template name="contentTemplate">
+      <div class="t--header-avatar-command-container">
+        <div repeat.for="command of header.avatarCommands" click.delegate="command.execute()">
+          <div class="t--header-avatar-command">
+            ${command.title}
+          </div>
+        </div>
+      </div>
+    </dx-template>
+  </dx-widget>
 </template>

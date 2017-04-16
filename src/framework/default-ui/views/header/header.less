@@ -22,6 +22,13 @@
     margin-left: 24px;
   }
 }
+.t--header-logo {
+  height: (@headerHeight - 25px);
+
+  > img {
+    height: 100%;
+  }
+}
 .t--header-title {
   display: flex;
   align-items: center;
@@ -34,4 +41,26 @@
 }
 .t--header-options {
 
+}
+.t--header-avatar {
+  > div {
+    height: 100%;
+    width: 100%;
+    background-position: center center;
+    background-size: cover;
+    background-repeat: no-repeat;
+  }
+
+  overflow: hidden;
+  height: (@headerHeight - 25px);
+  width: (@headerHeight - 25px);
+  border-radius: (@headerHeight - 25px);
+  border: 1px solid darkgray;
+  cursor: pointer;
+}
+.t--header-avatar-command-container {
+  padding: 12px;
+}
+.t--header-avatar-command {
+  cursor: pointer;
 }

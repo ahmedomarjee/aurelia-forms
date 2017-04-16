@@ -29,8 +29,10 @@ export function configure(aurelia: Aurelia) {
     aurelia.use.plugin("aurelia-testing");
   }
 
-  aurelia.start().then(() => {
+  return aurelia.start().then(() => {
     const authorization: AuthorizationService = aurelia.container.get(AuthorizationService);
     authorization.openApp();
+
+    return Promise.resolve();
   });
 }

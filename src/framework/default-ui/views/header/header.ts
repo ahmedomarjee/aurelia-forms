@@ -21,7 +21,17 @@ export class Header {
     private authorization: AuthorizationService,
     private header: HeaderService,
     private localization: LocalizationService
-  ) { }
+  ) { 
+    if (!this.header.avatarCommands.find(c => c.id === "logout")) {
+      this.header.avatarCommands.push({
+        id: "logout",
+        title: "Abmelden",
+        execute: () => {
+          this.logout();
+        }
+      });
+    }
+  }
 
   searchTextOptions: DevExpress.ui.dxTextBoxOptions = {
     mode: "search",
@@ -42,6 +52,18 @@ export class Header {
         });
       });
     }
+  }
+
+  avatar: Element;
+  avatarPopover: any;
+  avatarPopoverOptions: DevExpress.ui.dxPopoverOptions = {
+    contentTemplate: "contentTemplate",
+    width: "250px"
+  }
+
+  onAvatarClick() {
+    const popover: DevExpress.ui.dxPopover = this.avatarPopover.instance;
+    popover.show(this.avatar);
   }
 
   logout() {
