@@ -5,7 +5,7 @@
   align-items: center;
   height: @headerHeight;
   margin-left: @sidebarExpandedWidth;
-  padding: 0 @padding;
+  padding-left: @padding;
   .transition(margin-left);
 }
 .t--sidebar-collapsed {
@@ -16,7 +16,9 @@
 
 .t--header-flex {
   display: flex;
+  align-items: center;
   width: 100%;
+  height: 100%;
 
   > div:not(:first-child) {
     margin-left: 24px;
@@ -40,27 +42,51 @@
   flex-grow: 1;
 }
 .t--header-options {
+  display: flex;
+  height: 100%;
+  align-items: center;
 
+  > div {
+    height: 100%;
+    padding: 0 12px;
+    border-left: 1px solid #eeeeee;
+
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+
+    &:not(.t--header-avatar) {
+      &:hover {
+        background-color: #eeeeee;
+      }
+    }
+  }
 }
 .t--header-avatar {
   > div {
-    height: 100%;
-    width: 100%;
+    height: (@headerHeight - 25px);
+    width: (@headerHeight - 25px);
+    border-radius: (@headerHeight - 25px);
+    border: 1px solid darkgray;
     background-position: center center;
     background-size: cover;
     background-repeat: no-repeat;
   }
-
-  overflow: hidden;
-  height: (@headerHeight - 25px);
-  width: (@headerHeight - 25px);
-  border-radius: (@headerHeight - 25px);
-  border: 1px solid darkgray;
-  cursor: pointer;
 }
 .t--header-avatar-command-container {
   padding: 12px;
 }
 .t--header-avatar-command {
   cursor: pointer;
+}
+.t--header-command {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+
+  i > {
+    margin-bottom: 6px;
+    font-size: 16px;
+  }
 }

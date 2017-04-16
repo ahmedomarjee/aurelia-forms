@@ -11,6 +11,9 @@ import {
 import {
   LayoutService
 } from "./framework/default-ui/services/export";
+import {
+  HeaderService
+} from "./framework/default-ui/export"
 
 import * as routesForm from "text!./autodata/forms.json";
 import * as routesStructure from "text!./route-info/structure.json";
@@ -22,13 +25,29 @@ export class App {
   constructor(
     private router: RouterService,
     private routesCreator: RoutesCreatorService,
-    private layout: LayoutService
+    private layout: LayoutService,
+    private header: HeaderService
   ) { 
     this.routes = routesCreator.createRoutes(
       JSON.parse(<any>routesStructure),
       JSON.parse(<any>routesForm));
 
       this.layout.activateTheme();
+      this.header.onSearch.register(() => {
+        return Promise.resolve();
+      });
+
+      this.header.commands.push({
+        id: "dummy",
+        title: "Mails",
+        icon: "envelope-o",
+        execute: () => {
+          DevExpress.ui.dialog.alert(
+            "Neues Mail wird erstellt",
+            "Information"
+          );
+        }
+      });
   }
 
   attached() {

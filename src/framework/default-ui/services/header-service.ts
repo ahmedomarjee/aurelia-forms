@@ -6,7 +6,6 @@ import {
   CustomEvent,
 } from "../../base/export";
 import {
-  CommandService,
   ICommandData
 } from "../../forms/export";
 import {
@@ -16,7 +15,6 @@ import {
 @autoinject
 export class HeaderService {
   constructor(
-    private command: CommandService,
     public onSearch: CustomEvent<ISearchEventArgs>
   ) {
     this.avatarUrlChanged();

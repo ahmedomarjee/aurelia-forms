@@ -2028,12 +2028,11 @@ define('framework/default-ui/event-args/export',["require", "exports"], function
     Object.defineProperty(exports, "__esModule", { value: true });
 });
 
-define('framework/default-ui/services/header-service',["require", "exports", "tslib", "aurelia-framework", "../../base/export", "../../forms/export"], function (require, exports, tslib_1, aurelia_framework_1, export_1, export_2) {
+define('framework/default-ui/services/header-service',["require", "exports", "tslib", "aurelia-framework", "../../base/export"], function (require, exports, tslib_1, aurelia_framework_1, export_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var HeaderService = (function () {
-        function HeaderService(command, onSearch) {
-            this.command = command;
+        function HeaderService(onSearch) {
             this.onSearch = onSearch;
             this.logoUrl = "http://2014.erp-future.com/sites/2014.erp-future.com/files/1_business/Logo_U_TIP.png";
             this.text = "TIP Technik und Informatik Partner GmbH";
@@ -2056,8 +2055,7 @@ define('framework/default-ui/services/header-service',["require", "exports", "ts
     ], HeaderService.prototype, "avatarUrl", void 0);
     HeaderService = tslib_1.__decorate([
         aurelia_framework_1.autoinject,
-        tslib_1.__metadata("design:paramtypes", [export_2.CommandService,
-            export_1.CustomEvent])
+        tslib_1.__metadata("design:paramtypes", [export_1.CustomEvent])
     ], HeaderService);
     exports.HeaderService = HeaderService;
 });
@@ -2109,17 +2107,29 @@ define('framework/default-ui/services/export',["require", "exports", "./layout-s
     exports.LoadingService = loading_service_1.LoadingService;
 });
 
-define('app',["require", "exports", "tslib", "aurelia-framework", "./framework/stack-router/services/export", "./framework/default-ui/services/export", "text!./autodata/forms.json", "text!./route-info/structure.json"], function (require, exports, tslib_1, aurelia_framework_1, export_1, export_2, routesForm, routesStructure) {
+define('app',["require", "exports", "tslib", "aurelia-framework", "./framework/stack-router/services/export", "./framework/default-ui/services/export", "./framework/default-ui/export", "text!./autodata/forms.json", "text!./route-info/structure.json"], function (require, exports, tslib_1, aurelia_framework_1, export_1, export_2, export_3, routesForm, routesStructure) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var App = (function () {
-        function App(router, routesCreator, layout) {
+        function App(router, routesCreator, layout, header) {
             this.router = router;
             this.routesCreator = routesCreator;
             this.layout = layout;
+            this.header = header;
             this.routes = [];
             this.routes = routesCreator.createRoutes(JSON.parse(routesStructure), JSON.parse(routesForm));
             this.layout.activateTheme();
+            this.header.onSearch.register(function () {
+                return Promise.resolve();
+            });
+            this.header.commands.push({
+                id: "dummy",
+                title: "Mails",
+                icon: "envelope-o",
+                execute: function () {
+                    DevExpress.ui.dialog.alert("Neues Mail wird erstellt", "Information");
+                }
+            });
         }
         App.prototype.attached = function () {
             this.router.registerRoutes(this.routes, "security/authgroup");
@@ -2130,7 +2140,8 @@ define('app',["require", "exports", "tslib", "aurelia-framework", "./framework/s
         aurelia_framework_1.autoinject,
         tslib_1.__metadata("design:paramtypes", [export_1.RouterService,
             export_1.RoutesCreatorService,
-            export_2.LayoutService])
+            export_2.LayoutService,
+            export_3.HeaderService])
     ], App);
     exports.App = App;
 });
@@ -5578,17 +5589,18 @@ define('framework/default-ui/views/content/content',["require", "exports", "tsli
     exports.Content = Content;
 });
 
-define('framework/default-ui/views/header/header',["require", "exports", "tslib", "aurelia-framework", "../../../stack-router/export", "../../../base/services/export", "../../services/export"], function (require, exports, tslib_1, aurelia_framework_1, export_1, export_2, export_3) {
+define('framework/default-ui/views/header/header',["require", "exports", "tslib", "aurelia-framework", "../../../stack-router/export", "../../../base/export", "../../services/export", "../../../forms/export"], function (require, exports, tslib_1, aurelia_framework_1, export_1, export_2, export_3, export_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Header = (function () {
-        function Header(taskQueue, router, authorization, header, localization) {
+        function Header(taskQueue, router, authorization, header, localization, command) {
             var _this = this;
             this.taskQueue = taskQueue;
             this.router = router;
             this.authorization = authorization;
             this.header = header;
             this.localization = localization;
+            this.command = command;
             this.searchTextOptions = {
                 mode: "search",
                 placeholder: this.localization.translate(null, "default_ui.search"),
@@ -5621,12 +5633,49 @@ define('framework/default-ui/views/header/header',["require", "exports", "tslib"
                 });
             }
         }
+        Header.prototype.bind = function (bindingContext, overrideContext) {
+            this.scope = {
+                bindingContext: bindingContext,
+                overrideContext: overrideContext
+            };
+            this.scopeContainer = new export_2.ScopeContainer(this.scope);
+            this.prepareCommands();
+        };
+        Header.prototype.unbind = function () {
+            this.scopeContainer.disposeAll();
+        };
+        Header.prototype.logout = function () {
+            this.authorization.logout();
+        };
         Header.prototype.onAvatarClick = function () {
             var popover = this.avatarPopover.instance;
             popover.show(this.avatar);
         };
-        Header.prototype.logout = function () {
-            this.authorization.logout();
+        Header.prototype.prepareCommands = function () {
+            var _this = this;
+            if (this.header.avatarCommands) {
+                this.avatarCommands = this.header.avatarCommands.map(function (c) {
+                    return _this.convertCommand(c);
+                });
+            }
+            if (this.header.commands) {
+                this.commands = this.header.commands.map(function (c) {
+                    return _this.convertCommand(c);
+                });
+            }
+        };
+        Header.prototype.convertCommand = function (command) {
+            var _this = this;
+            return {
+                id: command.id,
+                title: command.title,
+                icon: command.icon,
+                isEnabled: this.command.isEnabled(this.scope, command),
+                isVisible: this.command.isVisible(this.scope, command),
+                execute: function () {
+                    _this.command.execute(_this.scope, command);
+                }
+            };
         };
         return Header;
     }());
@@ -5636,7 +5685,8 @@ define('framework/default-ui/views/header/header',["require", "exports", "tslib"
             export_1.RouterService,
             export_2.AuthorizationService,
             export_3.HeaderService,
-            export_2.LocalizationService])
+            export_2.LocalizationService,
+            export_4.CommandService])
     ], Header);
     exports.Header = Header;
 });
@@ -6224,7 +6274,7 @@ define('text!framework/login/login.css', ['module'], function(module) { module.e
 define('text!framework/default-ui/views/container/container.html', ['module'], function(module) { module.exports = "<template class=\"t--container\" class.bind=\"className\">\n  <require from=\"./container.css\"></require>\n  \n  <require from=\"../loading/loading\"></require>\n  <require from=\"../sidebar/sidebar\"></require>\n  <require from=\"../header/header\"></require>\n  <require from=\"../content/content\"></require>\n\n  <loading></loading>\n  <sidebar></sidebar>\n  <header></header>\n  <content></content>\n</template>\n"; });
 define('text!framework/default-ui/views/content/content.html', ['module'], function(module) { module.exports = "<template class=\"t--content\">\n  <require from=\"./content.css\"></require>\n\n  <stack-router></stack-router>\n</template>\n"; });
 define('text!framework/base/styles/styles.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\nbody {\n  margin: 0;\n  padding: 0;\n  font-family: \"Helvetica Neue\", \"Segoe UI\", Helvetica, Verdana, sans-serif;\n  font-size: 12px;\n}\n.t--editor-caption {\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n.t--cursor-pointer {\n  cursor: pointer;\n}\n.t--invisible-submit {\n  height: 0;\n  width: 0;\n  margin: 0;\n  padding: 0;\n  border: 0;\n}\n"; });
-define('text!framework/default-ui/views/header/header.html', ['module'], function(module) { module.exports = "<template class=\"t--header\">\n  <require from=\"./header.css\"></require>\n\n  <div class=\"t--header-flex\">\n    <div class=\"t--header-logo\" if.bind=\"header.logoUrl\">\n      <img src.bind=\"header.logoUrl\">\n    </div>\n    <div class=\"t--header-title\" if.bind=\"header.text\">\n      ${header.text}\n    </div>\n    <div class=\"t--header-search\" if.bind=\"header.onSearch.anyRegistered\">\n      <dx-widget name=\"dxTextBox\" options.bind=\"searchTextOptions\"></dx-widget>\n    </div>\n    <div class=\"t--header-between\"></div>\n    <div class=\"t--header-options\">\n      <div class=\"t--header-avatar\" click.delegate=\"onAvatarClick()\" ref=\"avatar\">\n        <div css.bind=\"header.avatarStyle\"></div>\n      </div>\n    </div>\n  </div>\n\n  <dx-widget name=\"dxPopover\" options.bind=\"avatarPopoverOptions\" view-model.ref=\"avatarPopover\">\n    <dx-template name=\"contentTemplate\">\n      <div class=\"t--header-avatar-command-container\">\n        <div repeat.for=\"command of header.avatarCommands\" click.delegate=\"command.execute()\">\n          <div class=\"t--header-avatar-command\">\n            ${command.title}\n          </div>\n        </div>\n      </div>\n    </dx-template>\n  </dx-widget>\n</template>"; });
+define('text!framework/default-ui/views/header/header.html', ['module'], function(module) { module.exports = "<template class=\"t--header\">\n  <require from=\"./header.css\"></require>\n\n  <div class=\"t--header-flex\">\n    <div class=\"t--header-logo\" if.bind=\"header.logoUrl\">\n      <img src.bind=\"header.logoUrl\">\n    </div>\n    <div class=\"t--header-title\" if.bind=\"header.text\">\n      ${header.text}\n    </div>\n    <div class=\"t--header-search\" if.bind=\"header.onSearch.anyRegistered\">\n      <dx-widget name=\"dxTextBox\" options.bind=\"searchTextOptions\"></dx-widget>\n    </div>\n    <div class=\"t--header-between\"></div>\n    <div class=\"t--header-options\">\n      <div repeat.for=\"command of commands\" click.delegate=\"command.execute()\" if.bind=\"command.isVisible && command.isEnabled\">\n        <div class=\"t--header-command\">\n          <i class=\"fa fa-${command.icon}\" if.bind=\"command.icon\"></i>\n          <div>${command.title}</div>\n        </div>\n      </div>\n\n      <div class=\"t--header-avatar\" click.delegate=\"onAvatarClick()\" ref=\"avatar\">\n        <div css.bind=\"header.avatarStyle\"></div>\n      </div>\n    </div>\n  </div>\n\n  <dx-widget name=\"dxPopover\" options.bind=\"avatarPopoverOptions\" view-model.ref=\"avatarPopover\">\n    <dx-template name=\"contentTemplate\">\n      <div class=\"t--header-avatar-command-container\">\n        <div repeat.for=\"command of avatarCommands\" click.delegate=\"command.execute()\" if.bind=\"command.isVisible && command.isEnabled\">\n          <div class=\"t--header-avatar-command\">\n            ${command.title}\n          </div>\n        </div>\n      </div>\n    </dx-template>\n  </dx-widget>\n</template>"; });
 define('text!framework/base/styles/variables.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n"; });
 define('text!framework/default-ui/views/loading/loading.html', ['module'], function(module) { module.exports = "<template>\n  <require from=\"../loading-spinner/loading-spinner\"></require>\n\n  <loading-spinner if.bind=\"loading.isLoading\"></loading-spinner>\n</template>"; });
 define('text!framework/default-ui/styles/popup.css', ['module'], function(module) { module.exports = ".dx-popup-wrapper:not(.dx-dialog) > .dx-popup-normal > .dx-popup-content {\n  padding: 0;\n}\n"; });
@@ -6242,7 +6292,7 @@ define('text!framework/stack-router/views/stack-router/stack-router.html', ['mod
 define('text!framework/stack-router/views/view/view.html', ['module'], function(module) { module.exports = "<template class=\"t--view\" class.bind=\"className\">\n  <require from=\"./view.css\"></require>\n\n  <div class=\"t--toolbar\" if.bind=\"createToolbar\">\n    <dx-widget if.bind=\"toolbarOptions\" name=\"dxToolbar\" options.bind=\"toolbarOptions\"></dx-widget>\n  </div>\n  <div class=\"t--view-content-wrapper\">\n    <div class=\"parent-container\">\n      <compose\n        view-model.ref=\"view.controller\" \n        view-model.bind=\"view.moduleId\" \n        model.bind=\"view.model\" \n        class=\"t--view-content\"></compose>\n    </div>\n  </div>\n</template>"; });
 define('text!framework/default-ui/views/container/container.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--container {\n  display: block;\n  width: 100vw;\n  height: 100vh;\n}\n.t--toolbar-title {\n  min-width: 220px;\n  padding: 0 12px;\n  font-size: 20px;\n  font-weight: 100;\n  color: white;\n}\n"; });
 define('text!framework/default-ui/views/content/content.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--content {\n  display: block;\n  margin-left: 280px;\n  height: calc(100% - 60px);\n  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n  transition-property: margin-left;\n}\n.t--sidebar-collapsed .t--content {\n  margin-left: 60px;\n}\n.t--view-current {\n  display: block;\n}\n.t--view-history {\n  display: none;\n}\n"; });
-define('text!framework/default-ui/views/header/header.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--header {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  margin-left: 280px;\n  padding: 0 12px;\n  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n  transition-property: margin-left;\n}\n.t--sidebar-collapsed .t--header {\n  margin-left: 60px;\n}\n.t--header-flex {\n  display: flex;\n  width: 100%;\n}\n.t--header-flex > div:not(:first-child) {\n  margin-left: 24px;\n}\n.t--header-logo {\n  height: 35px;\n}\n.t--header-logo > img {\n  height: 100%;\n}\n.t--header-title {\n  display: flex;\n  align-items: center;\n}\n.t--header-between {\n  flex-grow: 1;\n}\n.t--header-avatar {\n  overflow: hidden;\n  height: 35px;\n  width: 35px;\n  border-radius: 35px;\n  border: 1px solid darkgray;\n  cursor: pointer;\n}\n.t--header-avatar > div {\n  height: 100%;\n  width: 100%;\n  background-position: center center;\n  background-size: cover;\n  background-repeat: no-repeat;\n}\n.t--header-avatar-command-container {\n  padding: 12px;\n}\n.t--header-avatar-command {\n  cursor: pointer;\n}\n"; });
+define('text!framework/default-ui/views/header/header.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--header {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  margin-left: 280px;\n  padding-left: 12px;\n  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n  transition-property: margin-left;\n}\n.t--sidebar-collapsed .t--header {\n  margin-left: 60px;\n}\n.t--header-flex {\n  display: flex;\n  align-items: center;\n  width: 100%;\n  height: 100%;\n}\n.t--header-flex > div:not(:first-child) {\n  margin-left: 24px;\n}\n.t--header-logo {\n  height: 35px;\n}\n.t--header-logo > img {\n  height: 100%;\n}\n.t--header-title {\n  display: flex;\n  align-items: center;\n}\n.t--header-between {\n  flex-grow: 1;\n}\n.t--header-options {\n  display: flex;\n  height: 100%;\n  align-items: center;\n}\n.t--header-options > div {\n  height: 100%;\n  padding: 0 12px;\n  border-left: 1px solid #eeeeee;\n  display: flex;\n  align-items: center;\n  cursor: pointer;\n}\n.t--header-options > div:not(.t--header-avatar):hover {\n  background-color: #eeeeee;\n}\n.t--header-avatar > div {\n  height: 35px;\n  width: 35px;\n  border-radius: 35px;\n  border: 1px solid darkgray;\n  background-position: center center;\n  background-size: cover;\n  background-repeat: no-repeat;\n}\n.t--header-avatar-command-container {\n  padding: 12px;\n}\n.t--header-avatar-command {\n  cursor: pointer;\n}\n.t--header-command {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  cursor: pointer;\n}\n.t--header-command i {\n  margin-bottom: 6px;\n  font-size: 16px;\n}\n"; });
 define('text!framework/default-ui/views/loading-spinner/loading-spinner.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--loading {\n  position: fixed;\n  top: 0;\n  bottom: 0;\n  left: 0;\n  right: 0;\n  font-family: \"Helvetica Neue\", \"Segoe UI\", Helvetica, Verdana, sans-serif;\n  font-size: 60px;\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n  align-items: center;\n  background-color: rgba(255, 255, 255, 0.8);\n  z-index: 9999;\n  opacity: 0;\n  transition-delay: 500ms;\n  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n  transition-property: opacity;\n}\n.t--loading.t--loading-active {\n  opacity: 1;\n}\n.t--loading-spinner {\n  margin: 100px auto;\n  width: 50px;\n  height: 40px;\n  text-align: center;\n  font-size: 10px;\n}\n.t--loading-spinner > div {\n  background-color: #333;\n  height: 100%;\n  width: 6px;\n  display: inline-block;\n  -webkit-animation: animationLoadingSpinner 1.2s infinite ease-in-out;\n  animation: animationLoadingSpinner 1.2s infinite ease-in-out;\n}\n.t--loading-spinner > .t--loading-rect2 {\n  -webkit-animation-delay: -1.1s;\n  animation-delay: -1.1s;\n}\n.t--loading-spinner > .t--loading-rect3 {\n  -webkit-animation-delay: -1s;\n  animation-delay: -1s;\n}\n.t--loading-spinner > .t--loading-rect4 {\n  -webkit-animation-delay: -0.9s;\n  animation-delay: -0.9s;\n}\n.t--loading-spinner > .t--loading-rect5 {\n  -webkit-animation-delay: -0.8s;\n  animation-delay: -0.8s;\n}\n@-webkit-keyframes animationLoading {\n  0% {\n    opacity: 0;\n  }\n  100% {\n    opacity: 1;\n  }\n}\n@keyframes animationLoading {\n  0% {\n    opacity: 0;\n  }\n  100% {\n    opacity: 1;\n  }\n}\n@-webkit-keyframes animationLoadingSpinner {\n  0%,\n  40%,\n  100% {\n    -webkit-transform: scaleY(0.4);\n  }\n  20% {\n    -webkit-transform: scaleY(1);\n  }\n}\n@keyframes animationLoadingSpinner {\n  0%,\n  40%,\n  100% {\n    transform: scaleY(0.4);\n    -webkit-transform: scaleY(0.4);\n  }\n  20% {\n    transform: scaleY(1);\n    -webkit-transform: scaleY(1);\n  }\n}\n"; });
 define('text!framework/default-ui/views/sidebar/sidebar.css', ['module'], function(module) { module.exports = "@keyframes leftFadeIn {\n  from {\n    opacity: 0;\n    transform: translateX(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateX(0);\n  }\n}\n.t--sidebar {\n  display: block;\n  position: fixed;\n  top: 0;\n  bottom: 0;\n  left: 0;\n  z-index: 10;\n  width: 280px;\n  background-color: #2a2e35;\n  font-size: 14px;\n  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n  transition-property: left;\n}\n.t--sidebar ul {\n  padding: 0;\n  margin: 0;\n  list-style: none;\n}\n.t--sidebar-collapsed .t--sidebar {\n  left: -220px;\n}\n.t--sidebar-collapsed .t--sidebar-sub {\n  left: 60px;\n}\n.t--sidebar-header {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  background-color: #262930;\n  color: white;\n  cursor: pointer;\n}\n.t--sidebar-header-title {\n  flex-grow: 1;\n  font-size: 26px;\n  font-weight: 100;\n  padding: 12px;\n}\n.t--sidebar-header-icon {\n  display: flex;\n  width: 60px;\n  align-items: center;\n  justify-content: center;\n}\n.t--sidebar-item {\n  display: flex;\n  align-items: center;\n  height: 60px;\n  color: lightgray;\n  text-decoration: none;\n}\n.t--sidebar-item:hover {\n  color: white;\n}\n.t--sidebar-item-title {\n  flex-grow: 1;\n  padding: 12px;\n}\n.t--sidebar-item-icon {\n  display: flex;\n  width: 60px;\n  align-items: center;\n  justify-content: center;\n}\n.t--sidebar-sub {\n  position: fixed;\n  z-index: -9;\n  left: 280px;\n  min-width: 280px;\n  background-color: #2a2e35;\n  padding: 12px;\n}\n.t--sidebar-sub.au-enter-active {\n  animation: leftFadeIn 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);\n}\n.t--sidebar-sub-item {\n  color: lightgray;\n  text-decoration: none;\n}\n.t--sidebar-sub-item:hover {\n  color: white;\n}\n"; });
 define('text!framework/default-ui/views/sidebar-sub/sidebar-sub.css', ['module'], function(module) { module.exports = ".t--sidebar-sub-ul {\n  column-fill: auto;\n  column-count: 2;\n  column-width: 200px;\n}\n"; });

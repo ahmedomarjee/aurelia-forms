@@ -1,5 +1,7 @@
 import {
   autoinject,
+  OverrideContext,
+  Scope,
   TaskQueue
 } from "aurelia-framework";
 import {
@@ -7,11 +9,16 @@ import {
 } from "../../../stack-router/export";
 import {
   AuthorizationService,
-  LocalizationService
-} from "../../../base/services/export";
+  LocalizationService,
+  ScopeContainer
+} from "../../../base/export";
 import {
   HeaderService
 } from "../../services/export";
+import {
+  CommandService,
+  ICommandData
+} from "../../../forms/export"
 
 @autoinject
 export class Header {
@@ -20,7 +27,8 @@ export class Header {
     private router: RouterService,
     private authorization: AuthorizationService,
     private header: HeaderService,
-    private localization: LocalizationService
+    private localization: LocalizationService,
+    private command: CommandService
   ) { 
     if (!this.header.avatarCommands.find(c => c.id === "logout")) {
       this.header.avatarCommands.push({
@@ -61,12 +69,57 @@ export class Header {
     width: "250px"
   }
 
+  scope: Scope;
+  scopeContainer: ScopeContainer;
+
+  commands: ICommandData[];
+  avatarCommands: ICommandData[];
+
+  bind(bindingContext: any, overrideContext: OverrideContext) {
+    this.scope = {
+      bindingContext: bindingContext,
+      overrideContext: overrideContext
+    };
+    this.scopeContainer = new ScopeContainer(this.scope);
+
+    this.prepareCommands();
+  }
+  unbind() {
+    this.scopeContainer.disposeAll();
+  }
+
+  logout() {
+    this.authorization.logout();
+  }
+
   onAvatarClick() {
     const popover: DevExpress.ui.dxPopover = this.avatarPopover.instance;
     popover.show(this.avatar);
   }
 
-  logout() {
-    this.authorization.logout();
+  private prepareCommands() {
+    if (this.header.avatarCommands) {
+      this.avatarCommands = this.header.avatarCommands.map(c => {
+        return this.convertCommand(c);
+      });
+    }
+    if (this.header.commands) {
+      this.commands = this.header.commands.map(c => {
+        return this.convertCommand(c);
+      })
+    }
+  }
+  private convertCommand(command: ICommandData): ICommandData {
+    return {
+      id: command.id,
+      title: command.title,
+      icon: command.icon,
+      //TODO enabled und visible bei Änderung ebenfalls ändern ...
+      isEnabled: this.command.isEnabled(this.scope, command),
+      isVisible: this.command.isVisible(this.scope, command),
+      execute: () => {
+        this.command.execute(this.scope, command);
+      }
+    };
   }
 }

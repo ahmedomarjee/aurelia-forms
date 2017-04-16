@@ -13,6 +13,13 @@
     </div>
     <div class="t--header-between"></div>
     <div class="t--header-options">
+      <div repeat.for="command of commands" click.delegate="command.execute()" if.bind="command.isVisible && command.isEnabled">
+        <div class="t--header-command">
+          <i class="fa fa-${command.icon}" if.bind="command.icon"></i>
+          <div>${command.title}</div>
+        </div>
+      </div>
+
       <div class="t--header-avatar" click.delegate="onAvatarClick()" ref="avatar">
         <div css.bind="header.avatarStyle"></div>
       </div>
@@ -22,7 +29,7 @@
   <dx-widget name="dxPopover" options.bind="avatarPopoverOptions" view-model.ref="avatarPopover">
     <dx-template name="contentTemplate">
       <div class="t--header-avatar-command-container">
-        <div repeat.for="command of header.avatarCommands" click.delegate="command.execute()">
+        <div repeat.for="command of avatarCommands" click.delegate="command.execute()" if.bind="command.isVisible && command.isEnabled">
           <div class="t--header-avatar-command">
             ${command.title}
           </div>
