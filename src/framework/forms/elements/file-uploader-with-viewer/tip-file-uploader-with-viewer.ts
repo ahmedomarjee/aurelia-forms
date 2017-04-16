@@ -29,21 +29,22 @@ export class TipFileUploaderWithViewer{
     private taskQueue: TaskQueue
   ) {}
 
-  @bindable input: HTMLInputElement;
   @bindable options: IFileUploaderWithViewerOptions;
-  @bindable @observable currentValue: any;
-  @bindable downloadUrl: string;
+  @observable currentValue: any;
+  
+  input: HTMLInputElement;
+  downloadUrl: string;
 
   bindingContext: any;
   overrideContext: OverrideContext
 
   observables: Disposable[] = [];
 
-  @bindable placeholderIcon?: string;
-  @bindable placeholderImage?: string;
-  @bindable placeholderImageText?: string;
-  @bindable @observable iconDownload?: string;
-  @bindable imageStyle: any;
+  placeholderIcon?: string;
+  placeholderImage?: string;
+  placeholderImageText?: string;
+  @observable iconDownload?: string;
+  imageStyle: any;
   
   downloadButtonOptions: DevExpress.ui.dxButtonOptions = {
     text: "Download",
