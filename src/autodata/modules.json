@@ -1,0 +1,5 @@
+[
+  "../framework/login/views/login/login-form",
+  "../framework/security/views/authgroup/authgroup-edit-form",
+  "../framework/security/views/authgroup/authgroup-list-form"
+]

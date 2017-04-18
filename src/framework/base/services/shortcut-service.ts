@@ -11,6 +11,7 @@ import {
   Shortcuts
 } from "../enumerations/export";
 import * as mousetrap from "mousetrap";
+import "mousetrap/plugins/global-bind/mousetrap-global-bind";
 
 @autoinject
 export class ShortcutService {

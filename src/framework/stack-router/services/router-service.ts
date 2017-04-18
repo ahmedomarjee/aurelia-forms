@@ -12,6 +12,7 @@ import {
   ShortcutService
 } from "../../base/services/export";
 import * as Interfaces from "../interfaces/export";
+import * as $ from "jquery";
 
 @autoinject
 export class RouterService {

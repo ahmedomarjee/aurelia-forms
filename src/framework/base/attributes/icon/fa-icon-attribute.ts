@@ -3,6 +3,7 @@ import {
   bindable,
   customAttribute
 } from "aurelia-framework";
+import * as $ from "jquery";
 
 @autoinject
 @customAttribute("fa-icon")

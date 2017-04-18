@@ -1,15 +1,15 @@
 import { 
-  FrameworkConfiguration 
+  FrameworkConfiguration,
+  PLATFORM
 } from "aurelia-framework";
 import {
   DxTemplateService
 } from "../dx/services/dx-template-service";
-import "devextreme";
+import "./styles/styles.less";
 
 export function configure(config: FrameworkConfiguration) {
   config
-    .globalResources("./styles/styles.css")
-    .globalResources("./elements/file-uploader-with-viewer/tip-file-uploader-with-viewer");
+    .globalResources(PLATFORM.moduleName("./elements/file-uploader-with-viewer/tip-file-uploader-with-viewer"));
 
   const dxTemplate: DxTemplateService = config.container.get(DxTemplateService);
 

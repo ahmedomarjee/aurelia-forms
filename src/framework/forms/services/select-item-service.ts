@@ -8,34 +8,31 @@ import {
   DxTemplateService
 } from "../../dx/services/export";
 
-import * as selectItems from "text!../../../autodata/select-items.json";
+import * as selectItems from "json-loader!../../../autodata/select-items.json";
 
 @autoinject
 export class SelectItemService {
-  private _selectItems: any;
 
   constructor(
     private dxTemplate: DxTemplateService
   ) {
-    this._selectItems = JSON.parse(<any>selectItems);
-
     this.registerTemplates();
   }
 
   getSelectItem(id: string): ISelectItem {
-    if (!this._selectItems) {
+    if (!selectItems) {
       throw new Error("No select-items defined");
     }
-    if (!this._selectItems[id]) {
+    if (!selectItems[id]) {
       throw new Error(`Select-item ${id} is not defined`);
     }
 
-    return this._selectItems[id];
+    return selectItems[id];
   }
 
   private registerTemplates() {
-    for (let key in this._selectItems) {
-      const selectItem: ISelectItem = this._selectItems[key];
+    for (let key in selectItems) {
+      const selectItem: ISelectItem = selectItems[key];
 
       if (selectItem.titleTemplate) {
         this.dxTemplate.registerTemplate(`from-select-title-template-${selectItem.id}`, selectItem.titleTemplate);

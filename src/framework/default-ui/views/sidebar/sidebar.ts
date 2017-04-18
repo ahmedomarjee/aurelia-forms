@@ -10,7 +10,8 @@ import {
 } from "../../../stack-router/export";
 import {
   INavigationRoute
-} from "../../../stack-router/interfaces/export"
+} from "../../../stack-router/interfaces/export";
+import * as $ from "jquery";
 
 @autoinject
 export class Sidebar {

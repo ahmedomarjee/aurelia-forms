@@ -11,18 +11,16 @@ import {
   ScopeContainer
 } from "../classes/scope-container"
 
-import * as localizationNeutral from "text!../../../autodata/localization-neutral.json";
+import * as localizationNeutral from "json-loader!../../../autodata/localization-neutral.json";
 
 @autoinject
 export class LocalizationService {
   private isInitialized: boolean;
-  private neutral: any;
   
   constructor(
     private rest: RestService,
     private binding: BindingService
   ) {
-    this.neutral = JSON.parse(<any>localizationNeutral);
   }
 
   translate(scopeContainer: ScopeContainer | string[], key: string, callback?: {(val: string): void}): string {
@@ -57,7 +55,7 @@ export class LocalizationService {
   private getItem(key: string): any {
     const items = key.split(".");
     
-    let item: any = this.neutral;
+    let item: any = localizationNeutral;
     items.forEach(i => {
       if (!item) {
         return;

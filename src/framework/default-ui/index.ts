@@ -1,8 +1,6 @@
 import { FrameworkConfiguration } from "aurelia-framework";
+import "./styles/styles.less";
+import "./styles/toolbar.less";
+import "./styles/popup.less";
 
-export function configure(config: FrameworkConfiguration) {
-  config
-    .globalResources("./styles/styles.css")
-    .globalResources("./styles/toolbar.css")
-    .globalResources("./styles/popup.css");
-}
+export function configure(config: FrameworkConfiguration) { }

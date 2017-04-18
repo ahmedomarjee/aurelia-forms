@@ -22,7 +22,7 @@ import {
   DxTemplateService
 } from "../../dx/services/dx-template-service";
 import * as Interfaces from "../interfaces/export";
-import * as toolbarButtonTemplate from "text!../templates/toolbar-button-template.html";
+import * as toolbarButtonTemplate from "html-loader!../templates/toolbar-button-template.xhtml";
 
 @autoinject
 export class ToolbarService {

@@ -16,6 +16,7 @@ import {
   FileService,
   LocalizationService
 } from "../../../base/export";
+import * as $ from "jquery";
 
 @autoinject
 export class TipFileUploaderWithViewer{

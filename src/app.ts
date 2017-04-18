@@ -15,8 +15,8 @@ import {
   HeaderService
 } from "./framework/default-ui/export"
 
-import * as routesForm from "text!./autodata/forms.json";
-import * as routesStructure from "text!./route-info/structure.json";
+import * as routesForm from "json-loader!./autodata/forms.json";
+import * as routesStructure from "json-loader!./route-info/structure.json";
 
 @autoinject
 export class App {
@@ -29,8 +29,8 @@ export class App {
     private header: HeaderService
   ) { 
     this.routes = routesCreator.createRoutes(
-      JSON.parse(<any>routesStructure),
-      JSON.parse(<any>routesForm));
+      <any>routesStructure,
+      routesForm);
 
       this.layout.activateTheme();
       this.header.onSearch.register(() => {

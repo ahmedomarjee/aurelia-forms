@@ -1,10 +1,13 @@
-import { FrameworkConfiguration } from "aurelia-framework";
+import { 
+  FrameworkConfiguration,
+  PLATFORM
+} from "aurelia-framework";
+import "./styles/styles.less";
 
 export function configure(config: FrameworkConfiguration) {
   config
-    .globalResources("./attributes/icon/fa-icon-attribute")
-    .globalResources("./attributes/translation/translation-attribute")
-    .globalResources("./value-converters/translation/translation-value-converter")
-    .globalResources("./value-converters/sort/sort-value-converter")
-    .globalResources("./styles/styles.css");
+    .globalResources(PLATFORM.moduleName("./attributes/icon/fa-icon-attribute"))
+    .globalResources(PLATFORM.moduleName("./attributes/translation/translation-attribute"))
+    .globalResources(PLATFORM.moduleName("./value-converters/translation/translation-value-converter"))
+    .globalResources(PLATFORM.moduleName("./value-converters/sort/sort-value-converter"));
 }

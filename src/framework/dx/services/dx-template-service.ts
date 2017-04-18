@@ -4,6 +4,7 @@ import {
   Scope,
   TemplatingEngine
 } from "aurelia-framework";
+import * as $ from "jquery";
 
 @autoinject
 export class DxTemplateService {

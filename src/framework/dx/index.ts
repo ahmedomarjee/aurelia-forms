@@ -1,7 +1,14 @@
-import { FrameworkConfiguration } from "aurelia-framework";
-import "devextreme";
+import { 
+  FrameworkConfiguration,
+  PLATFORM
+} from "aurelia-framework";
+import {
+  DxLoader
+} from "./dx-loader";
 
 export function configure(config: FrameworkConfiguration) {
+  const dxLoader = new DxLoader();
+
   config
-    .globalResources("./elements/dx-widget");
+    .globalResources(PLATFORM.moduleName("./elements/dx-widget"));
 }

@@ -1,6 +1,7 @@
 import {
   autoinject
-} from "aurelia-framework"
+} from "aurelia-framework";
+import * as $ from "jquery";
 
 @autoinject
 export class LoadingSpinner {

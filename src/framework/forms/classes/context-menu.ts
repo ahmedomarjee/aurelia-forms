@@ -4,6 +4,7 @@ import {
 import {
   IContextMenuItem
 } from "../interfaces/context-menu-item";
+import * as $ from "jquery";
 
 export class ContextMenu {
   constructor() { }
