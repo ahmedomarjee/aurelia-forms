@@ -8,7 +8,7 @@ import {
   DxTemplateService
 } from "../../dx/services/export";
 
-import * as selectItems from "json-loader!../../../autodata/select-items.json";
+import * as selectItems from "json-loader!../../../framework-data/select-items.json";
 
 @autoinject
 export class SelectItemService {

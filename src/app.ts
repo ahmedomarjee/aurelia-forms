@@ -15,7 +15,7 @@ import {
   HeaderService
 } from "./framework/default-ui/export"
 
-import * as routesForm from "json-loader!./autodata/forms.json";
+import * as routesForm from "json-loader!./framework-data/forms.json";
 import * as routesStructure from "json-loader!./route-info/structure.json";
 
 @autoinject

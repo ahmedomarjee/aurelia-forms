@@ -7,7 +7,7 @@ import {
 } from "./framework/base/services/authorization-service";
 import {
   ModuleLoader
-} from "./autodata/modules";
+} from "./framework-data/modules";
 import environment from "./environment";
 import "whatwg-fetch";
 import "../resources/grid.less";

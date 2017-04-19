@@ -11,7 +11,7 @@ import {
   ScopeContainer
 } from "../classes/scope-container"
 
-import * as localizationNeutral from "json-loader!../../../autodata/localization-neutral.json";
+import * as localizationNeutral from "json-loader!../../../framework-data/localization-neutral.json";
 
 @autoinject
 export class LocalizationService {
