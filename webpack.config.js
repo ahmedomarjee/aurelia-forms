@@ -22,6 +22,7 @@ module.exports = {
       { test: /\.less$/i, use: ["style-loader", "css-loader", "less-loader"], issuer: /\.[tj]s$/i },
       { test: /\.less$/i, use: ["css-loader", "less-loader"], issuer: /\.html$/i },
       { test: /\.css$/i, use: ["style-loader", "css-loader"], issuer: /\.[tj]s$/i },
+      { test: /\.ts$/i, enforce: "pre", use: "source-map-loader" },
       { test: /\.ts$/i, use: "ts-loader" },
       { test: /\.html$/i, use: "html-loader" },
       {
@@ -44,5 +45,7 @@ module.exports = {
       minChunks: module => /node_modules[\/\\]devextreme/.test(module.resource)
     }),
     new AureliaPlugin(),
-  ]
+  ],
+
+  devtool: "inline-source-map"
 };
