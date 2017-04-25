@@ -111,11 +111,14 @@ export class RestService {
             this.onUnauthorizated.fire({
               url: url
             });
-            return;
+          } else if (r.status == 409) {
+            r.text().then(text => {
+              DevExpress.ui.notify(text, "error", 3000);
+            });
+          } else {
+            DevExpress.ui.notify(r.statusText, "error", 3000);
+            error(r);
           }
-
-          DevExpress.ui.notify(r.statusText, "error", 3000);
-          error(r);
         })
         .then(r => this.json.parse(r))
         .then(r => success(r))
