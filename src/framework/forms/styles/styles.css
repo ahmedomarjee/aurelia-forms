@@ -10,6 +10,7 @@
 }
 .t--form-element-flex-box {
   display: flex;
+  margin: -6px;
 }
 .t--form-element-image-inline {
   background-size: contain;

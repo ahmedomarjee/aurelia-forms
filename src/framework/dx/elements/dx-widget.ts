@@ -98,6 +98,7 @@ export class DxWidget {
       this.validatorInstance._dispose();
       this.validatorInstance = null;
     }
+    this.cleanUpNode();
 
     if (this.options && this.options.bindingOptions) {
       for (let binding of this.options.bindingOptions) {
@@ -265,5 +266,26 @@ export class DxWidget {
     }
 
     this._currentChangingProperty = null;
+  }
+  private cleanUpNode() {
+    const element = $(this.element);
+
+    const elementData = element.data(this.name);
+    if (elementData) {
+      if (elementData._dispose) {
+        elementData._dispose();
+      }
+
+      element.removeData(this.name);
+    }
+
+    const componentData = element.data("dxComponents");
+    if (componentData) {
+      element.removeData("dxComponents");
+    }
+
+    while (this.element.lastChild) {
+      this.element.removeChild(this.element.lastChild);
+    }
   }
 }
