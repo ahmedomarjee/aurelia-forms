@@ -1,0 +1,26 @@
+@keyframes leftFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+.t--view-content {
+  opacity: 0;
+  transform: translateX(10px);
+  transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);
+  transition-property: all;
+}
+.t--view-content.t--view-content-attached {
+  opacity: 1;
+  transform: translateX(0);
+}
+.t--view-content-wrapper {
+  background-color: #F5F5F5;
+}
+.t--view-content-wrapper .dx-datagrid-rowsview {
+  background-color: #F5F5F5;
+}
