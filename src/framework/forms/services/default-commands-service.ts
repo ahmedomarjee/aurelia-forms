@@ -12,6 +12,9 @@ import {
   PermissionService
 } from "../../base/services/export";
 import {
+  IValidationResult
+} from "../interfaces/export";
+import {
   RouterService
 } from "../../stack-router/services/router-service";
 import * as Interfaces from "../interfaces/export";
@@ -54,8 +57,10 @@ export class DefaultCommandsService {
     const cmd = this.getFormSaveCommand(form);
     
     cmd.execute = () => {
-      form.save().then(() => {
-        form.closeCurrentPopup();
+      form.save().then((r: IValidationResult) => {
+        if (r.isValid) {
+          form.closeCurrentPopup();
+        }
       });
     }
 

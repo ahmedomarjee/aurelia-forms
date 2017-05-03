@@ -33,6 +33,12 @@ export class LayoutService {
         propertyName: "color",
         value: this.themeColor
       }]
+    }, {
+      name: "h2, h3, h4, h5, h6",
+      properties: [{
+        propertyName: "border-left",
+        value: `5px solid ${this.themeColor}`
+      }]
     }]);
   }
 }

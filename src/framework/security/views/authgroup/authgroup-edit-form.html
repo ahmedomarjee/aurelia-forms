@@ -1,22 +1,24 @@
 <template>
-    <dx-widget class="t--form-validation-group" name="dxValidationGroup" options.bind="wd1Options" view-model.ref="wd1">
-        <div class="container t--form-container">
-            <div class="col-xs-12">
-                <div class="t--form-element-flex-box" style="flex-direction: column;height: 100%">
-                    <div class="col-xs-12">
-                        <div tr="key: authgroup-edit.info_text; markdown: true; mode: html"></div>
-                    </div>
-                    <div class="col-xs-12 t--form-relative-container" style="flex-grow: 1">
-                        <div class="t--form-absolute-container">
-                            <dx-widget name="dxDataGrid" options.bind="dataGridTestOptions" view-model.ref="dataGridTest"></dx-widget>
+    <div class="parent-container">
+        <dx-widget class="t--form-validation-group" name="dxValidationGroup" options.bind="wd1Options" view-model.ref="wd1">
+            <div class="container t--form-container">
+                <div class="col-xs-12">
+                    <div class="t--form-element-flex-box" style="flex-direction: column;height: 100%">
+                        <div class="col-xs-12">
+                            <div tr="key: authgroup-edit.info_text; markdown: true; mode: html"></div>
                         </div>
-                    </div>
-                    <div class="col-xs-12">
-                        <div class="t--editor-caption" tr="key: authgroup-edit.mandator_caption"></div>
-                        <dx-widget name="dxSelectBox" options.bind="mandatorOptions" view-model.ref="mandator"></dx-widget>
+                        <div class="col-xs-12 t--form-relative-container" style="flex-grow: 1">
+                            <div class="t--form-absolute-container">
+                                <dx-widget name="dxDataGrid" options.bind="dataGridTestOptions" view-model.ref="dataGridTest"></dx-widget>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 t--has-editor-caption">
+                            <div class="t--editor-caption" tr="key: authgroup-edit.mandator_caption"></div>
+                            <dx-widget name="dxSelectBox" options.bind="mandatorOptions" view-model.ref="mandator"></dx-widget>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </dx-widget>
+        </dx-widget>
+    </div>
 </template>

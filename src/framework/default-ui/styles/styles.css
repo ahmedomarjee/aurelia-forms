@@ -24,3 +24,29 @@
 .t--view-content-wrapper .dx-datagrid-rowsview {
   background-color: #F5F5F5;
 }
+.t--form-has-info-bar {
+  display: flex;
+}
+.t--form-info-bar {
+  width: 350px;
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+.container .dx-list:not(.dx-list-select-decorator-enabled) .dx-list-item.dx-state-hover,
+.container .dx-data-row.dx-state-hover:not(.dx-selection):not(.dx-row-inserted):not(dx-row-removed):not(.dx-edit-row) > td:not(.dx-focused) {
+  background-color: #808080;
+  color: white;
+}
+h2,
+h3,
+h4,
+h5,
+h6 {
+  padding: 6px 12px;
+  margin: 0;
+  background-color: #E5E5E5;
+  font-weight: normal;
+}
+h2 {
+  font-size: 14px;
+}

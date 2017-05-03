@@ -303,7 +303,7 @@ export class FormBase {
             "ERROR",
             3000);
           
-          return Promise.resolve()
+          return Promise.resolve(validationResult);
         }
       });
   }

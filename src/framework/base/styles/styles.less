@@ -12,6 +12,17 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.t--has-editor-caption {
+  display: flex;
+  align-items: center;
+
+  > .t--editor-caption {
+    width: 100px;
+  }
+  > *:not(.t--editor-caption) {
+    flex-grow: 1;
+  }
+}
 .t--cursor-pointer {
   cursor: pointer;
 }

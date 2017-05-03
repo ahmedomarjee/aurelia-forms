@@ -21,11 +21,20 @@
   overflow-y: auto;
 }
 .t--view-content {
-  display: table;
+  display: block;
   width: 100%;
-  margin-bottom: 12px;
+  height: 1px;
+  min-height: 100%;
   -webkit-overflow-scrolling: touch;
+}
+.t--view-content .parent-container {
+  min-height: 100%;
+  height: 1px;
 }
 .t--view-with-toolbar .t--view-content-wrapper {
   height: calc(100% - 60px);
+}
+.t--view-with-toolbar .t--view-content-wrapper > .parent-container {
+  height: calc(100% - 12px);
+  margin-bottom: 6px;
 }
