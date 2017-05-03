@@ -1,13 +1,11 @@
 <template>
     <require from="./authgroup-edit-form"></require>
-    <div class="parent-container">
-        <dx-widget class="t--form-validation-group" name="dxValidationGroup" options.bind="wd1Options" view-model.ref="wd1">
+    <dx-widget class="t--form-validation-group" name="dxValidationGroup" options.bind="wd1Options" view-model.ref="wd1">
+        <div class="parent-container">
             <div class="container t--form-container">
                 <dx-widget name="dxPopup" options.bind="editOptions" view-model.ref="edit">
                     <dx-template name="contentTemplate">
-                        <div class="parent-container">
-                            <authgroup-edit-form view-model.ref="editContent" is-edit-form="true"></authgroup-edit-form>
-                        </div>
+                        <authgroup-edit-form view-model.ref="editContent" is-edit-form="true"></authgroup-edit-form>
                     </dx-template>
                 </dx-widget>
                 <div class="col-xs-12 t--form-relative-container">
@@ -16,6 +14,6 @@
                     </div>
                 </div>
             </div>
-        </dx-widget>
-    </div>
+        </div>
+    </dx-widget>
 </template>

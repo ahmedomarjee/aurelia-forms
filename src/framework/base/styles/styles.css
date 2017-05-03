@@ -24,7 +24,8 @@ body {
   align-items: center;
 }
 .t--has-editor-caption > .t--editor-caption {
-  width: 100px;
+  min-width: 100px;
+  padding-right: 12px;
 }
 .t--has-editor-caption > *:not(.t--editor-caption) {
   flex-grow: 1;
