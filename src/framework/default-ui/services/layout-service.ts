@@ -28,12 +28,6 @@ export class LayoutService {
         value: `5px solid ${this.themeColor}`
       }]
     }, {
-      name: ".t--toolbar.t--toolbar-inline.dx-toolbar .t--toolbar-title",
-      properties: [{
-        propertyName: "color",
-        value: this.themeColor
-      }]
-    }, {
       name: "h2, h3, h4, h5, h6",
       properties: [{
         propertyName: "border-left",

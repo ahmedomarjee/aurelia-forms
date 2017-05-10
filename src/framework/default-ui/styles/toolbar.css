@@ -57,6 +57,7 @@
   height: 32px;
   font-size: 14px;
   font-weight: normal;
+  color: black;
 }
 .t--toolbar.t--toolbar-inline.dx-toolbar .dx-state-disabled .t--toolbar-item {
   color: gray;
