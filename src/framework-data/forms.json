@@ -1,20 +1,2 @@
 {
-  "framework/security/views/authgroup/authgroup-edit-form": {
-    "idParent": null,
-    "category": null,
-    "caption": "authgroup-edit.authgroup-edit_caption",
-    "route": "security/authgroup/:id",
-    "icon": null,
-    "moduleId": "framework/security/views/authgroup/authgroup-edit-form",
-    "isEnabled": false
-  },
-  "framework/security/views/authgroup/authgroup-list-form": {
-    "idParent": "settings",
-    "category": null,
-    "caption": "authgroup-list.authgroup-list_caption",
-    "route": "security/authgroup",
-    "icon": null,
-    "moduleId": "framework/security/views/authgroup/authgroup-list-form",
-    "isEnabled": true
-  }
 }

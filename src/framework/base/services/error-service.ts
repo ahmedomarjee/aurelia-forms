@@ -14,7 +14,7 @@ export class ErrorService {
   showError(error: any) {
     let message = error;
 
-    if (error instanceof Error) {
+    if (error instanceof Error || error.message) {
       message = error.message;
     }
 
@@ -24,6 +24,13 @@ export class ErrorService {
 
   }
   showAndLogError(error: any) {
+    if (!error) {
+      return;
+    }
+    if (error.isHandled === true) {
+      return;
+    }
+
     this.logError(error);
     this.showError(error);
   } 

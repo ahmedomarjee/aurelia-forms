@@ -37,22 +37,5 @@
   },
   "routes": {
     "settings": "Einstellungen"
-  },
-  "authgroup-edit": {
-    "authgroup-edit_caption": "Berechtigungsgruppe",
-    "info_text": {
-      "text": "Hallo Kollege - {0}",
-      "parameters": [
-        "models.data.$m_A.Name"
-      ]
-    },
-    "colnichts_caption": "Nichts",
-    "colnichts2_caption": "Nichts2",
-    "mandator_caption": "Mandant"
-  },
-  "authgroup-list": {
-    "authgroup-list_caption": "Berechtigungsgruppen",
-    "name_caption": "Bezeichnung",
-    "mandantor_caption": "Mandant"
   }
 }

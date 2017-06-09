@@ -1,13 +1,2 @@
 {
-  "mandator": {
-    "id": "mandator",
-    "elementName": "select-box",
-    "valueMember": "Id",
-    "displayMember": "Name",
-    "action": "base/Security/Mandator",
-    "columns": [
-      "Name",
-      "Id"
-    ]
-  }
 }
