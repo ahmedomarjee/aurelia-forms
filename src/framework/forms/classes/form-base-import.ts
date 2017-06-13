@@ -36,6 +36,9 @@ import {
   CommandService
 } from "../services/command-service";
 import {
+  FormEventService
+} from "../services/form-event-service";
+import {
   WidgetCreatorService
 } from "../widget-services/widget-creator-service";
 import {
@@ -76,6 +79,7 @@ export class FormBaseImport {
     public globalization: GlobalizationService,
     public localization: LocalizationService,
     public commandServerData: CommandServerData,
+    public formEvent: FormEventService,
     public onAttached: CustomEvent<IFormAttachedEventArgs>,
     public onReady: CustomEvent<IFormAttachedEventArgs>,
     public onReactivated: CustomEvent<IFormReadyEventArgs>,

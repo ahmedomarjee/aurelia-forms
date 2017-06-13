@@ -152,14 +152,17 @@ export class FormBase {
     this.owningView = owningView;
   }
   attached() {
-    const promise = this.onAttached.fire({
+    const args = {
       form: this
-    });
+    };
+    const promise = this.onAttached
+      .fire(args)
+      .then(() => this.formBaseImport.formEvent.onAttached.fire(args));
 
     this.formBaseImport.taskQueue.queueTask(() => {
-      this.onReady.fire({
-        form: this,
-      });
+      this.onReady
+        .fire(args)
+        .then(() => this.formBaseImport.formEvent.onReady.fire(args));
     });
 
     return promise;
@@ -186,9 +189,13 @@ export class FormBase {
     this.scopeContainer.disposeAll();
   }
   reactivate() {
-    this.onReactivated.fire({
+    const args = {
       form: this
-    });
+    };
+
+    this.onReactivated
+      .fire(args)
+      .then(() => this.formBaseImport.formEvent.onReactivating.fire(args));
   }
 
   getFileDownloadUrl(key: string): string {
@@ -235,6 +242,7 @@ export class FormBase {
     }
 
     return this.onValidating.fire(args)
+      .then(() => this.formBaseImport.formEvent.onValidating.fire(args))
       .then(() => {
         const forms = this.nestedForms.getNestedForms();
 
@@ -381,6 +389,9 @@ export class FormBase {
     this.command.execute(this.scope, command);
   }
   protected onConstructionFinished(): void {
+    this.formBaseImport.formEvent.onCreated.fire({
+      form: this
+    });
   }
 
   private loadCommands() {
