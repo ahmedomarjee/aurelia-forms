@@ -87,9 +87,11 @@ export class SimpleWidgetCreatorService {
     buttonOptions.text = this.localization.translate(form.scopeContainer, command.title);
     buttonOptions.hint = this.localization.translate(form.scopeContainer, command.tooltip);
     buttonOptions.width = "100%";
-    buttonOptions.onClick = () => {
+    buttonOptions.onClick = (a) => {
       if (typeof command.execute === "function") {
-        command.execute();
+        command.execute({
+          event: a.jQueryEvent
+        });
       } else if (typeof command.execute === "string") {
         form.binding.evaluate(form.scope, command.execute);
       } else {

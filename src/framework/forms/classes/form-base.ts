@@ -57,6 +57,7 @@ import {
   FormBaseImport
 } from "./form-base-import";
 import {
+  ICommandExecuteOptions,
   IPopupInfo,
   IValidationResult
 } from "../interfaces/export";
@@ -217,7 +218,7 @@ export class FormBase {
     }
   }
 
-  executeCommand(id: string) {
+  executeCommand(id: string, options?: ICommandExecuteOptions) {
     const context = this.getCurrentForm();
 
     if (context === this) {
@@ -229,7 +230,7 @@ export class FormBase {
         return;
       }
 
-      this.command.execute(this.scope, command);
+      this.command.execute(this.scope, command, options);
     } else {
       context.executeCommand(id);
     }
@@ -380,13 +381,13 @@ export class FormBase {
   protected addMapping(mapping: Interfaces.IMapping): void {
 
   }
-  protected submitForm(commandExpression: string): void {
+  protected submitForm(commandExpression: string, options?: ICommandExecuteOptions): void {
     const command: Interfaces.ICommandData = this.binding.evaluate(this.scope, commandExpression);
     if (!command || !command.execute) {
       return;
     }
 
-    this.command.execute(this.scope, command);
+    this.command.execute(this.scope, command, options);
   }
   protected onConstructionFinished(): void {
     this.formBaseImport.formEvent.onCreated.fire({

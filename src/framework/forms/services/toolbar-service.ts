@@ -16,8 +16,9 @@ import {
   CommandService
 } from "../services/command-service";
 import {
+  ICommandExecuteOptions,
   IToolbarManager
-} from "../interfaces/toolbar-manager";
+} from "../interfaces/export";
 import {
   DxTemplateService
 } from "../../dx/services/dx-template-service";
@@ -138,8 +139,8 @@ export class ToolbarService {
     item.location = command.location || "before";
     (<any>item).locateInMenu = command.locateInMenu;
     (<any>item).command = command;
-    (<any>item).guardedExecute = () => {
-      this.command.execute(scopeContainer.scope, command);
+    (<any>item).guardedExecute = (options: ICommandExecuteOptions) => {
+      this.command.execute(scopeContainer.scope, command, options);
     };
 
     return item;

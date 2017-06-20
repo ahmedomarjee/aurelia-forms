@@ -1,3 +1,7 @@
+import {
+    ICommandExecuteOptions
+} from "./command-execute-options";
+
 export interface ICommandData {
     id: string;
     icon?: string;
@@ -12,5 +16,5 @@ export interface ICommandData {
     isEnabledExpression?: string
     isVisible?: boolean;
     isVisibleExpression?: string;
-    execute?: {(): void} | {(): Promise<any>};
+    execute?: {(options?: ICommandExecuteOptions): void} | {(options?: ICommandExecuteOptions): Promise<any>};
 }

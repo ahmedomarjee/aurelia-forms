@@ -1,4 +1,4 @@
-<a class="t--toolbar-item" click.delegate="data.guardedExecute()">
+<a class="t--toolbar-item" click.delegate="data.guardedExecute({event: $event})">
   <div if.bind="data.command.badgeText" class="t--toolbar-item-badge" tr="key.bind: data.command.badgeText">
   </div>
   <div class="t--toolbar-item-content">

@@ -3,6 +3,7 @@ import {
   Scope
 } from "aurelia-framework";
 import {
+  ICommandExecuteOptions,
   ICommandData
 } from "../interfaces/export";
 import {
@@ -40,7 +41,7 @@ export class CommandService {
       && this.isEnabled(scope, command);
   }
 
-  execute(scope: Scope, command: ICommandData): boolean  {
+  execute(scope: Scope, command: ICommandData, options: ICommandExecuteOptions): boolean  {
     if (this.isCommandExecuting) {
       return;
     }
@@ -53,7 +54,7 @@ export class CommandService {
     }
 
     this.isCommandExecuting = true;
-    const result = command.execute.bind(scope.bindingContext)();
+    const result = command.execute.bind(scope.bindingContext)(options);
 
     if (result && result.then && result.catch) {
       result

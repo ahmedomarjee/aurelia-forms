@@ -17,6 +17,7 @@ import {
 } from "../../services/export";
 import {
   CommandService,
+  ICommandExecuteOptions,
   ICommandData
 } from "../../../forms/export"
 
@@ -117,8 +118,8 @@ export class Header {
       //TODO enabled und visible bei Änderung ebenfalls ändern ...
       isEnabled: this.command.isEnabled(this.scope, command),
       isVisible: this.command.isVisible(this.scope, command),
-      execute: () => {
-        this.command.execute(this.scope, command);
+      execute: (options: ICommandExecuteOptions) => {
+        this.command.execute(this.scope, command, options);
       }
     };
   }
