@@ -30,6 +30,28 @@ export class DefaultCommandsService {
     private permission: PermissionService
   ) {}
 
+  getFormAddCommand(form: FormBase): Interfaces.ICommandData {
+    const cmd: Interfaces.ICommandData = {
+      id: "$add",
+      icon: "plus",
+      title: "base.add",
+      sort: 5,
+      isVisible: form.canSave(),
+      execute() {
+        form.add()
+          .catch(r => {
+            form.error.showAndLogError(r);
+          });
+      }
+    };
+
+    form.models.onLoaded.register(() => {
+      cmd.isEnabled = form.canSaveNow();
+      return Promise.resolve();
+    });
+
+    return cmd;
+  }
   getFormSaveCommand(form: FormBase): Interfaces.ICommandData {
     const cmd: Interfaces.ICommandData = {
       id: "$save",
@@ -53,6 +75,29 @@ export class DefaultCommandsService {
 
     return cmd;
   }
+  getEditPopupSaveAndAddCommand(form: FormBase): Interfaces.ICommandData {
+    const cmd: Interfaces.ICommandData = {
+      id: "$saveAndAdd",
+      title: "base.save_and_add",
+      sort: 11,
+      isVisible: form.canSave(),
+      isEnabled: form.canSaveNow(),
+      execute() {
+        form.save().then((r: IValidationResult) => {
+          if (r.isValid) {
+            form.add();
+          }
+        });
+      }
+    };
+
+    form.models.onLoaded.register(() => {
+      cmd.isEnabled = form.canSaveNow();
+      return Promise.resolve();
+    });
+    
+    return cmd;
+  }
   getEditPopupSaveCommand(form: FormBase): Interfaces.ICommandData {
     const cmd = this.getFormSaveCommand(form);
     
@@ -62,7 +107,7 @@ export class DefaultCommandsService {
           form.closeCurrentPopup();
         }
       });
-    }
+    };
 
     return cmd;
   }
@@ -131,7 +176,7 @@ export class DefaultCommandsService {
   }
   getListAddCommand(form: FormBase, options: IListOptionsBase): Interfaces.ICommandData {
     const cmd: Interfaces.ICommandData = {
-      id: "$add",
+      id: "$listAdd",
       icon: "plus",
       title: "base.add",
       sort: 5,

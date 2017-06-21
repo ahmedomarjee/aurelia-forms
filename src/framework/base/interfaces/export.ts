@@ -1,4 +1,5 @@
 export * from "./data-source-options";
+export * from "./data-source-option-custom";
 export * from "./data-source-option-filter";
 export * from "./data-source-customization-options";
 export * from "./error";

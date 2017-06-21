@@ -30,6 +30,9 @@ export class DataGridWidgetCreatorService {
     if (options.dataModel) {
       const dataSource = this.baseWidgetCreator.createListDataSource(form, options);
       dataGridOptions.dataSource = dataSource;
+      
+      dataGridOptions.allowColumnResizing = true;
+      dataGridOptions.columnResizingMode = "widget";
 
       dataGridOptions.remoteOperations = {
         filtering: true,

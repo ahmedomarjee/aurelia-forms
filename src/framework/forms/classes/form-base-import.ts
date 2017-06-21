@@ -49,8 +49,9 @@ import {
   ErrorService
 } from "../../base/export";
 import {
-  RouterService
-} from "../../stack-router/services/router-service";
+  RouterService,
+  HistoryService
+} from "../../stack-router/services/export";
 import {
   IFormAttachedEventArgs,
   IFormReadyEventArgs,
@@ -68,6 +69,7 @@ export class FormBaseImport {
     public toolbar: ToolbarService,
     public defaultCommands: DefaultCommandsService,
     public router: RouterService,
+    public history: HistoryService,
     public error: ErrorService,
     public models: Models,
     public nestedForms: NestedForms,

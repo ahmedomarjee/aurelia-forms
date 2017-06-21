@@ -2,6 +2,7 @@
   "base": {
     "add": "Neuer Datensatz",
     "save": "Speichern",
+    "save_and_add": "Speichern \nund Neuanlage",
     "delete": "Löschen",
     "question": "Frage",
     "information": "Information",

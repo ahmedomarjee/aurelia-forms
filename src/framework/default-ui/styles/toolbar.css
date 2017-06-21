@@ -30,6 +30,9 @@
   color: white;
   background-color: #808080;
 }
+.t--toolbar-item-title {
+  white-space: pre-wrap;
+}
 .t--toolbar-item-content {
   display: flex;
   flex-direction: row;

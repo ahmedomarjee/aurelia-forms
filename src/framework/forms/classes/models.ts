@@ -109,7 +109,9 @@ export class Models {
       });
     }
   }
-  loadModelsWithKey() {
+  loadModelsWithKey(): Promise<any> {
+    const promises: Promise<any>[] = [];
+
     for (let id in this.info) {
       const model: Interfaces.IModel = this.info[id];
 
@@ -122,8 +124,15 @@ export class Models {
         continue;
       }
 
-      this.loadModel(model, keyValue);
+      promises.push(this.loadModel(model, keyValue));
     }
+
+    return new Promise((success, reject) => {
+      Promise
+        .all(promises)
+        .then(() => success())
+        .catch((r) => reject(r));
+    });
   }
   registerForm(form: FormBase) {
     if (this.form) {

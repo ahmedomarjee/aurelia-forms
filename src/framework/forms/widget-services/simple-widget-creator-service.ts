@@ -20,8 +20,11 @@ import {
 } from "./base-widget-creator-service";
 import {
   ICommandData,
-  IValidationResult
+  IValidationResult,
 } from "../interfaces/export";
+import {
+  IDataSourceOptionFilter
+} from "../../base/interfaces/export";
 import * as WidgetOptions from "../widget-options/export";
 
 @autoinject
@@ -230,6 +233,9 @@ export class SimpleWidgetCreatorService {
     const editorOptions: DevExpress.ui.dxSelectBoxOptions = this.createEditorOptions(form, options);
     const selectItem = this.selectItem.getSelectItem(options.idSelect);
 
+    editorOptions.searchEnabled = true;
+    editorOptions.searchExpr = selectItem.displayMember;
+
     this.addDataExpressionOptions(form, options, editorOptions, selectItem);
 
     if (selectItem.fieldTemplate) {
@@ -435,12 +441,17 @@ export class SimpleWidgetCreatorService {
         where.push(selectItem.where);
       }
 
-      const filters = [];
+      const filters: IDataSourceOptionFilter[] = [];
       if (options.customs) {
-        filters.push(...options.customs);
+        options.customs.forEach(custom => {
+          filters.push({
+            webApiCustomKey: custom.key,
+            webApiCustomValue: custom.value
+          })
+        });
       }
       if (options.filters) {
-        filters.push(...options.filter);
+        filters.push(...options.filters);
       }
 
       current.dataSource = this.dataSource.createDataSource(form.scopeContainer, {

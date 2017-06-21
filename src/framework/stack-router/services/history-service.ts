@@ -88,9 +88,9 @@ export class HistoryService {
 
 		locationGoTo.isHandled = true;
 	}
-	setUrlWithoutNavigation(url: string) {
+	setUrlWithoutNavigation(url: string, replace: boolean = false) {
 		this.guardedNavigate(() => {
-			this.assignUrl(url, false);
+			this.assignUrl(url, replace);
 		});
 	}
 

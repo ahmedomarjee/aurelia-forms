@@ -256,6 +256,21 @@ export class FormBase {
       });
   }
 
+  canAdd(): boolean {
+    return this
+      .getFormsInclOwn()
+      .some(i => i.models.getModels().some(m => {
+        if (!m.postOnSave) {
+          return false;
+        }
+
+        return true;
+      }));
+  }
+  add(): Promise<any> {
+    return this.loadById("0");
+  }
+
   canSave(): boolean {
     return this
       .getFormsInclOwn()
@@ -343,6 +358,25 @@ export class FormBase {
     return this.localization.translate(this.scopeContainer, key);
   }
 
+  loadById(id: string): Promise<any> {
+    if (!this.isEditForm && !this.isNestedForm) {
+      const currentUrl = this.formBaseImport.history.getUrl();
+      const currentRoute = this.formBaseImport.router.getRoute(currentUrl);
+
+      if (!currentRoute) {
+        return Promise.resolve();
+      }
+
+      const newUrl = this.formBaseImport.router.constructUrl(currentRoute.route, {
+        id: id
+      });
+
+      this.formBaseImport.history.setUrlWithoutNavigation(newUrl, true);
+    }
+    this.variables.data.$id = id;
+    return this.models.loadModelsWithKey();
+  }
+
   protected addModel(model: Interfaces.IModel): void {
     this.callOnBind(() => {
       this.models.addInfo(model);
@@ -401,8 +435,10 @@ export class FormBase {
 
       if (this.isEditForm) {
         this.commands.addCommand(this.formBaseImport.defaultCommands.getEditPopupSaveCommand(this));
+        this.commands.addCommand(this.formBaseImport.defaultCommands.getEditPopupSaveAndAddCommand(this));
         this.commands.addCommand(this.formBaseImport.defaultCommands.getEditPopupDeleteCommand(this));
       } else {
+        this.commands.addCommand(this.formBaseImport.defaultCommands.getFormAddCommand(this));
         this.commands.addCommand(this.formBaseImport.defaultCommands.getFormSaveCommand(this));
         this.commands.addCommand(this.formBaseImport.defaultCommands.getFormDeleteCommand(this));
       }

@@ -31,7 +31,51 @@ export class RouterService {
   viewStack: ViewItem[] = [];
   currentViewItem: ViewItem;
 
+  constructUrl(route: Interfaces.IRoute, parameters: any): string {
+    let url = Array.isArray(route.route)
+      ? route.route[0]
+      : route.route;
+
+    for (let parameter in parameters) {
+      url = url.replace(new RegExp(`/:${parameter}`), `/${parameters[parameter]}`)
+    }
+
+    return url;
+  }
   deactivate() {
+  }
+  getRoute(url: string): Interfaces.IRouteInfo {
+    const indexQuestionMark = url.indexOf("?");
+    if (indexQuestionMark >= 0) {
+      url = url.substr(0, indexQuestionMark);
+    }
+
+    const searchRouteInfo = (routes: Interfaces.IRoute[]) => {
+      for (const route of routes) {
+        const routeInfo = this.isRoute(route, url)
+          || searchRouteInfo(route.children);
+
+        if (routeInfo == void (0)) {
+          continue;
+        }
+
+        return routeInfo;
+      }
+
+      return null;
+    }
+
+    const routeInfo = searchRouteInfo(this.routes);
+    if (routeInfo != void(0)) {
+      return routeInfo;
+    }
+
+    return {
+      id: this.routeInfoId++,
+      route: this.getFallbackRoute(),
+      parameters: {},
+      isFallback: true
+    };
   }
   navigate(navigationArgs: Interfaces.INavigationArgs) {
     const routeInfo = this.getRoute(navigationArgs.url);
@@ -163,39 +207,6 @@ export class RouterService {
     }
 
     return result;
-  }
-  private getRoute(url: string): Interfaces.IRouteInfo {
-    const indexQuestionMark = url.indexOf("?");
-    if (indexQuestionMark >= 0) {
-      url = url.substr(0, indexQuestionMark);
-    }
-
-    const searchRouteInfo = (routes: Interfaces.IRoute[]) => {
-      for (const route of routes) {
-        const routeInfo = this.isRoute(route, url)
-          || searchRouteInfo(route.children);
-
-        if (routeInfo == void (0)) {
-          continue;
-        }
-
-        return routeInfo;
-      }
-
-      return null;
-    }
-
-    const routeInfo = searchRouteInfo(this.routes);
-    if (routeInfo != void(0)) {
-      return routeInfo;
-    }
-
-    return {
-      id: this.routeInfoId++,
-      route: this.getFallbackRoute(),
-      parameters: {},
-      isFallback: true
-    };
   }
   private isRoute(route: Interfaces.IRoute, url: string): Interfaces.IRouteInfo {
     if (route.route == void(0)) {

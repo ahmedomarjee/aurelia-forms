@@ -59,6 +59,15 @@ export class DataSourceService {
             getOptions.where = loadOptions.filter;
           }
         }
+        if (loadOptions.searchExpr && loadOptions.searchOperation && loadOptions.searchValue) {
+          const searchWhere = [loadOptions.searchExpr, loadOptions.searchOperation, loadOptions.searchValue];
+
+          if (getOptions.where) {
+            getOptions.where = [getOptions.where, searchWhere];
+          } else {
+            getOptions.where = searchWhere;
+          }
+        }
 
         getOptions.skip = loadOptions.skip;
         getOptions.take = loadOptions.take;
@@ -124,7 +133,7 @@ export class DataSourceService {
     getOptions.expand = options.webApiExpand;
     getOptions.orderBy = options.webApiOrderBy;
 
-    if (options.webApiWhere || (customizationOptions && customizationOptions.getCustomWhere)) {
+    if ((options.webApiWhere && options.webApiWhere.length) || (customizationOptions && customizationOptions.getCustomWhere)) {
       const where = [];
       const input = [];
 
@@ -147,7 +156,7 @@ export class DataSourceService {
       }
     }
 
-    if (options.filters || (customizationOptions && customizationOptions.getCustomFilters)) {
+    if ((options.filters && options.filters.length) || (customizationOptions && customizationOptions.getCustomFilters)) {
       const customs = [];
       const where = [];
 
@@ -262,7 +271,7 @@ export class DataSourceService {
     const filters: IDataSourceOptionFilter[] = [];
 
     if (options.filters) {
-      filters.push(...filters);
+      filters.push(...options.filters);
     }
     if (customizationOptions && customizationOptions.getCustomFilters) {
       const customFilters = customizationOptions.getCustomFilters();
