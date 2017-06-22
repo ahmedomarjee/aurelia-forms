@@ -6,6 +6,7 @@ export interface IDataGridColumnOptions {
     bindTo?: string;
     width?: string;
     format?: string;
+    enumTypeName?: string;
 
     sortIndex?: number;
     sortOrder?: SortOrderColumnEnum;

@@ -31,12 +31,18 @@ export class DefaultCommandsService {
   ) {}
 
   getFormAddCommand(form: FormBase): Interfaces.ICommandData {
+    const isVisible = (): boolean => {
+      return form.canSave()
+        && form.models.getModels().some(model => model.key === "variables.data.$id");
+    };
+
     const cmd: Interfaces.ICommandData = {
       id: "$add",
       icon: "plus",
       title: "base.add",
       sort: 5,
-      isVisible: form.canSave(),
+      isEnabled: form.canSaveNow(),
+      isVisible: isVisible(),
       execute() {
         form.add()
           .catch(r => {

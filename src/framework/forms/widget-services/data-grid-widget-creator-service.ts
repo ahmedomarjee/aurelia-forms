@@ -14,6 +14,9 @@ import {
 import {
   SelectionModeEnum
 } from "../enums/selection-mode-enum";
+import {
+  EnumItemService
+} from "../services/export";
 import * as WidgetOptions from "../widget-options/export";
 
 @autoinject
@@ -21,7 +24,8 @@ export class DataGridWidgetCreatorService {
   constructor(
     private baseWidgetCreator: BaseWidgetCreatorService,
     private globalization: GlobalizationService,
-    private localization: LocalizationService
+    private localization: LocalizationService,
+    private enumItem: EnumItemService
   ) { }
 
   addDataGrid(form: FormBase, options: WidgetOptions.IDataGridOptions) {
@@ -68,6 +72,16 @@ export class DataGridWidgetCreatorService {
         }
         if (col.format) {
           column.format = this.globalization.getFormatterParser(col.format);
+        }
+        if (col.enumTypeName) {
+          column.dataType = "string";
+          column.customizeText = (cellInfo) => {
+            if (cellInfo.value == void(0)) {
+              return "";
+            }
+
+            return this.enumItem.getDisplayText(col.enumTypeName, cellInfo.value.toString());
+          };
         }
 
         return column;
