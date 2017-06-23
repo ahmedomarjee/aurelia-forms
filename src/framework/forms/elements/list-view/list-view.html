@@ -1,0 +1,19 @@
+<template>
+  <require from="./list-view.less"></require>
+
+  <div class="container">
+    <div class.bind="(options.itemClass ? options.itemClass : 'col-xs-12')" repeat.for="item of items" click.bind="onItemClick(item, $event)">
+      <template replaceable part="item"></template>
+    </div>
+
+    <div class="col-xs-12" if.bind="options.pagerInfoVisible">
+      {{pagerInfoText}}
+    </div>
+    <div class="col-xs-12">
+      <div class="t--list-view-footer-buttons">
+        <dx-widget name="dxButton" options.bind="reloadButtonOptions"></dx-widget>
+        <dx-widget name="dxButton" options.bind="loadNextButtonOptions" if.bind="showLoadNextButton"></dx-widget>
+      </div>
+    </div>
+  </div>
+</template>

@@ -105,6 +105,8 @@ export class DataSourceService {
       }
     }));
 
+    dataSource.requireTotalCount(true);
+
     let timeout = null;
     this.addObservers(scopeContainer, options, () => {
       if (timeout) {

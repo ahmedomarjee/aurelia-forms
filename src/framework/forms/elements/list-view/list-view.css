@@ -1,0 +1,6 @@
+.t--list-view-footer-buttons {
+  display: flex;
+}
+.t--list-view-footer-buttons > * {
+  margin-right: 6px;
+}

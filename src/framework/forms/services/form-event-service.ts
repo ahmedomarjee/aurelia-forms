@@ -7,6 +7,7 @@ import {
 import {
   IFormAttachedEventArgs,
   IFormCreatedEventArgs,
+  IFormBindEventArgs,
   IFormReadyEventArgs,
   IFormReactivatedEventArgs,
   IFormValidatingEventArgs
@@ -16,6 +17,7 @@ import {
 export class FormEventService {
   constructor(
     public onCreated: CustomEvent<IFormCreatedEventArgs>,
+    public onBind: CustomEvent<IFormBindEventArgs>,
     public onAttached: CustomEvent<IFormAttachedEventArgs>,
     public onReady: CustomEvent<IFormReadyEventArgs>,
     public onReactivating: CustomEvent<IFormReactivatedEventArgs>,

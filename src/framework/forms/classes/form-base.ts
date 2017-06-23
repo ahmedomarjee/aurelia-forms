@@ -182,6 +182,10 @@ export class FormBase {
     })
 
     this._callOnBind = null;
+    this.formBaseImport.formEvent.onBind.fire({
+      form: this
+    });
+
     this.loadCommands();
     this.toolbarOptions = this.toolbar.createFormToolbarOptions(this);
     this.models.loadModelsWithKey();
@@ -257,17 +261,26 @@ export class FormBase {
   }
 
   canAdd(): boolean {
-    return this
-      .getFormsInclOwn()
-      .some(i => i.models.getModels().some(m => {
-        if (!m.postOnSave) {
-          return false;
-        }
+    const mainModel = this.getModelWithKeyId();
+    if (!mainModel) {
+      return false;
+    }
 
-        return true;
-      }));
+    if (!this.formBaseImport.permission.canWebApiNew(mainModel.webApiAction)) {
+      return false;
+    }
+
+    if (!this.models.allowNew(this.scopeContainer, mainModel)) {
+      return false;
+    }
+
+    return true;
   }
   add(): Promise<any> {
+    if (!this.canAdd()) {
+      return Promise.resolve();
+    }
+
     return this.loadById("0");
   }
 
@@ -316,6 +329,8 @@ export class FormBase {
                 this.translate("base.save_success"),
                 "SUCCESS",
                 3000);
+              
+              this.setCurrentUrl();
 
               return Promise.resolve(validationResult);
             });
@@ -326,7 +341,7 @@ export class FormBase {
               : this.translate("base.validation_error"),
             "ERROR",
             3000);
-          
+
           return Promise.resolve(validationResult);
         }
       });
@@ -340,6 +355,9 @@ export class FormBase {
           return false;
         }
         if (!this.models.data[m.id] || !this.models.data[m.id][m.keyProperty]) {
+          return false;
+        }
+        if (!this.models.allowDelete(this.scopeContainer, m)) {
           return false;
         }
 
@@ -358,21 +376,15 @@ export class FormBase {
     return this.localization.translate(this.scopeContainer, key);
   }
 
+  getModelWithKeyId(): Interfaces.IModel {
+    return this
+      .models
+      .getModels()
+      .find(m => m.key === "variables.data.$id");
+  };
   loadById(id: string): Promise<any> {
-    if (!this.isEditForm && !this.isNestedForm) {
-      const currentUrl = this.formBaseImport.history.getUrl();
-      const currentRoute = this.formBaseImport.router.getRoute(currentUrl);
+    this.setCurrentUrl(id);
 
-      if (!currentRoute) {
-        return Promise.resolve();
-      }
-
-      const newUrl = this.formBaseImport.router.constructUrl(currentRoute.route, {
-        id: id
-      });
-
-      this.formBaseImport.history.setUrlWithoutNavigation(newUrl, true);
-    }
     this.variables.data.$id = id;
     return this.models.loadModelsWithKey();
   }
@@ -413,7 +425,6 @@ export class FormBase {
     });
   }
   protected addMapping(mapping: Interfaces.IMapping): void {
-
   }
   protected submitForm(commandExpression: string, options?: ICommandExecuteOptions): void {
     const command: Interfaces.ICommandData = this.binding.evaluate(this.scope, commandExpression);
@@ -462,5 +473,42 @@ export class FormBase {
     }
 
     return this[editPopup.idContent];
+  }
+  private setCurrentUrl(id: string = null): void {
+    if (this.isEditForm || this.isNestedForm) {
+      return;
+    }
+
+    if (id == void(0)) {
+      const mainModel = this.getModelWithKeyId();
+      if (!mainModel) {
+        return;
+      }
+
+      const data = this.models.data[mainModel.id];
+      if (!data) {
+        return;
+      }
+
+      const key = data[mainModel.keyProperty];
+      if (key == void(0)) {
+        return;
+      }
+
+      id = key;
+    }
+
+    const currentUrl = this.formBaseImport.history.getUrl();
+    const currentRoute = this.formBaseImport.router.getRoute(currentUrl);
+
+    if (!currentRoute) {
+      return;
+    }
+
+    const newUrl = this.formBaseImport.router.constructUrl(currentRoute.route, {
+      id: id
+    });
+
+    this.formBaseImport.history.setUrlWithoutNavigation(newUrl, true);
   }
 }

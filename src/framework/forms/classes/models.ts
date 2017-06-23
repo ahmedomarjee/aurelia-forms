@@ -3,7 +3,10 @@ import {
   singleton
 } from "aurelia-framework";
 import {
-  RestService, CustomEvent
+  BindingService,
+  CustomEvent,
+  RestService,
+  ScopeContainer 
 } from "../../base/export";
 import {
   IModelLoadRequiredEventArgs,
@@ -27,6 +30,7 @@ export class Models {
   constructor(
     private rest: RestService,
     private dataSource: DataSourceService,
+    private binding: BindingService,
     public onLoadRequired: CustomEvent<IModelLoadRequiredEventArgs>,
     public onLoadedInterceptor: CustomEvent<IModelLoadedInterceptorEventArgs>,
     public onLoaded: CustomEvent<IModelLoadedEventArgs>
@@ -54,6 +58,20 @@ export class Models {
     this.info[model.id] = model;
 
     this.addObservers(model);
+  }
+  allowNew(scopeContainer: ScopeContainer,  model: Interfaces.IModel): boolean {
+    if (model.allowNew == void(0)) {
+      return true;
+    }
+
+    return !!this.binding.evaluate(scopeContainer.scope, model.allowNew);
+  }
+  allowDelete(scopeContainer: ScopeContainer,  model: Interfaces.IModel): boolean {
+    if (model.allowDelete == void(0)) {
+      return true;
+    }
+
+    return !!this.binding.evaluate(scopeContainer.scope, model.allowDelete);
   }
   createNewModelData(model: Interfaces.IModel): any {
     const data = {};

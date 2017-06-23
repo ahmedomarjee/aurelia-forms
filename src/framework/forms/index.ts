@@ -9,7 +9,8 @@ import "./styles/styles.less";
 
 export function configure(config: FrameworkConfiguration) {
   config
-    .globalResources(PLATFORM.moduleName("./elements/file-uploader-with-viewer/tip-file-uploader-with-viewer"));
+    .globalResources(PLATFORM.moduleName("./elements/file-uploader-with-viewer/tip-file-uploader-with-viewer"))
+    .globalResources(PLATFORM.moduleName("./elements/list-view/list-view"));
 
   const dxTemplate: DxTemplateService = config.container.get(DxTemplateService);
 

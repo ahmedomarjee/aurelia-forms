@@ -1,0 +1,7 @@
+{
+  "list_view": {
+    "load_next": "Weitere Datensätze laden",
+    "reload": "Daten neu laden",
+    "pager_info": "{0} Datensätze ({1} geladen)"
+  }
+}

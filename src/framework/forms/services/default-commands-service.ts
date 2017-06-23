@@ -12,6 +12,7 @@ import {
   PermissionService
 } from "../../base/services/export";
 import {
+  IModel,
   IValidationResult
 } from "../interfaces/export";
 import {
@@ -31,9 +32,9 @@ export class DefaultCommandsService {
   ) {}
 
   getFormAddCommand(form: FormBase): Interfaces.ICommandData {
-    const isVisible = (): boolean => {
+    const isEnabled = (): boolean => {
       return form.canSave()
-        && form.models.getModels().some(model => model.key === "variables.data.$id");
+        && form.getModelWithKeyId() != void(0);
     };
 
     const cmd: Interfaces.ICommandData = {
@@ -41,8 +42,8 @@ export class DefaultCommandsService {
       icon: "plus",
       title: "base.add",
       sort: 5,
-      isEnabled: form.canSaveNow(),
-      isVisible: isVisible(),
+      isEnabled: isEnabled(),
+      isVisible: form.canAdd(),
       execute() {
         form.add()
           .catch(r => {
@@ -87,7 +88,7 @@ export class DefaultCommandsService {
       title: "base.save_and_add",
       sort: 11,
       isVisible: form.canSave(),
-      isEnabled: form.canSaveNow(),
+      isEnabled: form.canSaveNow() && form.canAdd(),
       execute() {
         form.save().then((r: IValidationResult) => {
           if (r.isValid) {
@@ -232,8 +233,9 @@ export class DefaultCommandsService {
         cmd.isVisible = (info.webApiAction
             && info.keyProperty
             && this.permission.canWebApiNew(info.webApiAction)
+            && form.models.allowNew(form.scopeContainer, info)
             && !!(options.editUrl || options.idEditPopup || options.edits.length > 0)) || false;
-
+        
         const isEnabled = () => {
           return (!options.isRelation || (form.models.data[info.id] && form.models.data[info.id][info.keyProperty])) || false;
         };

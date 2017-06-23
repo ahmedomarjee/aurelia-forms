@@ -116,8 +116,6 @@ export class SimpleWidgetCreatorService {
   }
   addInclude(form: FormBase, options: WidgetOptions.IIncludeOptions) {
   }
-  addListView(form: FormBase, options: WidgetOptions.IListViewOptions) {
-  }
   addLookup(form: FormBase, options: WidgetOptions.ISelectOptions) {
     const editorOptions: DevExpress.ui.dxLookupOptions = this.createEditorOptions(form, options);
     const selectItem = this.selectItem.getSelectItem(options.idSelect);

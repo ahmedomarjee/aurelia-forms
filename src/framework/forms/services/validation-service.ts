@@ -2,6 +2,7 @@ import {
   autoinject
 } from "aurelia-framework";
 import {
+  BindingService,
   LocalizationService,
   ScopeContainer
 } from "../../base/export";
@@ -11,9 +12,11 @@ export class ValidationService {
   private validators: any = {};
 
   constructor(
+    private binding: BindingService,
     private localization: LocalizationService
   ) {
     this.registerRequired();
+    this.registerConditionalRequired();
     this.registerEmail();
     this.registerStringLength();
   }
@@ -39,6 +42,29 @@ export class ValidationService {
         message: this.localization.translate(
           [this.localization.translate(null, caption)], 
           "forms.validator_required")
+      };
+    });
+  }
+  private registerConditionalRequired() {
+    this.registerValidator("conditionalRequired", (scopeContainer, caption, parameters) => {
+      return {
+        type: "custom",
+        reevaluate: true,
+        message: this.localization.translate(
+          [this.localization.translate(null, caption)], 
+          "forms.validator_required"),
+        validationCallback: (e) => {
+          if (e.value != null && e.value != "" && e.value != undefined) {
+            return true;
+          }
+
+          const condition = parameters.find(p => p.name === "condition");
+          if (!condition || !condition.value) {
+            return false;
+          }
+
+          return !this.binding.evaluate(scopeContainer.scope, condition.value);
+        }
       };
     });
   }

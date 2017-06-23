@@ -11,6 +11,9 @@ import {
   DataGridWidgetCreatorService
 } from "./data-grid-widget-creator-service";
 import {
+  ListViewWidgetCreatorService
+} from "./list-view-widget-creator-service";
+import {
   ListWidgetCreatorService
 } from "./list-widget-creator-service";
 import * as WidgetOptions from "../widget-options/export";
@@ -20,7 +23,8 @@ export class WidgetCreatorService {
   constructor(
     private simpleWidgetCreator: SimpleWidgetCreatorService,
     private dataGridWidgetCreator: DataGridWidgetCreatorService,
-    private listWidgetCreator: ListWidgetCreatorService
+    private listWidgetCreator: ListWidgetCreatorService,
+    private listViewWidgetCreator: ListViewWidgetCreatorService
   ) { }
 
   addAccordion(form: FormBase, options: WidgetOptions.IAccordionOptions) {
@@ -80,7 +84,7 @@ export class WidgetCreatorService {
   }
   addListView(form: FormBase, options: WidgetOptions.IListViewOptions) {
     form.callOnBind(() => {
-      this.simpleWidgetCreator.addListView(form, options);
+      this.listViewWidgetCreator.addListView(form, options);
     });
   }
   addLookup(form: FormBase, options: WidgetOptions.ISelectOptions) {

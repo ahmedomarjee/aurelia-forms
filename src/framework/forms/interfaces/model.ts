@@ -14,7 +14,6 @@ export interface IModel {
     key?: string;
     keyProperty?: string;
     postOnSave?: boolean;
-    isMain?: boolean;
     autoLoad?: boolean;
 
     allowNew?: string;

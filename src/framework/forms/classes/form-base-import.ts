@@ -46,7 +46,8 @@ import {
   CustomEvent,
   GlobalizationService,
   LocalizationService,
-  ErrorService
+  ErrorService,
+  PermissionService
 } from "../../base/export";
 import {
   RouterService,
@@ -70,6 +71,7 @@ export class FormBaseImport {
     public defaultCommands: DefaultCommandsService,
     public router: RouterService,
     public history: HistoryService,
+    public permission: PermissionService,
     public error: ErrorService,
     public models: Models,
     public nestedForms: NestedForms,

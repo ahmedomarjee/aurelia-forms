@@ -3,4 +3,5 @@ import {IListOptionsBase} from "./list-options-base";
 
 export interface IListViewOptions extends IListOptionsBase {
     groupProperty?: string;
+    itemClass?: string;
 }
