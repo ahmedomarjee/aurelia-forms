@@ -9,7 +9,11 @@ import {
 } from "./binding-service";
 import {
   ScopeContainer
-} from "../classes/scope-container"
+} from "../classes/scope-container";
+import {
+  ILocalizationItem,
+  ILocalizationItemExtractInfo
+} from "../interfaces/export";
 
 import * as localizationNeutral from "json-loader!../../../framework-data/localization-neutral.json";
 
@@ -23,22 +27,25 @@ export class LocalizationService {
   ) {
   }
 
-  translate(scopeContainer: ScopeContainer | string[], key: string, callback?: {(val: string): void}): string {
+  translate(scopeContainer: ScopeContainer | string[], key: any, callback?: {(val: string): void}): string {
     if (!key) {
       return null;
     }
 
-    const item = this.getItem(key);
+    const extractedInfo = this.extractInfo(scopeContainer, key);
 
-    if (!item) {
+    if (!extractedInfo || !extractedInfo.item) {
       throw new Error(`No localization found for ${key}`);
     }
+
+    const item = extractedInfo.item;
+    scopeContainer = extractedInfo.scopeContainer;
 
     if (callback) {
       if (!Array.isArray(scopeContainer) && typeof item === "object" && item.parameters.length > 0) {
         item.parameters.forEach((expr, index) => {
           this.binding
-            .observe(scopeContainer, expr, () => {
+            .observe(<ScopeContainer>scopeContainer, expr, () => {
               callback(this.translateItem(scopeContainer, item))
             });
         });
@@ -52,7 +59,18 @@ export class LocalizationService {
       return this.translateItem(scopeContainer, item);
     }
   }
-  private getItem(key: string): any {
+  private extractInfo(scopeContainer: ScopeContainer | string[], key: any): ILocalizationItemExtractInfo {
+    if (typeof key === "object") {
+      const localizationItem: ILocalizationItem = key;
+
+      if (!localizationItem.key) {
+        throw new Error(`No key defined in ${key}`);
+      }
+
+      scopeContainer = localizationItem.parameters;
+      key = localizationItem.key;
+    }
+    
     const items = key.split(".");
     
     let item: any = localizationNeutral;
@@ -64,7 +82,10 @@ export class LocalizationService {
       item = item[i];
     });
 
-    return item;
+    return {
+      item: item,
+      scopeContainer: scopeContainer
+    };
   }
   private translateItem(scopeContainer: ScopeContainer | string[], item: any): string {
     if (typeof item === "string") {

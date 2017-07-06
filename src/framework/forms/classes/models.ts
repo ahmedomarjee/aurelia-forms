@@ -11,8 +11,13 @@ import {
 import {
   IModelLoadRequiredEventArgs,
   IModelLoadedEventArgs,
-  IModelLoadedInterceptorEventArgs
+  IModelLoadedInterceptorEventArgs,
+  IModelSavedEventArgs,
+  IModelDeletedEventArgs
 } from "../event-args/export";
+import {
+  ModelEventService
+} from "../services/export";
 import {
   FormBase
 } from "./form-base";
@@ -31,9 +36,12 @@ export class Models {
     private rest: RestService,
     private dataSource: DataSourceService,
     private binding: BindingService,
+    private modelEvent: ModelEventService,
     public onLoadRequired: CustomEvent<IModelLoadRequiredEventArgs>,
     public onLoadedInterceptor: CustomEvent<IModelLoadedInterceptorEventArgs>,
-    public onLoaded: CustomEvent<IModelLoadedEventArgs>
+    public onLoaded: CustomEvent<IModelLoadedEventArgs>,
+    public onSaved: CustomEvent<IModelSavedEventArgs>,
+    public onDeleted: CustomEvent<IModelDeletedEventArgs>
   ) {
     this.onLoadRequired.waitTimeout = 10;
 
@@ -66,6 +74,13 @@ export class Models {
 
     return !!this.binding.evaluate(scopeContainer.scope, model.allowNew);
   }
+  allowSave(scopeContainer: ScopeContainer, model: Interfaces.IModel): boolean {
+    if (model.allowSave == void(0)) {
+      return true;
+    }
+
+    return !!this.binding.evaluate(scopeContainer.scope, model.allowSave);
+  }
   allowDelete(scopeContainer: ScopeContainer,  model: Interfaces.IModel): boolean {
     if (model.allowDelete == void(0)) {
       return true;
@@ -97,6 +112,11 @@ export class Models {
 
     return arr;
   }
+  getModelWithKeyId(): Interfaces.IModel {
+    return this
+      .getModels()
+      .find(m => m.key === "variables.data.$id");
+  };
   loadModel(model: Interfaces.IModel, keyValue: any): Promise<any> {
     const getOptions = this.dataSource.createGetOptions(this.form.scopeContainer, model);
 
@@ -106,7 +126,11 @@ export class Models {
       this.onLoaded.fire({
         model: model,
         data: null
-      })
+      });
+      this.modelEvent.onLoaded.fire({
+        model: model,
+        data: null
+      });
     } else {
       return this.rest.get({
         url: this.rest.getWebApiUrl(`${model.webApiAction}/${keyValue}`),
@@ -121,6 +145,10 @@ export class Models {
         this.data[model.id] = r;
 
         this.onLoaded.fire({
+          model: model,
+          data: r
+        });
+        this.modelEvent.onLoaded.fire({
           model: model,
           data: r
         });
@@ -152,6 +180,15 @@ export class Models {
         .catch((r) => reject(r));
     });
   }
+  loadModelWithKeyId(): Promise<any> {
+    const model = this.getModelWithKeyId();
+    if (!model) {
+      return Promise.resolve();
+    }
+
+    const key = this.data[model.id][model.keyProperty];
+    return this.loadModel(model, key);
+  }
   registerForm(form: FormBase) {
     if (this.form) {
       throw new Error("Form was already registered");
@@ -178,7 +215,25 @@ export class Models {
           getOptions: this.dataSource.createGetOptions(this.form.scopeContainer, m)
         }).then(r => {
           this.data[m.id] = r;
+
+          if (m.key && m.key === "variables.data.$id") {
+            this.form.variables.data.$id = r[m.keyProperty];
+          }
+
+          this.onSaved.fire({
+            model: m,
+            data: r
+          });
+          this.modelEvent.onSaved.fire({
+            model: m,
+            data: r
+          });
+
           this.onLoaded.fire({
+            model: m,
+            data: r
+          });
+          this.modelEvent.onLoaded.fire({
             model: m,
             data: r
           });
@@ -197,10 +252,23 @@ export class Models {
     const promiseArr = this.getModels()
       .filter(m => m.postOnSave && this.data[m.id] && this.data[m.id][m.keyProperty])
       .map(m => {
+        const data = this.data[m.id];
+
         const promise = this.rest.delete({
           url: this.rest.getWebApiUrl(m.webApiAction),
-          id: this.data[m.id][m.keyProperty],
+          id: data[m.keyProperty],
           increaseLoadingCount: true
+        }).then(() => {
+          this.onDeleted.fire({
+            model: m,
+            data: data
+          });
+          this.modelEvent.onDeleted.fire({
+            model: m,
+            data: data
+          });
+
+          return Promise.resolve();
         });
 
         return promise;
@@ -213,7 +281,7 @@ export class Models {
   }
 
   private addObservers(model: Interfaces.IModel) {
-    this.addObserversDetail(model, model.key);
+    this.addObserversDetail(model, model.key, true);
 
     this.dataSource.addObservers(this.form.scopeContainer, model, () => {
       this.onLoadRequired.fire({
@@ -221,12 +289,17 @@ export class Models {
       });
     });
   }
-  private addObserversDetail(model: Interfaces.IModel, expression: string) {
+  private addObserversDetail(model: Interfaces.IModel, expression: string, checkKeyProperty: boolean) {
     if (expression == void (0)) {
       return;
     }
 
     this.form.binding.observe(this.form.scopeContainer, expression, (newValue, oldValue) => {
+      //Prüfen ob sowieso schon dieser Datensatz geladen. Wenn ja, dann nicht nochmal laden
+      if (checkKeyProperty && this.data[model.id] && this.data[model.id][model.keyProperty] && this.data[model.id][model.keyProperty] == newValue) {
+        return;
+      }
+
       this.onLoadRequired.fire({
         model
       });

@@ -9,5 +9,6 @@ export * from "./mapping";
 export * from "./model";
 export * from "./popup-info";
 export * from "./toolbar-manager";
+export * from "./updateable-popup-options";
 export * from "./variable";
 export * from "./validation-result";

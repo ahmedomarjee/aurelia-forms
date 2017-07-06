@@ -5,6 +5,7 @@ import {
   IDataSourceOptions,
   IDataSourceOptionFilter,
   IDataSourceCustomizationOptions,
+  IDataSourceLastLoadInfo
 } from "../interfaces/export";
 import {
   RestService
@@ -80,12 +81,24 @@ export class DataSourceService {
               sortOrder: (data.desc === true ? 1 : 0)
             }
           });
-        }
+        };
+
+        const currentDataSource: any = dataSource;
+        const lastLoadInfo: IDataSourceLastLoadInfo = {
+          getOptions: getOptions,
+          url: this.rest.getWebApiUrl(options.webApiAction)
+        };
+
+        currentDataSource.lastLoadInfo = lastLoadInfo;
 
         return this.rest.get({
-          url: this.rest.getWebApiUrl(options.webApiAction),
-          getOptions
+          url: lastLoadInfo.url,
+          getOptions: lastLoadInfo.getOptions
         }).then(r => {
+          if (customizationOptions && customizationOptions.resultInterceptor) {
+            r = customizationOptions.resultInterceptor(r);
+          }
+
           let result;
           if (loadOptions.requireTotalCount) {
             result = {
@@ -94,10 +107,6 @@ export class DataSourceService {
             };
           } else {
             result = r;
-          }
-
-          if (customizationOptions && customizationOptions.resultInterceptor) {
-            result = customizationOptions.resultInterceptor(result);
           }
 
           return result;

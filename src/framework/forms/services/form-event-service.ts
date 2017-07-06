@@ -10,7 +10,8 @@ import {
   IFormBindEventArgs,
   IFormReadyEventArgs,
   IFormReactivatedEventArgs,
-  IFormValidatingEventArgs
+  IFormValidatingEventArgs,
+  IFormExecuteCommandEventArgs
 } from "../event-args/export";
 
 @autoinject
@@ -21,6 +22,7 @@ export class FormEventService {
     public onAttached: CustomEvent<IFormAttachedEventArgs>,
     public onReady: CustomEvent<IFormReadyEventArgs>,
     public onReactivating: CustomEvent<IFormReactivatedEventArgs>,
-    public onValidating: CustomEvent<IFormValidatingEventArgs>
+    public onValidating: CustomEvent<IFormValidatingEventArgs>,
+    public onExecuteCommand: CustomEvent<IFormExecuteCommandEventArgs>
   ) {}
 }

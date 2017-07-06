@@ -9,7 +9,9 @@ import {
 } from "../widget-options/export";
 import {
   LocationService,
-  PermissionService
+  PermissionService,
+  RestService,
+  ShortcutService
 } from "../../base/services/export";
 import {
   IModel,
@@ -28,19 +30,28 @@ export class DefaultCommandsService {
   constructor(
     private router: RouterService,
     private location: LocationService,
-    private permission: PermissionService
-  ) {}
+    private permission: PermissionService,
+    private rest: RestService,
+    private shortcut: ShortcutService
+  ) { 
+    this.shortcut.bindShortcut("< c", "$command", false);
+    this.shortcut.bindShortcut("f10", "$save");
+    this.shortcut.bindShortcut("ctrl+f10", "$saveAndNew");
+    this.shortcut.bindShortcut("f8", "$delete");
+    this.shortcut.bindShortcut("f7", "$add");
+  }
 
   getFormAddCommand(form: FormBase): Interfaces.ICommandData {
     const isEnabled = (): boolean => {
       return form.canSave()
-        && form.getModelWithKeyId() != void(0);
+        && form.models.getModelWithKeyId() != void (0);
     };
 
     const cmd: Interfaces.ICommandData = {
       id: "$add",
       icon: "plus",
       title: "base.add",
+      tooltip: "base.add",
       sort: 5,
       isEnabled: isEnabled(),
       isVisible: form.canAdd(),
@@ -53,7 +64,7 @@ export class DefaultCommandsService {
     };
 
     form.models.onLoaded.register(() => {
-      cmd.isEnabled = form.canSaveNow();
+      cmd.isEnabled = form.canAdd();
       return Promise.resolve();
     });
 
@@ -64,6 +75,7 @@ export class DefaultCommandsService {
       id: "$save",
       icon: "floppy-o",
       title: "base.save",
+      tooltip: "base.save",
       sort: 10,
       isVisible: form.canSave(),
       isEnabled: form.canSaveNow(),
@@ -86,6 +98,7 @@ export class DefaultCommandsService {
     const cmd: Interfaces.ICommandData = {
       id: "$saveAndAdd",
       title: "base.save_and_add",
+      tooltip: "base.save_and_add",
       sort: 11,
       isVisible: form.canSave(),
       isEnabled: form.canSaveNow() && form.canAdd(),
@@ -102,12 +115,12 @@ export class DefaultCommandsService {
       cmd.isEnabled = form.canSaveNow();
       return Promise.resolve();
     });
-    
+
     return cmd;
   }
   getEditPopupSaveCommand(form: FormBase): Interfaces.ICommandData {
     const cmd = this.getFormSaveCommand(form);
-    
+
     cmd.execute = () => {
       form.save().then((r: IValidationResult) => {
         if (r.isValid) {
@@ -123,6 +136,7 @@ export class DefaultCommandsService {
       id: "$delete",
       icon: "times",
       title: "base.delete",
+      tooltip: "base.delete",
       sort: 20,
       isVisible: form.canSave(),
       isEnabled: form.canDeleteNow(),
@@ -153,15 +167,15 @@ export class DefaultCommandsService {
 
     cmd.execute = () => {
       DevExpress.ui.dialog.confirm(
-          form.translate("base.sure_delete_question"),
-          form.translate("base.question"))
-          .then(r => {
-            if (r) {
-              form.delete().then(() => {
-                form.closeCurrentPopup();
-              });
-            }
-          });
+        form.translate("base.sure_delete_question"),
+        form.translate("base.question"))
+        .then(r => {
+          if (r) {
+            form.delete().then(() => {
+              form.closeCurrentPopup();
+            });
+          }
+        });
     };
 
     return cmd;
@@ -170,10 +184,11 @@ export class DefaultCommandsService {
     const cmd: Interfaces.ICommandData = {
       id: "$goBack",
       icon: "arrow-left",
+      tooltip: "base.back",
       sort: 0,
       isVisible: this.router.viewStack.length > 1
-        && !form.isEditForm
-        && !form.isNestedForm,
+      && !form.isEditForm
+      && !form.isNestedForm,
       execute() {
         history.back();
       }
@@ -186,6 +201,7 @@ export class DefaultCommandsService {
       id: "$listAdd",
       icon: "plus",
       title: "base.add",
+      tooltip: "base.add",
       sort: 5,
       isVisible: false,
       isEnabled: true,
@@ -205,12 +221,12 @@ export class DefaultCommandsService {
                   this.location.goTo(c.editUrl + "/0", form);
                 }
                 if (c.idEditPopup) {
-                  form.editPopups.show(c.idEditPopup);
+                  form.editPopups.show(c.idEditPopup, null);
                 }
               }
             });
           });
-          
+
           ctxMenu.show(null);
         } else {
           if (options.editDataContext) {
@@ -221,7 +237,7 @@ export class DefaultCommandsService {
             this.location.goTo(options.editUrl + "/0", form);
           }
           if (options.idEditPopup) {
-            form.editPopups.show(options.idEditPopup);
+            form.editPopups.show(options.idEditPopup, null);
           }
         }
       }
@@ -231,11 +247,11 @@ export class DefaultCommandsService {
       const info = form.models.getInfo(options.dataModel);
       if (info) {
         cmd.isVisible = (info.webApiAction
-            && info.keyProperty
-            && this.permission.canWebApiNew(info.webApiAction)
-            && form.models.allowNew(form.scopeContainer, info)
-            && !!(options.editUrl || options.idEditPopup || options.edits.length > 0)) || false;
-        
+          && info.keyProperty
+          && this.permission.canWebApiNew(info.webApiAction)
+          && form.models.allowNew(form.scopeContainer, info)
+          && !!(options.editUrl || options.idEditPopup || options.edits.length > 0)) || false;
+
         const isEnabled = () => {
           return (!options.isRelation || (form.models.data[info.id] && form.models.data[info.id][info.keyProperty])) || false;
         };
@@ -259,17 +275,98 @@ export class DefaultCommandsService {
 
     return result;
   }
-  getClosePopupCommand(form: FormBase) {
+  getScrollDown(form: FormBase): Interfaces.ICommandData {
+    const cmd: Interfaces.ICommandData = {
+      id: "$scrollDown",
+      icon: "chevron-down",
+      tooltip: "base.scroll_down",
+      sort: 2,
+      isEnabled: !!form.viewScrollInfo && form.viewScrollInfo.index < form.viewScrollInfo.maxCount - 1,
+      isVisible: !!form.viewScrollInfo,
+      execute: () => {
+        const index = form.viewScrollInfo.index + 1;
+        this.scroll(form, index);
+      }
+    }
+
+    form.binding.observe(form.scopeContainer, "viewScrollInfo.index", () => {
+      cmd.isEnabled = !!form.viewScrollInfo && form.viewScrollInfo.index < form.viewScrollInfo.maxCount - 1
+    });
+    form.binding.observe(form.scopeContainer, "viewScrollInfo", () => {
+      cmd.isVisible = !!form.viewScrollInfo;
+    });
+
+    return cmd;
+  }
+  getScrollUp(form: FormBase): Interfaces.ICommandData {
+    const cmd: Interfaces.ICommandData = {
+      id: "$scrollUp",
+      icon: "chevron-up",
+      tooltip: "base.scroll_up",
+      sort: 1,
+      isEnabled: !!form.viewScrollInfo && form.viewScrollInfo.index > 0,
+      isVisible: !!form.viewScrollInfo,
+      execute: () => {
+        const index = form.viewScrollInfo.index - 1;
+        this.scroll(form, index);
+      }
+    }
+
+    form.binding.observe(form.scopeContainer, "viewScrollInfo.index", () => {
+      cmd.isEnabled = !!form.viewScrollInfo && form.viewScrollInfo.index > 0
+    });
+    form.binding.observe(form.scopeContainer, "viewScrollInfo", () => {
+      cmd.isVisible = !!form.viewScrollInfo;
+    });
+
+    return cmd;
+  }
+  getClosePopupCommand(form: FormBase | {(): void}) {
     const cmd: Interfaces.ICommandData = {
       id: "$close",
       icon: "times",
+      tooltip: "base.close",
       sort: 999,
       location: "after",
       execute() {
-        form.closeCurrentPopup();
+        if (typeof form === "function") {
+          form();
+        } else {
+          form.closeCurrentPopup();
+        }
       }
     }
 
     return cmd;
+  }
+
+  private scroll(form: FormBase, index: number): void {
+    const model = form.models.getModelWithKeyId();
+    const getOptions = {
+      take: 1,
+      skip: index,
+      where: form.viewScrollInfo.lastLoadInfo.getOptions.where,
+      orderBy: form.viewScrollInfo.lastLoadInfo.getOptions.orderBy,
+      customs: form.viewScrollInfo.lastLoadInfo.getOptions.customs,
+      columns: [model.keyProperty],
+      requireTotalCount: true
+    }
+
+    this.rest.get({
+      url: form.viewScrollInfo.lastLoadInfo.url,
+      getOptions: getOptions,
+      increaseLoadingCount: true,
+    }).then(r => {
+      if (r && r.count != void(0)) {
+        form.viewScrollInfo.maxCount = r.count;
+      }
+      
+      if (r && r.rows && r.rows.length) {
+        form.viewScrollInfo.index = index;
+
+        const id = r.rows[0][model.keyProperty];
+        form.loadById(id);
+      }
+    });
   }
 }

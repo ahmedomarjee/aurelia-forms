@@ -2,19 +2,21 @@ import {
   computedFrom,
   Controller
 } from "aurelia-framework";
-import * as Interfaces from "../interfaces/export";
+import {
+  IViewItemModel
+} from "../interfaces/view-item-model";
 
 export class ViewItem {
-  constructor(public routeInfo: Interfaces.IRouteInfo) {
-    this.title = routeInfo.route.caption;
-    this.moduleId = routeInfo.route.moduleId;
-    this.model = routeInfo;
+  constructor(viewModelItem: IViewItemModel) {
+    this.title = viewModelItem.routeInfo.route.caption;
+    this.moduleId = viewModelItem.routeInfo.route.moduleId;
+    this.model = viewModelItem;
     this.isCurrent = true;
   }
 
   title: string;
   moduleId: any;
-  model: any;
+  model: IViewItemModel;
   isCurrent: boolean;
   controller?: Controller;
 

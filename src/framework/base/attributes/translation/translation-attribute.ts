@@ -2,6 +2,7 @@ import {
   autoinject,
   bindable,
   customAttribute,
+  observable,
   OverrideContext,
   Scope
 } from "aurelia-framework";
@@ -24,7 +25,7 @@ export class TrCustomAttribute {
   scopeContainer: ScopeContainer;
 
   @bindable mode: string;
-  @bindable key: string;
+  @bindable @observable key: any;
   @bindable markdown: true;
 
   bind(bindingContext: any, overrideContext: OverrideContext) {

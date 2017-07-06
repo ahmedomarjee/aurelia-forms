@@ -27,8 +27,21 @@ export class FileService {
 
     return this.rest.getApiUrl(`base/File/Download?key=${key}${authKey}`);
   }
-  download() {
+  getInlineUrl(key: string) {
+    if (!key) {
+      return null;
+    }
+    
+    let authKey = this.authorization.getAuthorizationKey();
+    if (authKey) {
+      authKey = `&authKey=${encodeURIComponent(authKey)}`;
+    }
 
+    return this.rest.getApiUrl(`base/File/Inline?key=${key}${authKey}`);
+  }
+  download(key: string) {
+    const downloadUrl = this.getDownloadUrl(key);
+    window.open(downloadUrl, "_blank");
   }
   upload(file: File): Promise<string> {
     const formData = new FormData();

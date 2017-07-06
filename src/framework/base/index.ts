@@ -9,5 +9,6 @@ export function configure(config: FrameworkConfiguration) {
     .globalResources(PLATFORM.moduleName("./attributes/icon/fa-icon-attribute"))
     .globalResources(PLATFORM.moduleName("./attributes/translation/translation-attribute"))
     .globalResources(PLATFORM.moduleName("./value-converters/translation/translation-value-converter"))
-    .globalResources(PLATFORM.moduleName("./value-converters/sort/sort-value-converter"));
+    .globalResources(PLATFORM.moduleName("./value-converters/sort/sort-value-converter"))
+    .globalResources(PLATFORM.moduleName("./value-converters/format/format-value-converter"));
 }

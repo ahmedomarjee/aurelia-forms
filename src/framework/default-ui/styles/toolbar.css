@@ -15,13 +15,14 @@
   padding: 0 12px;
 }
 .t--toolbar-item {
+  position: relative;
   display: flex;
   align-items: center;
   height: 32px;
   padding: 0 12px;
   text-decoration: none;
-  cursor: pointer;
   -webkit-user-select: none;
+  cursor: pointer;
 }
 .t--toolbar-item i {
   font-size: 16px;
@@ -32,6 +33,16 @@
 }
 .t--toolbar-item-title {
   white-space: pre-wrap;
+}
+.t--toolbar-item-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 18px;
+  padding: 0 4px;
+  background-color: #e80000;
 }
 .t--toolbar-item-content {
   display: flex;

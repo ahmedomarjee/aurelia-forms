@@ -27,17 +27,12 @@ import {
   CommandServerData
 } from "./command-server-data";
 import {
+  DefaultCommandsService,
+  CommandService,
+  FormEventService,
+  GlobalPopupService,
   ToolbarService
-} from "../services/toolbar-service";
-import {
-  DefaultCommandsService
-} from "../services/default-commands-service";
-import {
-  CommandService
-} from "../services/command-service";
-import {
-  FormEventService
-} from "../services/form-event-service";
+} from "../services/export";
 import {
   WidgetCreatorService
 } from "../widget-services/widget-creator-service";
@@ -83,6 +78,7 @@ export class FormBaseImport {
     public globalization: GlobalizationService,
     public localization: LocalizationService,
     public commandServerData: CommandServerData,
+    public globalPopup: GlobalPopupService,
     public formEvent: FormEventService,
     public onAttached: CustomEvent<IFormAttachedEventArgs>,
     public onReady: CustomEvent<IFormAttachedEventArgs>,

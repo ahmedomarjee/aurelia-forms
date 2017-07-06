@@ -172,6 +172,7 @@ export interface IGlobalizationProvider {
   commaSeparator: string;
   groupSeparator: string
 }
+
 export class GermanGlobalizationProvider implements IGlobalizationProvider {
   culture = "de";
 

@@ -3,13 +3,12 @@ import {
 } from "aurelia-framework";
 import {
   IRoute
-} from "../interfaces/route"
+} from "../interfaces/route";
 
 export class RoutesCreatorService {
-  constructor(
-  ) {}
+  constructor() {}
 
-  createRoutes(structure: any[], routeForms: any) {
+  createRoutes(structure: any[], routeForms: any, canActivate?: {(route: IRoute): boolean}) {
     const routes: IRoute[] = [];
     const parentDic: any = {};
 
@@ -43,6 +42,12 @@ export class RoutesCreatorService {
         }
         if (routeForm.icon) {
           route.navigation.icon = routeForm.icon;
+        }
+      }
+
+      if (canActivate) {
+        route.canActivate = () => {
+          return canActivate(route);
         }
       }
       

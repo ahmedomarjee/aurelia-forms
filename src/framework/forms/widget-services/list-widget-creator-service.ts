@@ -40,7 +40,7 @@ export class ListWidgetCreatorService {
         e.data = e.itemData;
 
         clickActions.forEach(item => {
-          item(e)
+          item(e, listOptions.dataSource);
         });
       };
     }

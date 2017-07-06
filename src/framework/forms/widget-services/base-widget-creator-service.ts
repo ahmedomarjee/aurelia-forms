@@ -13,7 +13,8 @@ import {
   ToolbarService
 } from "../services/export";
 import {
-  IDataSourceCustomizationOptions
+  IDataSourceCustomizationOptions,
+  IViewScrollInfo
 } from "../../base/interfaces/export";
 import * as WidgetOptions from "../widget-options/export";
 
@@ -61,7 +62,7 @@ export class BaseWidgetCreatorService {
     if (options.createToolbar) {
       form[options.optionsToolbar.optionsName] = this.toolbar.createToolbarOptions(
         form.scopeContainer,
-        options.caption, 
+        options.caption,
         commands);
     } else if (options.isMainList) {
       commands.forEach(c => form.commands.addCommand(c));
@@ -90,7 +91,7 @@ export class BaseWidgetCreatorService {
         }
         form.binding.observe(
           form.scopeContainer,
-          `models.data.${model.id}.${model.keyProperty}`, 
+          `models.data.${model.id}.${model.keyProperty}`,
           () => {
             dataSource.reload();
           }
@@ -101,20 +102,41 @@ export class BaseWidgetCreatorService {
       return dataSource;
     }
   }
-  getListClickActions(form: FormBase, options: WidgetOptions.IListOptionsBase): { (e: any): void }[] {
-    const clickActions: { (e: any): void }[] = [];
+  getListClickActions(form: FormBase, options: WidgetOptions.IListOptionsBase): { (e: any, dataSource?: DevExpress.data.DataSource): void }[] {
+    const clickActions: { (e: any, dataSource?: DevExpress.data.DataSource): void }[] = [];
+
+    const getViewScrollInfo = (e: any, dataSource: DevExpress.data.DataSource): IViewScrollInfo => {
+      const customDataSource: any = dataSource;
+      if (!customDataSource.lastLoadInfo) {
+        return null;
+      }
+
+      const pageSize = dataSource.pageSize();
+      const pageIndex = dataSource.pageIndex();
+      const pageStart = pageSize * pageIndex;
+
+      const rowIndex = e && e.rowIndex != void (0)
+        ? pageStart + e.rowIndex
+        : -1;
+
+      return {
+        lastLoadInfo: customDataSource.lastLoadInfo,
+        index: rowIndex,
+        maxCount: dataSource.totalCount()
+      };
+    };
 
     if (options.onItemClick) {
-      clickActions.push(e => {
+      clickActions.push((e, ds) => {
         form.binding.evaluate({
-            bindingContext: e,
-            overrideContext: null
-          }, options.onItemClick);
+          bindingContext: e,
+          overrideContext: null
+        }, options.onItemClick);
       });
     }
     if (options.editDataContext || options.edits.length > 0) {
       if (options.edits.length > 0) {
-        clickActions.push(e => {
+        clickActions.push((e, ds) => {
           const edit = options.edits.find(c => c.typeName === e.data.ObjectTypeName);
           if (!edit) {
             return;
@@ -123,7 +145,7 @@ export class BaseWidgetCreatorService {
           form.models.data[edit.editDataContext] = e.data;
         });
       } else {
-        clickActions.push(e => {
+        clickActions.push((e, ds) => {
           form.models.data[options.editDataContext] = e.data;
         });
       }
@@ -133,17 +155,17 @@ export class BaseWidgetCreatorService {
 
       if (model) {
         if (options.edits.length > 0) {
-          clickActions.push(e => {
+          clickActions.push((e, ds) => {
             const edit = options.edits.find(c => c.typeName === e.data.ObjectTypeName);
             if (!edit) {
               return;
             }
 
-            this.location.goTo(`#${edit.editUrl}/${e.data[model.keyProperty]}`, form);
+            this.location.goTo(`#${edit.editUrl}/${e.data[model.keyProperty]}`, form, getViewScrollInfo(e, ds));
           });
         } else {
-          clickActions.push(e => {
-            this.location.goTo(`#${options.editUrl}/${e.data[model.keyProperty]}`, form);
+          clickActions.push((e, ds) => {
+            this.location.goTo(`#${options.editUrl}/${e.data[model.keyProperty]}`, form, getViewScrollInfo(e, ds));
           });
         }
       }
@@ -163,17 +185,18 @@ export class BaseWidgetCreatorService {
       });
 
       if (options.edits.length > 0) {
-        clickActions.push(e => {
+        //TODO - Info aus DataSource.lastLoadOptions übergeben und verarbeiten
+        clickActions.push((e, ds) => {
           const edit = options.edits.find(c => c.typeName === e.data.ObjectTypeName);
           if (!edit) {
             return;
           }
 
-          form.editPopups.show(edit.idEditPopup);
+          form.editPopups.show(edit.idEditPopup, getViewScrollInfo(e, ds));
         });
       } else {
-        clickActions.push(e => {
-          form.editPopups.show(options.idEditPopup);
+        clickActions.push((e, ds) => {
+          form.editPopups.show(options.idEditPopup, getViewScrollInfo(e, ds));
         });
       }
     }
@@ -196,8 +219,21 @@ export class BaseWidgetCreatorService {
       widgetOptions.hint = options.tooltip;
     }
 
+    const customWidgetOptions: any = widgetOptions;
+    customWidgetOptions.__customDisposingList = [];
+    widgetOptions.onDisposing = () => {
+      widgetOptions.onDisposing = null;
+
+      customWidgetOptions.__customDisposingList.forEach(c => c());
+      customWidgetOptions.__customDisposingList = null;
+    };
+
     form[options.options.optionsName] = widgetOptions;
 
     return widgetOptions;
+  }
+  registerCustomDisposing(options: any, action: {(): void}) {
+    const customOptions: any = options;
+    customOptions.__customDisposingList.push(action);
   }
 }

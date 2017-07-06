@@ -13,5 +13,9 @@ export interface IFileUploaderWithViewerOptions extends IEditorOptions {
     placeholderImageText?: string;
     iconDownload?: string;
     iconDownloadExpression?: string;
+    showViewer?: boolean;
     height?: string;
+    bindingOptions?: any;
+
+    onValueChanged?(value: string): void;
 }

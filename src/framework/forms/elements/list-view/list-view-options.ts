@@ -5,6 +5,7 @@ export interface IListViewOptions {
   selectionMode?: string;
   pagerInfoVisible?: boolean;
   pageSize?: number;
+  showReloadButton?: boolean;
 
   onItemClick?: (args: any) => void;
 }

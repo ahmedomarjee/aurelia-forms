@@ -52,7 +52,7 @@ export class ListViewWidgetCreatorService {
     if (clickActions.length > 0) {
       listViewOptions.onItemClick = (e) => {
         clickActions.forEach(item => {
-          item(e)
+          item(e, listViewOptions.dataSource);
         });
       };
     }

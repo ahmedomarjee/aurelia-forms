@@ -72,6 +72,10 @@ export class DxTemplateService {
     });
     result.attached();
 
-    return $(newElement);
+    return $(newElement)
+      .one("dxremove", () => {
+        result.unbind();
+        result.detached();
+      });
   }
 }

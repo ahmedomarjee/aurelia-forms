@@ -14,7 +14,7 @@ export class WebEventService {
 
   execute(eventInfo: any, showLoading: boolean = false): Promise<any> {
     return this.rest.post({
-      url: this.rest.getApiUrl("Event/Post"),
+      url: this.rest.getApiUrl("base/Event/Post"),
       increaseLoadingCount: showLoading,
       data: eventInfo
     });

@@ -29,5 +29,8 @@ export class ScopeContainer {
       })
       this._disposables.length = 0;
     }
+
+    this.scope = null;
+    this.parentScopeContainer = null;
   }
 }

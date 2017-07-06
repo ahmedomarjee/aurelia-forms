@@ -1,5 +1,7 @@
 {
   "default_ui": {
-    "search": "Suchen ..."
+    "search": "Suchen ...",
+    "execute_command": "Befehl ausführen ...",
+    "choose_command": "Bitte wählen Sie einen Befehlt aus"
   }
 }

@@ -2,20 +2,25 @@
   <require from="./tip-file-uploader-with-viewer.less"></require>
   <input type="file" accept.bind="options.acceptType" ref="input">
 
-  <div class="t--file-uploader-with-viewer-click-region" click.delegate="onClick($event)">
-    <div if.bind="placeholderImage && !downloadUrl" class="t--file-uploader-placeholder-image" css.bind="imageStyle">
+  <div class="t--file-uploader-with-viewer-click-region" class.bind="clickableClass" click.delegate="onClick($event)" dragover.delegate="onDragOver($event)"
+    dragleave.delegate="onDragLeave($event)" drop.delegate="onDrop($event)">
+    <div if.bind="canUpload && placeholderImage && !downloadUrl" class="t--file-uploader-placeholder-image" css.bind="imageStyle">
       <img src.bind="placeholderImage" />
     </div>
-    <div if.bind="placeholderImageText && !downloadUrl" class="t--file-uploader-placeholder-image-text"></div>
-      <span>${placeholderImageText}</span>
-    <div if.bind="placeholderIcon && !downloadUrl" class="t--file-uploader-placeholder-icon">
+    
+    <div if.bind="canUpload && placeholderImageText && !downloadUrl" class="t--file-uploader-placeholder-image-text"></div>
+    
+    <span if.bind="canUpload">${placeholderImageText}</span>
+    
+    <div if.bind="canUpload && placeholderIcon && !downloadUrl" class="t--file-uploader-placeholder-icon">
       <i class="fa fa-${placeholderIcon}"></i>
     </div>
 
-    <div if.bind="downloadUrl" class="t--file-uploader-image" css.bind="imageStyle">
+    <div if.bind="showImageViewer" class="t--file-uploader-image" css.bind="imageStyle">
       <img src.bind="downloadUrl" />
     </div>
 
-    <dx-widget class="t--file-uploader-with-viewer-download" if.bind="downloadUrl" view-model.ref="downloadButton" name="dxButton" options.bind="downloadButtonOptions"></dx-widget>
+    <dx-widget class="t--file-uploader-with-viewer-download" if.bind="showViewer" view-model.ref="downloadButton" name="dxButton"
+      options.bind="downloadButtonOptions"></dx-widget>
   </div>
 </template>

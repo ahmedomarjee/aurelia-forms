@@ -10,13 +10,15 @@ import {
 import {
   AuthorizationService,
   LocalizationService,
-  ScopeContainer
+  ScopeContainer,
+  ShortcutService
 } from "../../../base/export";
 import {
   HeaderService
 } from "../../services/export";
 import {
   CommandService,
+  GlobalPopupService,
   ICommandExecuteOptions,
   ICommandData
 } from "../../../forms/export"
@@ -29,7 +31,9 @@ export class Header {
     private authorization: AuthorizationService,
     private header: HeaderService,
     private localization: LocalizationService,
-    private command: CommandService
+    private command: CommandService,
+    private shortcut: ShortcutService,
+    private globalPopup: GlobalPopupService
   ) { 
     if (!this.header.avatarCommands.find(c => c.id === "logout")) {
       this.header.avatarCommands.push({
@@ -40,9 +44,18 @@ export class Header {
         }
       });
     }
+
+    this.shortcut.bindShortcut("f6", () => {
+      if (this.globalPopup.isAnyPopupOpen()) {
+        return;
+      }
+
+      this.searchTextBox.instance.focus();
+    });
   }
 
-  searchTextOptions: DevExpress.ui.dxTextBoxOptions = {
+  searchTextBox: any;
+  searchTextBoxOptions: DevExpress.ui.dxTextBoxOptions = {
     mode: "search",
     placeholder: this.localization.translate(null, "default_ui.search"),
     onKeyPress: (e) => {
@@ -111,16 +124,15 @@ export class Header {
     }
   }
   private convertCommand(command: ICommandData): ICommandData {
-    return {
-      id: command.id,
-      title: command.title,
-      icon: command.icon,
-      //TODO enabled und visible bei Änderung ebenfalls ändern ...
-      isEnabled: this.command.isEnabled(this.scope, command),
-      isVisible: this.command.isVisible(this.scope, command),
-      execute: (options: ICommandExecuteOptions) => {
-        this.command.execute(this.scope, command, options);
-      }
-    };
+    //TODO - Expression auch evaluieren + ggf. guardedExecute
+    
+    if (command.isVisible == void(0)) {
+      command.isVisible = true;
+    }
+    if (command.isEnabled == void(0)) {
+      command.isEnabled = true;
+    }
+    
+    return command;
   }
 }

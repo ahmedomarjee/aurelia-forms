@@ -12,6 +12,11 @@
     "validation_error": "Daten können aufgrund ungültiger Validierung nicht gespeichert werden",
     "login": "Anmelden",
     "logout": "Abmelden",
-    "navigation": "Navigation"
+    "navigation": "Navigation",
+    "back": "Zurück",
+    "scroll_down": "Nächster Datensatz",
+    "scroll_up": "Vorheriger Datensatz",
+    "close": "Schließen",
+    "param_1": "{0}"
   }
 }

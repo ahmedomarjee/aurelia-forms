@@ -1,6 +1,7 @@
 import {
   autoinject,
   bindable,
+  computedFrom,
   observable,
   BindingEngine,
   Disposable,
@@ -19,7 +20,7 @@ import {
 import * as $ from "jquery";
 
 @autoinject
-export class TipFileUploaderWithViewer{
+export class TipFileUploaderWithViewer {
   private _isClickActive: boolean;
 
   constructor(
@@ -28,25 +29,55 @@ export class TipFileUploaderWithViewer{
     private binding: BindingService,
     private bindingEngine: BindingEngine,
     private taskQueue: TaskQueue
-  ) {}
+  ) { }
 
   @bindable options: IFileUploaderWithViewerOptions;
   @observable currentValue: any;
-  
+
   input: HTMLInputElement;
   downloadUrl: string;
 
   bindingContext: any;
-  overrideContext: OverrideContext
+  overrideContext: OverrideContext;
 
   observables: Disposable[] = [];
+  dropEnabled: boolean = false;
+
+  isReadOnly: boolean;
+  isDisabled: boolean;
 
   placeholderIcon?: string;
   placeholderImage?: string;
   placeholderImageText?: string;
   @observable iconDownload?: string;
   imageStyle: any;
-  
+
+  @computedFrom("options.showViewer", "downloadUrl")
+  get showViewer(): boolean {
+    return this.downloadUrl
+      && (!this.options
+        || this.options.showViewer == void (0)
+        || this.options.showViewer == true);
+  }
+  @computedFrom("showViewer", "options.acceptType")
+  get showImageViewer(): boolean {
+    return this.showViewer
+      && this.options
+      && this.options.acceptType == "image/*";
+  }
+  @computedFrom("dropEnabled")
+  get clickableClass(): string {
+    if (this.dropEnabled) {
+      return "t--file-uploader-with-viewer-click-region-droppable";
+    } else {
+      return "";
+    }
+  }
+  @computedFrom("isReadOnly", "isDisabled")
+  get canUpload(): boolean {
+    return !this.isReadOnly && !this.isDisabled;
+  }
+
   downloadButtonOptions: DevExpress.ui.dxButtonOptions = {
     text: "Download",
     onClick: () => {
@@ -81,6 +112,18 @@ export class TipFileUploaderWithViewer{
       this.placeholderIcon = this.options.placeholderIcon;
     }
 
+    if (this.options.isReadOnlyExpression) {
+      this.observeValue(this.options.isReadOnlyExpression, (v) => this.isReadOnly = v);
+    } else if (this.options.isReadOnly) {
+      this.isReadOnly = this.options.isReadOnly;
+    }
+
+    if (this.options.isDisabledExpression) {
+      this.observeValue(this.options.isDisabledExpression, (v) => this.isDisabled = v);
+    } else if (this.options.isDisabled) {
+      this.isDisabled = this.options.isDisabled;
+    }
+
     this.placeholderImageText = this.options.placeholderImageText
       || this.localization.translate(null, "forms.file_uploadClickHere");
 
@@ -101,37 +144,18 @@ export class TipFileUploaderWithViewer{
       if (this.input.files.length !== 1) {
         return;
       }
-
-      this.taskQueue.queueMicroTask(() => {
-        this.file
-          .upload(this.input.files[0])
-          .then(r => {
-            if (!r || !r.length) {
-              return;
-            }
-
-            this.currentValue = r[0];
-
-            const bindingOptions = this.options["bindingOptions"];
-            if (bindingOptions && bindingOptions.value) {
-              const expression = this.bindingEngine.parseExpression(bindingOptions.value);
-              expression.assign({
-                bindingContext: this.bindingContext,
-                overrideContext: this.overrideContext
-              }, r[0], null);
-            }
-          });
-      });
+    
+      this.uploadFile(this.input.files[0]);
     });
   }
 
   getExpressionContext(propertyName: string) {
     return this.binding.getBindingContext({
-        bindingContext: this.bindingContext,
-        overrideContext: this.overrideContext
-      }, propertyName);
+      bindingContext: this.bindingContext,
+      overrideContext: this.overrideContext
+    }, propertyName);
   }
-  observeValue(propertyName: string, setValueCallback: {(value): void}) {
+  observeValue(propertyName: string, setValueCallback: { (value): void }) {
     const expression = this.bindingEngine.parseExpression(propertyName);
     const context = this.getExpressionContext(propertyName);
     const observer = this.bindingEngine.expressionObserver(context, propertyName);
@@ -168,8 +192,72 @@ export class TipFileUploaderWithViewer{
   }
 
   onClick(event: Event) {
+    if (!this.canUpload) {
+      return;
+    }
+
     $(this.input).trigger("click");
     event.stopPropagation();
     event.preventDefault();
+  }
+  onDragOver(event: Event) {
+    event.preventDefault();
+    this.dropEnabled = this.isDropEnabled(event);
+  }
+  onDragLeave(event: Event) {
+    event.preventDefault();
+    this.dropEnabled = false;
+  }
+  onDrop(event: any) {
+    event.preventDefault();
+
+    if (!this.isDropEnabled(event)) {
+      return;
+    }
+
+    this.uploadFile(event.dataTransfer.files[0]);
+    this.dropEnabled = false;
+  }
+
+  private isDropEnabled(event: any): boolean {
+    if (!this.canUpload) {
+      return false;
+    }
+
+    if (!event.dataTransfer || !event.dataTransfer.types || event.dataTransfer.types.length !== 1) {
+      return false;
+    }
+
+    return true;
+  }
+  private uploadFile(file: File) {
+    this.taskQueue.queueTask(() => {
+      this.file
+        .upload(file)
+        .then(r => {
+          if (!r || !r.length) {
+            return;
+          }
+
+          this.currentValue = r[0];
+
+          const bindingOptions = this.options["bindingOptions"];
+          if (bindingOptions && bindingOptions.value) {
+            const expression = this.bindingEngine.parseExpression(bindingOptions.value);
+            expression.assign({
+              bindingContext: this.bindingContext,
+              overrideContext: this.overrideContext
+            }, r[0], null);
+          }
+
+          if (this.options.onValueChanged) {
+            this.options.onValueChanged(r[0]);
+          }
+
+          if (this.options.showViewer === false) {
+            this.currentValue = null;
+          }
+        });
+    });
   }
 }

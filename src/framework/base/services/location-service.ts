@@ -7,6 +7,9 @@ import {
 import {
   CustomEvent
 } from "../classes/custom-event";
+import {
+  IViewScrollInfo
+} from "../interfaces/export";
 
 @autoinject
 export class LocationService {
@@ -14,10 +17,11 @@ export class LocationService {
     public onLocationGoTo: CustomEvent<ILocationGoToEventArgs>
   ) {}
 
-  goTo(url: string, currentViewModel: any) {
+  goTo(url: string, currentViewModel: any, viewScrollInfo?: IViewScrollInfo) {
     const args: ILocationGoToEventArgs = {
       url: url,
       currentViewModel: currentViewModel,
+      viewScrollInfo: viewScrollInfo,
       isHandled: false
     }
 

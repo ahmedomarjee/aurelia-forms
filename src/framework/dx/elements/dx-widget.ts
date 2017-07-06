@@ -20,6 +20,7 @@ import * as $ from "jquery";
 @processContent(false)
 export class DxWidget {
   private _currentChangingProperty: string;
+  private _inlines: any[] = [];
 
   @bindable name: string;
   @bindable options: any;
@@ -29,7 +30,6 @@ export class DxWidget {
   instance: any;
   validatorInstance: any;
   templates = {};
-  scope: Scope;
   scopeContainer: ScopeContainer;
 
   constructor(
@@ -44,24 +44,25 @@ export class DxWidget {
     this.owningView = owningView;
   }
   bind(bindingContext: any, overrideContext: OverrideContext) {
-    this.scope = {
+    this.scopeContainer = new ScopeContainer({
       bindingContext: bindingContext,
       overrideContext: overrideContext
-    };
-    this.scopeContainer = new ScopeContainer(this.scope);
+    });
     
     this.extractTemplates();
     this.checkBindings();
   }
   unbind() {
     this.scopeContainer.disposeAll();
+
+    this._inlines.forEach(c => c.unbind());
   }
   attached() {
     this.renderInline();
 
     this.options = this.options || {};
     this.options.onOptionChanged = this.onOptionChanged.bind(this);
-    this.options.modelByElement = DxWidget.modelByElement;
+    this.options.modelByElement = this.modelByElement.bind(this);
     this.options.integrationOptions = {
       templates: this.templates
     }
@@ -91,14 +92,13 @@ export class DxWidget {
   }
   detached() {
     if (this.instance) {
-      this.instance._dispose();
+      this.removeNode(this.instance);
       this.instance = null;
     }
     if (this.validatorInstance) {
-      this.validatorInstance._dispose();
+      this.removeNode(this.validatorInstance);
       this.validatorInstance = null;
     }
-    this.cleanUpNode();
 
     if (this.options && this.options.bindingOptions) {
       for (let binding of this.options.bindingOptions) {
@@ -108,6 +108,8 @@ export class DxWidget {
         }
       }
     }
+
+    this._inlines.forEach(c => c.detached());
   }
 
   isChangingProperty(propertyName: string) {
@@ -120,16 +122,8 @@ export class DxWidget {
     }
   }
 
-  private static modelByElement(element: any): any {
-    if (element.jquery) {
-      element = element.get(0);
-    }
-
-    if (!element.au || !element.au.controller || !element.au.controller.viewModel || !element.au.controller.viewModel.scope) {
-      return null;
-    }
-
-    return element.au.controller.viewModel.scope.bindingContext;
+  private modelByElement(element: any): any {
+    return this.scopeContainer.scope;
   }
   private extractTemplates(): void {
     $(this.element)
@@ -145,7 +139,7 @@ export class DxWidget {
               item,
               renderData.container,
               this.owningView.resources,
-              this.scope,
+              this.scopeContainer.scope,
               renderData.model
             );
           }
@@ -153,7 +147,7 @@ export class DxWidget {
         $(item).remove();
       });
 
-      Object.assign(this.templates, this.dxTemplate.getTemplates(this.scope, this.owningView.resources));
+      Object.assign(this.templates, this.dxTemplate.getTemplates(this.scopeContainer.scope, this.owningView.resources));
   }
   private registerBindings(): void {
     if (!this.options.bindingOptions) {
@@ -171,7 +165,7 @@ export class DxWidget {
           this.registerDeepObserver(binding, property, value);
         });
 
-      const value = this.binding.evaluate(this.scope, binding.expression);
+      const value = this.binding.evaluate(this.scopeContainer.scope, binding.expression);
 
       this.setOptionValue(property, value, true);
       this.registerDeepObserver(binding, property, value);
@@ -223,24 +217,25 @@ export class DxWidget {
       return;
     }
 
-    const currValue = this.binding.evaluate(this.scope, binding.expression);
+    const currValue = this.binding.evaluate(this.scopeContainer.scope, binding.expression);
 
     if (currValue === e.value) {
       return;
     }
 
-    this.binding.assign(this.scope, binding.expression, e.value);
+    this.binding.assign(this.scopeContainer.scope, binding.expression, e.value);
   }
   private renderInline(): void {
     $(this.element).children().each((index, child) => {
       const result = this.templatingEngine.enhance({
         element: child,
         resources: this.owningView.resources,
-        bindingContext: this.scope.bindingContext,
-        overrideContext: this.scope.overrideContext
+        bindingContext: this.scopeContainer.scope.bindingContext,
+        overrideContext: this.scopeContainer.scope.overrideContext
       });
 
       result.attached();
+      this._inlines.push(result);
     });
   }
   private setOptionValue(propertyName: string, value: any, isValid?: boolean) {
@@ -267,25 +262,26 @@ export class DxWidget {
 
     this._currentChangingProperty = null;
   }
-  private cleanUpNode() {
-    const element = $(this.element);
+  private removeNode(instance: any) {
+    const element = instance.element();
 
-    const elementData = element.data(this.name);
-    if (elementData) {
-      if (elementData._dispose) {
-        elementData._dispose();
-      }
+    const args: any = { type: 'dxremove', _angularIntegration: true };
+    element.triggerHandler(args);
 
+    const data = element.data(this.name);
+    if (data) {
+      //Dispose nicht notwendig, da dies bereits durch dxremove aufgerufen wird
+      //data._dispose();
       element.removeData(this.name);
     }
 
-    const componentData = element.data("dxComponents");
-    if (componentData) {
+    const dxComponents = element.data("dxComponents");
+    if (dxComponents) {
       element.removeData("dxComponents");
     }
 
-    while (this.element.lastChild) {
-      this.element.removeChild(this.element.lastChild);
+    while (element.childNodes) {
+      element.removeChild(element.childNodes[0]);
     }
   }
 }

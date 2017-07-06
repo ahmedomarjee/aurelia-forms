@@ -6,6 +6,7 @@ import {
 } from "../classes/form-base";
 import {
   DefaultCommandsService,
+  GlobalPopupService,
   SelectItemService,
   ToolbarService,
   ValidationService
@@ -20,7 +21,8 @@ import {
 } from "./base-widget-creator-service";
 import {
   ICommandData,
-  IValidationResult,
+  IUpdateablePopupOptions,
+  IValidationResult
 } from "../interfaces/export";
 import {
   IDataSourceOptionFilter
@@ -37,7 +39,8 @@ export class SimpleWidgetCreatorService {
     private toolbar: ToolbarService,
     private defaultCommands: DefaultCommandsService,
     private validation: ValidationService,
-    private selectItem: SelectItemService
+    private selectItem: SelectItemService,
+    private globalPopup: GlobalPopupService
   ) { }
 
   addAccordion(form: FormBase, options: WidgetOptions.IAccordionOptions) {
@@ -113,6 +116,24 @@ export class SimpleWidgetCreatorService {
   }
   addFileUploaderWithViewer(form: FormBase, options: WidgetOptions.IFileUploaderWithViewerOptions) {
     const widgetOptions = this.createEditorOptions(form, options);
+
+    widgetOptions.acceptType = options.acceptType;
+    widgetOptions.acceptTypeEnum = options.acceptTypeEnum;
+    widgetOptions.caption = options.caption;
+    widgetOptions.height = options.height;
+    widgetOptions.iconDownload = options.iconDownload;
+    widgetOptions.iconDownloadExpression = options.iconDownloadExpression;
+    widgetOptions.placeholderIcon = options.placeholderIcon;
+    widgetOptions.placeholderIconExpression = options.placeholderIconExpression;
+    widgetOptions.placeholderImage = options.placeholderImage;
+    widgetOptions.placeholderImageExpression = options.placeholderImageExpression;
+    widgetOptions.placeholderImageText = options.placeholderImageText;
+    widgetOptions.showViewer = options.showViewer;
+    widgetOptions.tooltip = options.tooltip;
+    widgetOptions.isDisabledExpression = options.isDisabledExpression;
+    widgetOptions.isDisabled = options.isDisabled;
+    widgetOptions.isReadOnlyExpression = options.isReadOnlyExpression;
+    widgetOptions.isReadOnly = options.isReadOnly;
   }
   addInclude(form: FormBase, options: WidgetOptions.IIncludeOptions) {
   }
@@ -171,12 +192,16 @@ export class SimpleWidgetCreatorService {
         id: options.id,
         popup: e.component
       });
+
+      this.globalPopup.addFormPopup(e.component);
     };
     widgetOptions.onHidden = (e) => {
-      const index = form.popupStack.indexOf(e.component);
+      const index = form.popupStack.findIndex(p => p.popup === e.component);
       if (index >= 0) {
         form.popupStack.splice(index, 1);
       }
+
+      this.globalPopup.removeFormPopup(e.component);
     };
 
     if (options.height) {
@@ -390,6 +415,63 @@ export class SimpleWidgetCreatorService {
         return Promise.resolve();
       }
     });
+  }
+
+  updatePopupOptions(updateablePopupOptions: IUpdateablePopupOptions) {
+    const options = updateablePopupOptions.options;
+
+    options.showCloseButton = false;
+    options.contentTemplate = "contentTemplate";
+
+    const onShowing = options.onShowing;
+    options.onShowing = (e) => {
+      if (onShowing) {
+        onShowing(e);
+      }
+
+      this.globalPopup.addIndependentPopup(component);
+    };
+
+    const onHidden = options.onHidden;
+    options.onHidden = (e) => {
+      if (onHidden) {
+        onHidden(e);
+      }
+
+      this.globalPopup.removeIndependentPopup(component);
+    };
+
+    const onInitialized = options.onInitialized;
+    let component: DevExpress.ui.dxPopup;
+    options.onInitialized = (e) => {
+      if (onInitialized) {
+        onInitialized(e);
+      }
+
+      component = e.component;
+    }
+
+    var commands: ICommandData[] = [];
+    commands.push(this.defaultCommands.getClosePopupCommand(() => component.hide()));
+    commands.push(...updateablePopupOptions.commands);
+
+    options.toolbarItems = this.toolbar.createToolbarItems(
+      updateablePopupOptions.scopeContainer, {
+      getItems: () => {
+        if (!component) {
+          return options.toolbarItems;
+        }
+
+        return component.option("toolbarItems");
+      },
+      setItemProperty: (index, property, value) => {
+        if (!component) {
+          return [];
+        }
+
+        component.option(`toolbarItems[${index}].${property}`, value);
+      }
+    }, updateablePopupOptions.caption, commands);
   }
 
   private createEditorOptions(form: FormBase, options: WidgetOptions.IEditorOptions): any {

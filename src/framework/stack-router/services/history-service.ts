@@ -77,6 +77,7 @@ export class HistoryService {
 
 		const args: Interfaces.INavigationArgs = {
 			url: this.getUrl(locationGoTo.url),
+			viewScrollInfo: locationGoTo.viewScrollInfo,
 			replace: replace
 		};
 
@@ -88,6 +89,7 @@ export class HistoryService {
 
 		locationGoTo.isHandled = true;
 	}
+	//TODO - ev. in LocationService übernehmen, da es dort besser passt
 	setUrlWithoutNavigation(url: string, replace: boolean = false) {
 		this.guardedNavigate(() => {
 			this.assignUrl(url, replace);

@@ -5,9 +5,6 @@ import {
   ViewItem
 } from "../classes/view-item";
 import {
-  Shortcuts
-} from "../../base/enumerations/export";
-import {
   LocalizationService,
   ShortcutService
 } from "../../base/services/export";
@@ -91,7 +88,7 @@ export class RouterService {
 
     navigationArgs.routeInfo = routeInfo;
 
-    if (this.viewStack.length > 1 && this.viewStack[this.viewStack.length - 2].routeInfo.id === routeInfo.id) {
+    if (this.viewStack.length > 1 && this.viewStack[this.viewStack.length - 2].model.routeInfo.id === routeInfo.id) {
       this.removeLastViewItem();
       return;
     } else if (navigationArgs.clearStack) {
@@ -99,8 +96,11 @@ export class RouterService {
     } else if (this.viewStack.length > 0 && navigationArgs.replace) {
       this.viewStack.splice(this.viewStack.length - 1, 1);
     }
-
-    this.addViewItem(new ViewItem(routeInfo));
+    
+    this.addViewItem(new ViewItem({
+      routeInfo: routeInfo,
+      viewScrollInfo: navigationArgs.viewScrollInfo
+    }));
   }
   registerRoutes(routes: Interfaces.IRoute[], fallbackRoute: string) {
     routes = routes || [];
@@ -180,7 +180,10 @@ export class RouterService {
         navigation: route.navigation,
         children: this.getNavigationRoutes(route.children)
       };
-      result.push(navigationRoute);
+
+      if (navigationRoute.route || (navigationRoute.children && navigationRoute.children.length > 0)) {
+        result.push(navigationRoute);
+      }
     }
 
     return result;
@@ -283,7 +286,9 @@ export class RouterService {
       }
 
       if (route.canActivate == void (0)) {
-        route.canActivate = this.returnTrue;
+        route.canActivate = () => {
+          return true;
+        };
       }
 
       route.children = route.children || [];
@@ -303,33 +308,9 @@ export class RouterService {
         return;
       }
 
-      switch(e.shortcut) {
-        case Shortcuts.save: {
-          currentViewModel.executeCommand("$save");
-          break;
-        }
-        case Shortcuts.saveAndNew: {
-          currentViewModel.executeCommand("$saveAndNew");
-          break;
-        }
-        case Shortcuts.new: {
-          currentViewModel.executeCommand("$new");
-          break;
-        }
-        case Shortcuts.delete: {
-          currentViewModel.executeCommand("$delete");
-          break;
-        }
-        default: {
-          break;
-        }
-      }
-
+      currentViewModel.executeCommand(e.idCommand);
       return Promise.resolve();
     });
-  }
-  private returnTrue(): boolean {
-    return true;
   }
   private setCurrentViewItem() {
     if (this.viewStack.length === 0) {

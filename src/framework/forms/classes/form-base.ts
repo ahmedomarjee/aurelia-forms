@@ -61,6 +61,12 @@ import {
   IPopupInfo,
   IValidationResult
 } from "../interfaces/export";
+import {
+  IViewScrollInfo
+} from "../../base/interfaces/export";
+import {
+  IViewItemModel
+} from "../../stack-router/interfaces/export";
 
 export class FormBase {
   private _callOnBind: { (): void }[];
@@ -107,6 +113,7 @@ export class FormBase {
   toolbarOptions: DevExpress.ui.dxToolbarOptions;
   id: string;
   title: string;
+  viewScrollInfo: IViewScrollInfo;
 
   isEditForm: boolean;
   isNestedForm: boolean;
@@ -144,9 +151,13 @@ export class FormBase {
     this._callOnBind.push(callback);
   }
 
-  activate(routeInfo: any) {
-    if (routeInfo && routeInfo.parameters && routeInfo.parameters.id) {
-      this.variables.data.$id = routeInfo.parameters.id;
+  activate(viewItemInfo: IViewItemModel) {
+    this.viewScrollInfo = viewItemInfo && viewItemInfo.viewScrollInfo
+      ? viewItemInfo.viewScrollInfo
+      : null;
+
+    if (viewItemInfo && viewItemInfo.routeInfo && viewItemInfo.routeInfo.parameters && viewItemInfo.routeInfo.parameters.id) {
+      this.variables.data.$id = viewItemInfo.routeInfo.parameters.id;
     }
   }
   created(owningView: any, myView: any) {
@@ -225,16 +236,35 @@ export class FormBase {
   executeCommand(id: string, options?: ICommandExecuteOptions) {
     const context = this.getCurrentForm();
 
-    if (context === this) {
-      const command = this.commands
-        .getCommands()
-        .find(i => i.id == id);
+    if (context == null) {
+      return;
+    } else if (context === this) {
+      if (id === "$command") {
+        if (this.formBaseImport.globalPopup.isIndependentPopupOpen()) {
+          return;
+        }
 
-      if (!command) {
-        return;
+        const commands = this.commands
+          .getCommands()
+          .filter(c => 
+            this.formBaseImport.command.isVisibleAndEnabled(this.scope, c));
+
+        this.formBaseImport.formEvent.onExecuteCommand.fire({
+          form: this,
+          commands: commands,
+          allowGlobalCommands: !this.isEditForm
+        });
+      } else {
+        const command = this.commands
+          .getCommands()
+          .find(i => i.id == id);
+
+        if (!command) {
+          return;
+        }
+
+        this.command.execute(this.scope, command, options);
       }
-
-      this.command.execute(this.scope, command, options);
     } else {
       context.executeCommand(id);
     }
@@ -261,7 +291,7 @@ export class FormBase {
   }
 
   canAdd(): boolean {
-    const mainModel = this.getModelWithKeyId();
+    const mainModel = this.models.getModelWithKeyId();
     if (!mainModel) {
       return false;
     }
@@ -291,7 +321,6 @@ export class FormBase {
         if (!m.postOnSave) {
           return false;
         }
-
         return true;
       }));
   }
@@ -305,17 +334,21 @@ export class FormBase {
         if (!this.models.data[m.id] || this.models.data[m.id][m.keyProperty] === undefined) {
           return false;
         }
+        if (!this.models.allowSave(this.scopeContainer, m)) {
+          return false;
+        }
 
         return true;
       }));
   }
-  save(): Promise<any> {
+  save(): Promise<IValidationResult> {
     const validationResult: IValidationResult = {
       isValid: true,
       messages: []
     };
 
     if (!this.canSave() || !this.canSaveNow()) {
+      validationResult.isValid = false;
       return Promise.resolve(validationResult);
     }
 
@@ -329,7 +362,7 @@ export class FormBase {
                 this.translate("base.save_success"),
                 "SUCCESS",
                 3000);
-              
+
               this.setCurrentUrl();
 
               return Promise.resolve(validationResult);
@@ -376,12 +409,6 @@ export class FormBase {
     return this.localization.translate(this.scopeContainer, key);
   }
 
-  getModelWithKeyId(): Interfaces.IModel {
-    return this
-      .models
-      .getModels()
-      .find(m => m.key === "variables.data.$id");
-  };
   loadById(id: string): Promise<any> {
     this.setCurrentUrl(id);
 
@@ -448,10 +475,18 @@ export class FormBase {
         this.commands.addCommand(this.formBaseImport.defaultCommands.getEditPopupSaveCommand(this));
         this.commands.addCommand(this.formBaseImport.defaultCommands.getEditPopupSaveAndAddCommand(this));
         this.commands.addCommand(this.formBaseImport.defaultCommands.getEditPopupDeleteCommand(this));
+
+        this.commands.addCommand(this.formBaseImport.defaultCommands.getScrollDown(this));
+        this.commands.addCommand(this.formBaseImport.defaultCommands.getScrollUp(this));
       } else {
         this.commands.addCommand(this.formBaseImport.defaultCommands.getFormAddCommand(this));
         this.commands.addCommand(this.formBaseImport.defaultCommands.getFormSaveCommand(this));
         this.commands.addCommand(this.formBaseImport.defaultCommands.getFormDeleteCommand(this));
+
+        if (this.viewScrollInfo) {
+          this.commands.addCommand(this.formBaseImport.defaultCommands.getScrollDown(this));
+          this.commands.addCommand(this.formBaseImport.defaultCommands.getScrollUp(this));
+        }
       }
     }
 
@@ -460,6 +495,10 @@ export class FormBase {
     }
   }
   private getCurrentForm(): FormBase {
+    if (this.formBaseImport.globalPopup.isIndependentPopupOpen()) {
+      return null;
+    }
+
     if (this.popupStack.length === 0) {
       return this;
     }
@@ -479,8 +518,8 @@ export class FormBase {
       return;
     }
 
-    if (id == void(0)) {
-      const mainModel = this.getModelWithKeyId();
+    if (id == void (0)) {
+      const mainModel = this.models.getModelWithKeyId();
       if (!mainModel) {
         return;
       }
@@ -491,7 +530,7 @@ export class FormBase {
       }
 
       const key = data[mainModel.keyProperty];
-      if (key == void(0)) {
+      if (key == void (0)) {
         return;
       }
 

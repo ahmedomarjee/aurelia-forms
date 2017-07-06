@@ -19,6 +19,9 @@ import {
 import {
   CustomEvent
 } from "../../base/classes/custom-event";
+import {
+  IViewScrollInfo
+} from "../../base/interfaces/export";
 import * as Interfaces from "../interfaces/export";
 
 @autoinject
@@ -42,7 +45,7 @@ export class EditPopups {
   getInfo(id: string): Interfaces.IEditPopup {
     return this.editPopups.find(c => c.id === id);
   }
-  show(id: string) {
+  show(id: string, viewScrollInfo: IViewScrollInfo) {
     const editPopup = this.editPopups.find(c => c.id === id);
 
     if (!editPopup) {
@@ -54,6 +57,9 @@ export class EditPopups {
     if (!editPopup.isInitialized) {
       this.initializeContent(instance, editPopup);
     }
+
+    const editPopupFormBase: FormBase = this.form[editPopup.idContent]
+    editPopupFormBase.viewScrollInfo = viewScrollInfo;
 
     instance.show();
   }

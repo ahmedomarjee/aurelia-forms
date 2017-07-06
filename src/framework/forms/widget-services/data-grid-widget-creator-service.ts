@@ -88,7 +88,9 @@ export class DataGridWidgetCreatorService {
       });
     }
 
-    if (options.showFilterRow) {
+    //MainLists erhalten immer eine Filter-Zeile, 
+    //da hier die Suche immer sinnvoll ist
+    if (options.showFilterRow || options.isMainList) {
       dataGridOptions.filterRow = {
         visible: true
       };
@@ -99,15 +101,19 @@ export class DataGridWidgetCreatorService {
       dataGridOptions.rowTemplate = options.rowScriptTemplateId;
     }
 
-    const clickActions = this.baseWidgetCreator.getListClickActions(form, options);
+    let clickActions = this.baseWidgetCreator.getListClickActions(form, options);
     if (clickActions.length > 0) {
       dataGridOptions.hoverStateEnabled = true;
 
       dataGridOptions.onRowClick = (e) => {
         clickActions.forEach(item => {
-          item(e)
+          item(e, dataGridOptions.dataSource);
         });
       };
+
+      this.baseWidgetCreator.registerCustomDisposing(dataGridOptions, () => {
+        clickActions = null;
+      });
     }
 
     if (options.selectionMode) {

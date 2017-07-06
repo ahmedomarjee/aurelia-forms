@@ -13,6 +13,9 @@
   align-items: center;
   padding: 12px;
 }
+.t--file-uploader-with-viewer .t--file-uploader-with-viewer-click-region-droppable {
+  border-color: #2DCC70;
+}
 .t--file-uploader-with-viewer .t--file-uploader-image,
 .t--file-uploader-with-viewer t--file-uploader-placeholder-image {
   width: 100%;

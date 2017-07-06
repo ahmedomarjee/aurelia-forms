@@ -1,6 +1,7 @@
 import {
   autoinject,
   bindable,
+  computedFrom,
   observable
 } from "aurelia-framework";
 import {
@@ -26,6 +27,12 @@ export class ListView {
   totalPages: number;
   pagerInfoText: string;
   showLoadNextButton: boolean;
+
+  @computedFrom("options.showReloadButton")
+  get showReloadButton(): boolean {
+    return this.options.showReloadButton == void(0)
+      || this.options.showReloadButton;
+  }
 
   bind(): void {
     this.options.dataSource.on("changed", (r, options) => {

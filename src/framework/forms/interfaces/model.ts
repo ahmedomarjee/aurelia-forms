@@ -17,6 +17,7 @@ export interface IModel {
     autoLoad?: boolean;
 
     allowNew?: string;
+    allowSave?: string;
     allowDelete?: string;
 
     filters: IDataSourceOptionFilter[];

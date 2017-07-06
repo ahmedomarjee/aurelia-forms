@@ -19,9 +19,11 @@ export class ValidationService {
     this.registerConditionalRequired();
     this.registerEmail();
     this.registerStringLength();
+    this.registerIBAN();
+    this.registerBIC();
   }
 
-  registerValidator(type: string, callback: {(scopeContainer: ScopeContainer, caption: string, parameters: any): any}) {
+  registerValidator(type: string, callback: { (scopeContainer: ScopeContainer, caption: string, parameters: any): any }) {
     this.validators[type] = callback;
   }
 
@@ -40,7 +42,7 @@ export class ValidationService {
       return {
         type: "required",
         message: this.localization.translate(
-          [this.localization.translate(null, caption)], 
+          [this.localization.translate(null, caption)],
           "forms.validator_required")
       };
     });
@@ -51,7 +53,7 @@ export class ValidationService {
         type: "custom",
         reevaluate: true,
         message: this.localization.translate(
-          [this.localization.translate(null, caption)], 
+          [this.localization.translate(null, caption)],
           "forms.validator_required"),
         validationCallback: (e) => {
           if (e.value != null && e.value != "" && e.value != undefined) {
@@ -68,12 +70,34 @@ export class ValidationService {
       };
     });
   }
+  private registerBIC(){
+     this.registerValidator("BIC", (ScopeContainer, caption, parameters) => {
+      return {
+        type: "pattern",
+        pattern: "^([A-Z]){4}([A-Z]){2}([0-9A-Z]){2}([0-9A-Z]{3})?$",
+        message: this.localization.translate(
+          [this.localization.translate(null, caption)],
+          "forms.validator_bic")
+      };
+    });
+  }
+  private registerIBAN() {
+    this.registerValidator("IBAN", (ScopeContainer, caption, parameters) => {
+      return {
+        type: "pattern",
+        pattern: "[A-Z]{2}[0-9]{2}[A-Z0-9]{4}[0-9]{7}([A-Z0-9]?){0,16}",
+        message: this.localization.translate(
+          [this.localization.translate(null, caption)],
+          "forms.validator_iban")
+      };
+    });
+  }
   private registerEmail() {
     this.registerValidator("email", (scopeContainer, caption, parameters) => {
       return {
         type: "email",
         message: this.localization.translate(
-          [this.localization.translate(null, caption)], 
+          [this.localization.translate(null, caption)],
           "forms.validator_email")
       };
     });
@@ -84,21 +108,21 @@ export class ValidationService {
         return {
           type: "stringLength",
           message: this.localization.translate(
-            [this.localization.translate(null, caption), parameters.min, parameters.max], 
+            [this.localization.translate(null, caption), parameters.min, parameters.max],
             "forms.validator_stringLengthMinMax")
         };
       } else if (parameters.min) {
         return {
           type: "stringLength",
           message: this.localization.translate(
-            [this.localization.translate(null, caption), parameters.min], 
+            [this.localization.translate(null, caption), parameters.min],
             "forms.validator_stringLengthMin")
         };
       } else if (parameters.max) {
         return {
           type: "stringLength",
           message: this.localization.translate(
-            [this.localization.translate(null, caption), parameters.max], 
+            [this.localization.translate(null, caption), parameters.max],
             "forms.validator_stringLengthMax")
         };
       } else {

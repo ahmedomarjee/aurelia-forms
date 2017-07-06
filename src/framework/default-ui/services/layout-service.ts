@@ -33,6 +33,13 @@ export class LayoutService {
         propertyName: "border-left",
         value: `5px solid ${this.themeColor}`
       }]
+    },
+    {
+      name: ".erp-list-item-container:hover",
+      properties: [{
+        propertyName: "background-color",
+        value: this.themeColor
+      }]
     }]);
   }
 }

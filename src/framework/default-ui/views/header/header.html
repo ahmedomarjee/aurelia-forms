@@ -9,12 +9,13 @@
       ${header.text}
     </div>
     <div class="t--header-search" if.bind="header.onSearch.anyRegistered">
-      <dx-widget name="dxTextBox" options.bind="searchTextOptions"></dx-widget>
+      <dx-widget name="dxTextBox" options.bind="searchTextBoxOptions" view-model.ref="searchTextBox"></dx-widget>
     </div>
     <div class="t--header-between"></div>
     <div class="t--header-options">
       <div repeat.for="command of commands" click.delegate="command.execute({event: $event})" if.bind="command.isVisible && command.isEnabled">
         <div class="t--header-command">
+          <div if.bind="command.badgeText" class="t--header-command-badge" tr="key.bind: command.badgeText"></div>
           <i class="fa fa-${command.icon}" if.bind="command.icon"></i>
           <div>${command.title}</div>
         </div>

@@ -13,7 +13,7 @@
   align-items: center;
   height: 60px;
   margin-left: 280px;
-  padding: 0 12px;
+  padding-left: 12px;
   transition: all 0.3s cubic-bezier(0.62, 0.28, 0.23, 0.99);
   transition-property: margin-left;
 }
@@ -22,10 +22,18 @@
 }
 .t--header-flex {
   display: flex;
+  align-items: center;
   width: 100%;
+  height: 100%;
 }
 .t--header-flex > div:not(:first-child) {
   margin-left: 24px;
+}
+.t--header-logo {
+  height: 35px;
+}
+.t--header-logo > img {
+  height: 100%;
 }
 .t--header-title {
   display: flex;
@@ -33,4 +41,61 @@
 }
 .t--header-between {
   flex-grow: 1;
+}
+.t--header-options {
+  display: flex;
+  height: 100%;
+  align-items: center;
+}
+.t--header-options > div {
+  height: 100%;
+  padding: 0 12px;
+  border-left: 1px solid #eeeeee;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+.t--header-options > div:not(.t--header-avatar):hover {
+  background-color: #eeeeee;
+}
+.t--header-avatar > div {
+  height: 35px;
+  width: 35px;
+  border-radius: 35px;
+  border: 1px solid darkgray;
+  background-position: center center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+.t--header-avatar-command-container {
+  padding: 12px;
+}
+.t--header-avatar-command {
+  cursor: pointer;
+}
+.t--header-command {
+  display: flex;
+  position: relative;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  cursor: pointer;
+}
+.t--header-command i {
+  margin-bottom: 6px;
+  font-size: 16px;
+}
+.t--header-command-badge {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  top: 6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 18px;
+  background-color: #e80000;
+  color: white;
 }
